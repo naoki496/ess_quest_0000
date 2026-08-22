@@ -373,11 +373,12 @@
   }
 
   const MAP_POINTS = {
-    forest: { left: 25, top: 72 },
-    cave: { left: 16, top: 43 },
-    tower: { left: 56, top: 44 },
-    castle: { left: 82, top: 15 },
-    boss: { left: 80, top: 70 }
+    forest: { left: 17.1, top: 75.6 },
+    cave: { left: 16.7, top: 47.0 },
+    tower: { left: 46.5, top: 47.8 },
+    castle: { left: 80.8, top: 33.3 },
+    // 最終ステージは「城の外」ではなく、城内の魔王の部屋へ進入する。
+    boss: { left: 84.0, top: 25.0 }
   };
 
   const STAGE_BACKGROUNDS = {
@@ -385,7 +386,7 @@
     cave: "./assets/bg_cave.png",
     tower: "./assets/bg_tower.png",
     castle: "./assets/bg_castle.png",
-    boss: "./assets/bg_castle.png"
+    boss: "./assets/bg_boss.png"
   };
 
   function setMarker(point, instant = false) {
@@ -402,13 +403,17 @@
     stopBGM({ reset: true });
     const fromPoint = MAP_POINTS[fromStage.key] || MAP_POINTS.forest;
     const toPoint = MAP_POINTS[toStage.key] || MAP_POINTS.forest;
-    mapMessage.textContent = `${fromStage.name} から ${toStage.name} へ`;
+    mapMessage.textContent = toStage.key === "boss"
+      ? "まおうの しろ の なかへ…"
+      : `${fromStage.name} から ${toStage.name} へ`;
     setMarker(fromPoint, true);
     mapOverlay.hidden = false;
     await sleep(450);
     setMarker(toPoint, false);
     await sleep(3200);
-    mapMessage.textContent = `${toStage.name} に とうちゃく！`;
+    mapMessage.textContent = toStage.key === "boss"
+      ? "まおうの へや に とうちゃく！"
+      : `${toStage.name} に とうちゃく！`;
     await sleep(700);
     mapOverlay.hidden = true;
   }
@@ -447,33 +452,63 @@
 
     const isCompactLandscape = window.matchMedia("(max-width: 980px) and (orientation: landscape)").matches;
     const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-    const maxPx = isCompactLandscape ? 74 : (isPortrait ? 72 : 94);
-    const minPx = 30;
+    const termCount = currentQuestion?.nums?.length || 2;
+    const isThreeTerm = termCount >= 3;
+
+    const maxPx = isCompactLandscape ? (isThreeTerm ? 58 : 74) : (isPortrait ? (isThreeTerm ? 54 : 72) : (isThreeTerm ? 68 : 94));
+    const minPx = isCompactLandscape ? (isThreeTerm ? 32 : 38) : (isPortrait ? (isThreeTerm ? 30 : 36) : (isThreeTerm ? 36 : 44));
+
+    mathProblem.classList.toggle("three-term", isThreeTerm);
+    mathProblem.style.letterSpacing = isThreeTerm ? "-.055em" : "-.025em";
+    mathProblem.style.transform = "none";
+
     const boxStyle = getComputedStyle(equationFitBox);
     const padX = parseFloat(boxStyle.paddingLeft || 0) + parseFloat(boxStyle.paddingRight || 0);
     const padY = parseFloat(boxStyle.paddingTop || 0) + parseFloat(boxStyle.paddingBottom || 0);
-    const availableWidth = Math.max(80, equationFitBox.clientWidth - padX - 8);
-    const availableHeight = Math.max(48, equationFitBox.clientHeight - padY - 6);
+    const availableWidth = Math.max(120, equationFitBox.clientWidth - padX - 10);
+    const availableHeight = Math.max(52, equationFitBox.clientHeight - padY - 8);
 
-    mathProblem.style.fontSize = `${maxPx}px`;
-    mathProblem.style.letterSpacing = "-.025em";
-    mathProblem.style.transform = "none";
+    // 要素自体は幅100%なので、要素幅ではなく「文字列そのもの」の実測値を使う。
+    const textRange = document.createRange();
+    textRange.selectNodeContents(mathProblem);
+    const measure = px => {
+      mathProblem.style.fontSize = `${px}px`;
+      const rect = textRange.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    };
+    const fits = px => {
+      const rect = measure(px);
+      return rect.width <= availableWidth + 1 && rect.height <= availableHeight + 1;
+    };
 
-    let rect = mathProblem.getBoundingClientRect();
-    const widthScale = rect.width > 0 ? availableWidth / rect.width : 1;
-    const heightScale = rect.height > 0 ? availableHeight / rect.height : 1;
-    const scale = Math.min(1, widthScale, heightScale);
-    let target = Math.max(minPx, Math.floor(maxPx * scale));
-    mathProblem.style.fontSize = `${target}px`;
-
-    // 最終安全弁：実測しながら必ず枠内へ収める
-    for (let i = 0; i < 40; i++) {
-      rect = mathProblem.getBoundingClientRect();
-      if (rect.width <= availableWidth && rect.height <= availableHeight) break;
-      target = Math.max(22, target - 2);
-      mathProblem.style.fontSize = `${target}px`;
-      if (target <= 22) break;
+    // 毎回ゼロから「枠内に入る最大サイズ」を探索するため、前問のサイズに引きずられない。
+    let lo = minPx;
+    let hi = maxPx;
+    let best = minPx;
+    while (lo <= hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (fits(mid)) {
+        best = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
     }
+
+    // 最小値でも入らない特殊な狭幅だけ、24pxまで安全に下げる。
+    if (!fits(best)) {
+      let size = best;
+      while (size > 24 && !fits(size)) size -= 1;
+      best = size;
+    }
+    mathProblem.style.fontSize = `${best}px`;
+    textRange.detach?.();
+  }
+
+  function scheduleMathFit() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => fitMathProblem());
+    });
   }
 
   async function prepareQuestion({ stageIntro = false, previousStageKey = null } = {}) {
@@ -493,7 +528,7 @@
     setEnemy(stage);
     currentQuestion = generateQuestion();
     mathProblem.textContent = `${currentQuestion.expression} = ?`;
-    requestAnimationFrame(() => fitMathProblem());
+    scheduleMathFit();
     feedbackText.textContent = "";
     feedbackText.className = "feedback-text";
     bottomMessage.textContent = streak === 19 ? "さいごの 1もん！ まおうを たおそう！" : "もんだいに こたえて すすもう！";
@@ -633,12 +668,12 @@
   });
 
   window.addEventListener("resize", () => {
-    if (currentQuestion && !game.hidden) fitMathProblem();
+    if (currentQuestion && !game.hidden) scheduleMathFit();
   });
 
   if ("ResizeObserver" in window) {
     const ro = new ResizeObserver(() => {
-      if (currentQuestion && !game.hidden) fitMathProblem();
+      if (currentQuestion && !game.hidden) scheduleMathFit();
     });
     ro.observe(equationFitBox);
   }

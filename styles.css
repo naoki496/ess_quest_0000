@@ -680,3 +680,50 @@ body[data-zone="boss"] .scene-background { background-image: url('./assets/bg_bo
   .answer-deck { grid-template-columns: 1fr !important; }
   .answer-deck .answer { min-height: 62px !important; }
 }
+
+/* ===== v6: robust equation fitting + corrected world map ===== */
+.equation-fit-box {
+  container-type: inline-size;
+}
+.math-problem,
+.math-problem.long,
+.math-problem.three-term {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1 !important;
+}
+.math-problem.three-term {
+  letter-spacing: -.055em;
+}
+
+.world-map {
+  aspect-ratio: 1200 / 820;
+  width: min(900px, 84vw);
+}
+.world-map img {
+  object-fit: contain;
+  background: #276d88;
+}
+
+@media (max-width: 980px) and (orientation: landscape) {
+  .equation-fit-box {
+    min-height: 86px;
+    height: clamp(88px, 18vh, 122px);
+  }
+}
+
+@media (orientation: portrait) {
+  .equation-fit-box {
+    min-height: 92px;
+    height: 104px;
+  }
+}
