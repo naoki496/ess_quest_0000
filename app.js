@@ -4,7 +4,7 @@
   const QUESTION_SECONDS = 60;
   const CORRECT_DELAY = 900;
   const WRONG_DELAY = 1850;
-  const MAX_STREAK = 20;
+  const MAX_STREAK = 45;
   const MAX_LIVES = 3;
 
   const startScreen = document.getElementById("startScreen");
@@ -36,9 +36,17 @@
   const stageRevealOverlay = document.getElementById("stageRevealOverlay");
   const stageRevealBg = document.getElementById("stageRevealBg");
   const stageRevealTitle = document.getElementById("stageRevealTitle");
+  const stageClearOverlay = document.getElementById("stageClearOverlay");
+  const stageClearTitle = document.getElementById("stageClearTitle");
   const clearOverlay = document.getElementById("clearOverlay");
-  const againBtn = document.getElementById("againBtn");
   const confetti = document.getElementById("confetti");
+  const resultOverlay = document.getElementById("resultOverlay");
+  const resultMistakes = document.getElementById("resultMistakes");
+  const resultTimeouts = document.getElementById("resultTimeouts");
+  const resultRestarts = document.getElementById("resultRestarts");
+  const resultErrorList = document.getElementById("resultErrorList");
+  const resultRestartBtn = document.getElementById("resultRestartBtn");
+  const resultTitleBtn = document.getElementById("resultTitleBtn");
 
   const FALLBACK_BGM = "./assets/bgm.mp3";
   const bgm = new Audio(FALLBACK_BGM);
@@ -65,6 +73,9 @@
   let lastSimpleOp = null;
   let sameSimpleOpCount = 0;
   let currentZone = "forest";
+  let mistakeLog = [];
+  let timeoutCount = 0;
+  let stageRestartCount = 0;
 
   const STAGES = [
     {
@@ -81,7 +92,7 @@
     {
       key: "cave",
       name: "ふしぎな どうくつ",
-      minStreak: 5,
+      minStreak: 10,
       bgm: "./assets/Cold Amber.mp3",
       enemies: [
         ["いわゴーレム", "golem.png"],
@@ -92,7 +103,7 @@
     {
       key: "tower",
       name: "まほうの とう",
-      minStreak: 10,
+      minStreak: 20,
       bgm: "./assets/Crate Lockup Tango.mp3",
       enemies: [
         ["まほうつかい", "wizard.png"],
@@ -103,7 +114,7 @@
     {
       key: "castle",
       name: "まおうの しろ",
-      minStreak: 15,
+      minStreak: 30,
       bgm: "./assets/Quantized Panic.mp3",
       enemies: [
         ["あくまのナイト", "knight.png"],
@@ -114,7 +125,7 @@
     {
       key: "boss",
       name: "まおうの へや",
-      minStreak: 19,
+      minStreak: 40,
       bgm: "./assets/Geology.mp3",
       enemies: [["まおうキング", "demon.png"]]
     }
@@ -144,10 +155,10 @@
   }
 
   function stageForStreak(value) {
-    if (value >= 19) return STAGES[4];
-    if (value >= 15) return STAGES[3];
-    if (value >= 10) return STAGES[2];
-    if (value >= 5) return STAGES[1];
+    if (value >= 40) return STAGES[4];
+    if (value >= 30) return STAGES[3];
+    if (value >= 20) return STAGES[2];
+    if (value >= 10) return STAGES[1];
     return STAGES[0];
   }
 
@@ -258,10 +269,10 @@
   function generateQuestion() {
     let q;
     for (let i = 0; i < 120; i++) {
-      if (streak < 5) q = makeForestQuestion();
-      else if (streak < 10) q = makeCaveQuestion();
-      else if (streak < 15) q = makeTowerQuestion();
-      else if (streak < 19) q = makeCastleQuestion(false);
+      if (streak < 10) q = makeForestQuestion();
+      else if (streak < 20) q = makeCaveQuestion();
+      else if (streak < 30) q = makeTowerQuestion();
+      else if (streak < 40) q = makeCastleQuestion(false);
       else q = makeCastleQuestion(true);
       if (!recentProblemKeys.includes(q.key)) break;
     }
@@ -285,15 +296,35 @@
     if (!soundOn) {
       bgm.pause();
     } else if (!game.hidden && mapOverlay.hidden && stageRevealOverlay.hidden) {
-      playStageBGM(stageForStreak(Math.min(streak, 19)));
+      playStageBGM(stageForStreak(Math.min(streak, 44)));
     }
   }
 
   function stopBGM({ reset = false } = {}) {
     bgm.pause();
+    bgm.volume = 0.34;
     if (reset) {
       try { bgm.currentTime = 0; } catch (_) {}
     }
+  }
+
+  async function fadeOutBGM(duration = 1200) {
+    if (bgm.paused) {
+      stopBGM({ reset: true });
+      return;
+    }
+    const startVolume = bgm.volume || 0.34;
+    const started = performance.now();
+    await new Promise(resolve => {
+      const tick = now => {
+        const progress = Math.min(1, (now - started) / duration);
+        bgm.volume = startVolume * (1 - progress);
+        if (progress < 1) requestAnimationFrame(tick);
+        else resolve();
+      };
+      requestAnimationFrame(tick);
+    });
+    stopBGM({ reset: true });
   }
 
   function playStageBGM(stage) {
@@ -307,6 +338,7 @@
       bgm.load();
     }
     bgm.loop = true;
+    bgm.volume = 0.34;
     bgm.play().catch(() => {
       if (target !== FALLBACK_BGM) playFallbackBGM(target);
     });
@@ -319,6 +351,7 @@
     bgm.src = FALLBACK_BGM;
     bgm.load();
     bgm.loop = true;
+    bgm.volume = 0.34;
     bgm.play().catch(() => {});
   }
 
@@ -431,7 +464,6 @@
   }
 
   async function showMapTravel(fromStage, toStage) {
-    stopBGM({ reset: true });
     const fromPoint = MAP_POINTS[fromStage.key] || MAP_POINTS.forest;
     const toPoint = MAP_POINTS[toStage.key] || MAP_POINTS.forest;
     const enteringBossRoom = toStage.key === "boss";
@@ -476,7 +508,19 @@
     stageRevealOverlay.hidden = true;
   }
 
+  async function showStageClearTransition(stage) {
+    stageClearTitle.textContent = stage.name;
+    stageClearOverlay.hidden = false;
+    stageClearOverlay.classList.remove("play");
+    void stageClearOverlay.offsetWidth;
+    stageClearOverlay.classList.add("play");
+    await sleep(1200);
+    stageClearOverlay.hidden = true;
+    stageClearOverlay.classList.remove("play");
+  }
+
   async function runStageTransition(fromStage, toStage) {
+    await Promise.all([fadeOutBGM(1200), showStageClearTransition(fromStage)]);
     await showMapTravel(fromStage, toStage);
     await showStageBackground(toStage);
   }
@@ -524,7 +568,7 @@
     renderEquation(currentQuestion);
     feedbackText.textContent = "";
     feedbackText.className = "feedback-text";
-    bottomMessage.textContent = streak === 19 ? "さいごの 1もん！ まおうを たおそう！" : "もんだいに こたえて すすもう！";
+    bottomMessage.textContent = streak === 44 ? "さいごの 1もん！ まおうを たおそう！" : (streak >= 40 ? "さいしゅうステージ！ まおうを たおそう！" : "もんだいに こたえて すすもう！");
 
     const values = makeChoices(currentQuestion.answer);
     answerButtons.forEach((button, index) => {
@@ -547,6 +591,17 @@
 
     const answer = currentQuestion.answer;
     const isCorrect = !timeUp && selectedValue === answer;
+    if (!isCorrect) {
+      const stage = stageForStreak(streak);
+      mistakeLog.push({
+        stage: stage.name,
+        question: `${currentQuestion.expression.replace(/\s+/g, "")}=${answer}`,
+        selected: timeUp ? null : selectedValue,
+        correct: answer,
+        timeUp
+      });
+      if (timeUp) timeoutCount += 1;
+    }
     const correctBtn = answerButtons.find(btn => Number(btn.dataset.value) === answer);
     if (correctBtn) correctBtn.classList.add("correct");
 
@@ -561,7 +616,7 @@
       enemySprite.classList.add("defeat");
       const oldStage = stageForStreak(streak).key;
       streak += 1;
-      renderHud(stageForStreak(Math.min(streak, 19)));
+      renderHud(stageForStreak(Math.min(streak, 44)));
       if (streak >= MAX_STREAK) {
         await sleep(550);
         showClear();
@@ -591,6 +646,7 @@
         const stage = stageForStreak(streak);
         bottomMessage.textContent = "ライフ 0。いまの ステージを はじめから！";
         await sleep(WRONG_DELAY + 300);
+        stageRestartCount += 1;
         streak = stage.minStreak;
         resetLives();
         currentZone = stage.key;
@@ -614,8 +670,37 @@
     }
   }
 
-  function showClear() {
+  function renderResult() {
+    resultMistakes.textContent = String(mistakeLog.length);
+    resultTimeouts.textContent = String(timeoutCount);
+    resultRestarts.textContent = String(stageRestartCount);
+    resultErrorList.replaceChildren();
+
+    if (mistakeLog.length === 0) {
+      const perfect = document.createElement("div");
+      perfect.className = "result-perfect";
+      perfect.textContent = "ノーミス！ すべての もんだいを クリアしました。";
+      resultErrorList.appendChild(perfect);
+      return;
+    }
+
+    mistakeLog.forEach((item, index) => {
+      const row = document.createElement("article");
+      row.className = "result-error-item";
+      const answerText = item.timeUp ? "じかんぎれ" : `えらんだ こたえ：${item.selected}`;
+      row.innerHTML = `<span class="result-error-no">${index + 1}</span><div><small>${item.stage}</small><strong>${item.question}</strong><p>${answerText} ／ せいかい：${item.correct}</p></div>`;
+      resultErrorList.appendChild(row);
+    });
+  }
+
+  function showResult() {
+    renderResult();
+    resultOverlay.hidden = false;
+  }
+
+  async function showClear() {
     stopTimer();
+    await fadeOutBGM(1000);
     buildConfetti();
     clearOverlay.hidden = false;
     if (soundOn) {
@@ -624,12 +709,23 @@
         correctSE.play().catch(() => {});
       } catch (_) {}
     }
+    await sleep(2400);
+    clearOverlay.hidden = true;
+    showResult();
+  }
+
+  function resetRunStats() {
+    mistakeLog = [];
+    timeoutCount = 0;
+    stageRestartCount = 0;
   }
 
   async function startGame() {
     startScreen.hidden = true;
     clearOverlay.hidden = true;
+    resultOverlay.hidden = true;
     game.hidden = false;
+    resetRunStats();
     streak = 0;
     resetLives();
     currentZone = "forest";
@@ -647,17 +743,28 @@
     btn.addEventListener("click", () => resolveAnswer(Number(btn.dataset.value), false));
   });
   startBtn.addEventListener("click", startGame);
-  againBtn.addEventListener("click", startGame);
+  resultRestartBtn.addEventListener("click", startGame);
+  resultTitleBtn.addEventListener("click", () => {
+    stopTimer();
+    stopBGM({ reset: true });
+    resultOverlay.hidden = true;
+    clearOverlay.hidden = true;
+    stageClearOverlay.hidden = true;
+    mapOverlay.hidden = true;
+    stageRevealOverlay.hidden = true;
+    game.hidden = true;
+    startScreen.hidden = false;
+  });
   startSoundBtn.addEventListener("click", () => setSound(!soundOn));
   bgmToggle.addEventListener("click", () => setSound(!soundOn));
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       bgm.pause();
-      if (!game.hidden && clearOverlay.hidden && !locked) stopTimer();
+      if (!game.hidden && clearOverlay.hidden && resultOverlay.hidden && !locked) stopTimer();
     } else if (soundOn && !game.hidden) {
-      if (mapOverlay.hidden && stageRevealOverlay.hidden) playStageBGM(stageForStreak(Math.min(streak, 19)));
-      if (clearOverlay.hidden && !locked) startTimer();
+      if (mapOverlay.hidden && stageRevealOverlay.hidden && stageClearOverlay.hidden && resultOverlay.hidden) playStageBGM(stageForStreak(Math.min(streak, 44)));
+      if (clearOverlay.hidden && resultOverlay.hidden && !locked) startTimer();
     }
   });
 

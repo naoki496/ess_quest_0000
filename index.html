@@ -4,13 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#12213c">
-  <meta name="description" content="3つのライフで20もんクリアをめざす、さんすうRPGゲーム。">
+  <meta name="description" content="3つのライフで45もんクリアをめざす、さんすうRPGゲーム。">
   <title>さんすうクエスト</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body data-zone="forest">
-  <div class="portrait-hint" aria-hidden="true">↻ よこむきにすると あそびやすいよ！</div>
-
   <section id="startScreen" class="start-screen start-screen-v8" aria-label="タイトルがめん">
     <div class="start-backdrop"></div>
     <div class="start-v8-shell ornate-frame">
@@ -37,7 +35,7 @@
         <div class="start-rule-card"><b>60</b><span>びょう</span><small>1もんの じかん</small></div>
         <div class="start-rule-card"><b>3</b><span>たく</span><small>こたえを えらぶ</small></div>
         <div class="start-rule-card"><b>3</b><span>ライフ</span><small>3かいミスで ステージやりなおし</small></div>
-        <div class="start-rule-card accent"><b>20</b><span>もん</span><small>さいごまで クリア</small></div>
+        <div class="start-rule-card accent"><b>45</b><span>もん</span><small>さいごまで クリア</small></div>
       </div>
     </div>
   </section>
@@ -46,7 +44,7 @@
     <header class="hud ornate-frame">
       <div class="hud-block streak-block">
         <span class="hud-label">すすみ</span>
-        <strong id="streakText">0 / 20</strong>
+        <strong id="streakText">0 / 45</strong>
       </div>
 
       <div class="journey-wrap">
@@ -82,7 +80,7 @@
 
       <div class="stage-banner ornate-frame">
         <span id="stageName">はじまりの もり</span>
-        <small id="stageStep">1 / 20</small>
+        <small id="stageStep">1 / 45</small>
       </div>
 
       <div class="battle-row">
@@ -156,14 +154,46 @@
     </div>
   </div>
 
+  <div id="stageClearOverlay" class="overlay stage-clear-overlay" hidden>
+    <div class="stage-clear-flare" aria-hidden="true"></div>
+    <div class="stage-clear-content">
+      <small>STAGE CLEAR</small>
+      <strong id="stageClearTitle">はじまりの もり</strong>
+      <span>つぎの エリアへ</span>
+    </div>
+  </div>
+
   <div id="clearOverlay" class="overlay clear-overlay" hidden>
     <div id="confetti" class="confetti" aria-hidden="true"></div>
     <section class="clear-card ornate-frame" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
       <img src="./assets/hero.png" class="clear-hero" alt="ゆうしゃ">
-      <p class="clear-kicker">★ 20もん とうは！ ★</p>
+      <p class="clear-kicker">★ 45もん とうは！ ★</p>
       <h2 id="clearTitle">ぼうけん<br><span>クリア！</span></h2>
-      <p>まおうを たおした！<br>すごい！ さいごの ステージまで クリア！</p>
-      <button id="againBtn" class="big-command action-primary" type="button">もういちど ちょうせん</button>
+      <p>まおうを たおした！<br>リザルトを まとめています…</p>
+    </section>
+  </div>
+
+  <div id="resultOverlay" class="overlay result-overlay" hidden>
+    <section class="result-card ornate-frame" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+      <header class="result-header">
+        <small>ADVENTURE RESULT</small>
+        <h2 id="resultTitle">リザルト</h2>
+        <p>ぼうけんの きろく</p>
+      </header>
+      <div class="result-summary">
+        <div><span>クリア</span><strong>45 / 45</strong><small>もん</small></div>
+        <div><span>ミス</span><strong id="resultMistakes">0</strong><small>かい</small></div>
+        <div><span>じかんぎれ</span><strong id="resultTimeouts">0</strong><small>かい</small></div>
+        <div><span>やりなおし</span><strong id="resultRestarts">0</strong><small>かい</small></div>
+      </div>
+      <section class="result-errors">
+        <h3>まちがえた もんだい</h3>
+        <div id="resultErrorList" class="result-error-list"></div>
+      </section>
+      <div class="result-actions">
+        <button id="resultRestartBtn" class="big-command action-primary" type="button">最初から遊ぶ</button>
+        <button id="resultTitleBtn" class="big-command result-secondary" type="button">タイトルにもどる</button>
+      </div>
     </section>
   </div>
 
