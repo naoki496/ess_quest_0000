@@ -5,6 +5,7 @@
   const CORRECT_DELAY = 900;
   const WRONG_DELAY = 1850;
   const MAX_STREAK = 20;
+  const MAX_LIVES = 3;
 
   const startScreen = document.getElementById("startScreen");
   const startBtn = document.getElementById("startBtn");
@@ -12,11 +13,13 @@
   const game = document.getElementById("game");
   const bgmToggle = document.getElementById("bgmToggle");
   const streakText = document.getElementById("streakText");
+  const lifePips = document.getElementById("lifePips");
   const journeyFill = document.getElementById("journeyFill");
   const timerText = document.getElementById("timerText");
   const stageName = document.getElementById("stageName");
   const stageStep = document.getElementById("stageStep");
   const mathProblem = document.getElementById("mathProblem");
+  const equationFitBox = document.getElementById("equationFitBox");
   const feedbackText = document.getElementById("feedbackText");
   const choicesEl = document.getElementById("choices");
   const answerButtons = [...document.querySelectorAll(".answer")];
@@ -37,8 +40,10 @@
   const againBtn = document.getElementById("againBtn");
   const confetti = document.getElementById("confetti");
 
-  const bgm = new Audio("./assets/bgm.mp3");
-  let currentBgmFile = "./assets/bgm.mp3";
+  const FALLBACK_BGM = "./assets/bgm.mp3";
+  const bgm = new Audio(FALLBACK_BGM);
+  let currentBgmFile = FALLBACK_BGM;
+  let requestedBgmFile = FALLBACK_BGM;
   const correctSE = new Audio("./assets/correct.mp3");
   const wrongSE = new Audio("./assets/wrong.mp3");
   const goSE = new Audio("./assets/go.mp3");
@@ -50,6 +55,7 @@
 
   let soundOn = true;
   let streak = 0;
+  let lives = MAX_LIVES;
   let currentQuestion = null;
   let locked = false;
   let timerId = null;
@@ -65,7 +71,7 @@
       key: "forest",
       name: "はじまりの もり",
       minStreak: 0,
-      bgm: "./assets/bgm.mp3",
+      bgm: "./assets/Cybern.mp3",
       enemies: [
         ["ぷるるスライム", "slime.png"],
         ["きのこぞう", "mushroom.png"],
@@ -76,7 +82,7 @@
       key: "cave",
       name: "ふしぎな どうくつ",
       minStreak: 5,
-      bgm: "./assets/bgm.mp3",
+      bgm: "./assets/Cold Amber.mp3",
       enemies: [
         ["いわゴーレム", "golem.png"],
         ["クリスタルン", "crystal.png"],
@@ -87,7 +93,7 @@
       key: "tower",
       name: "まほうの とう",
       minStreak: 10,
-      bgm: "./assets/bgm.mp3",
+      bgm: "./assets/Crate Lockup Tango.mp3",
       enemies: [
         ["まほうつかい", "wizard.png"],
         ["クリスタルン", "crystal.png"],
@@ -98,7 +104,7 @@
       key: "castle",
       name: "まおうの しろ",
       minStreak: 15,
-      bgm: "./assets/bgm.mp3",
+      bgm: "./assets/Quantized Panic.mp3",
       enemies: [
         ["あくまのナイト", "knight.png"],
         ["やみのまほうつかい", "wizard.png"],
@@ -109,7 +115,7 @@
       key: "boss",
       name: "まおうの へや",
       minStreak: 19,
-      bgm: "./assets/bgm.mp3",
+      bgm: "./assets/Geology.mp3",
       enemies: [["まおうキング", "demon.png"]]
     }
   ];
@@ -143,6 +149,21 @@
     if (value >= 10) return STAGES[2];
     if (value >= 5) return STAGES[1];
     return STAGES[0];
+  }
+
+  function renderLives() {
+    const gems = lifePips ? [...lifePips.querySelectorAll(".life-gem")] : [];
+    gems.forEach((gem, index) => {
+      const active = index < lives;
+      gem.classList.toggle("active", active);
+      gem.classList.toggle("lost", !active);
+    });
+    if (lifePips) lifePips.setAttribute("aria-label", `ライフ ${lives} / ${MAX_LIVES}`);
+  }
+
+  function resetLives() {
+    lives = MAX_LIVES;
+    renderLives();
   }
 
   function pickSimpleOperator() {
@@ -277,7 +298,8 @@
 
   function playStageBGM(stage) {
     if (!soundOn || !stage) return;
-    const target = stage.bgm || "./assets/bgm.mp3";
+    const target = stage.bgm || FALLBACK_BGM;
+    requestedBgmFile = target;
     if (currentBgmFile !== target) {
       stopBGM({ reset: true });
       currentBgmFile = target;
@@ -285,8 +307,24 @@
       bgm.load();
     }
     bgm.loop = true;
+    bgm.play().catch(() => {
+      if (target !== FALLBACK_BGM) playFallbackBGM(target);
+    });
+  }
+
+  function playFallbackBGM(failedTarget) {
+    if (!soundOn || requestedBgmFile !== failedTarget) return;
+    stopBGM({ reset: true });
+    currentBgmFile = FALLBACK_BGM;
+    bgm.src = FALLBACK_BGM;
+    bgm.load();
+    bgm.loop = true;
     bgm.play().catch(() => {});
   }
+
+  bgm.addEventListener("error", () => {
+    if (currentBgmFile !== FALLBACK_BGM) playFallbackBGM(currentBgmFile);
+  });
 
   function playSE(audio) {
     if (!soundOn) return;
@@ -400,26 +438,41 @@
     streakText.textContent = `${streak} / ${MAX_STREAK}`;
     journeyFill.style.width = `${(streak / MAX_STREAK) * 100}%`;
     stageName.textContent = stage.name;
-    stageStep.textContent = `${streak + 1} / ${MAX_STREAK}`;
+    stageStep.textContent = `${Math.min(streak + 1, MAX_STREAK)} / ${MAX_STREAK}`;
+    renderLives();
   }
 
   function fitMathProblem() {
-    const el = mathProblem;
-    const maxPx = window.matchMedia("(max-width: 980px) and (orientation: landscape)").matches ? 72 : 88;
-    const minPx = 38;
-    el.style.fontSize = `${maxPx}px`;
-    el.classList.remove("long");
-    const available = Math.max(0, el.clientWidth - 10);
-    let size = maxPx;
-    while (size > minPx && el.scrollWidth > available) {
-      size -= 2;
-      el.style.fontSize = `${size}px`;
-    }
-    if (el.scrollWidth > available) {
-      el.style.fontSize = `${minPx}px`;
-      el.style.letterSpacing = "-.045em";
-    } else {
-      el.style.letterSpacing = "-.02em";
+    if (!mathProblem || !equationFitBox) return;
+
+    const isCompactLandscape = window.matchMedia("(max-width: 980px) and (orientation: landscape)").matches;
+    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+    const maxPx = isCompactLandscape ? 74 : (isPortrait ? 72 : 94);
+    const minPx = 30;
+    const boxStyle = getComputedStyle(equationFitBox);
+    const padX = parseFloat(boxStyle.paddingLeft || 0) + parseFloat(boxStyle.paddingRight || 0);
+    const padY = parseFloat(boxStyle.paddingTop || 0) + parseFloat(boxStyle.paddingBottom || 0);
+    const availableWidth = Math.max(80, equationFitBox.clientWidth - padX - 8);
+    const availableHeight = Math.max(48, equationFitBox.clientHeight - padY - 6);
+
+    mathProblem.style.fontSize = `${maxPx}px`;
+    mathProblem.style.letterSpacing = "-.025em";
+    mathProblem.style.transform = "none";
+
+    let rect = mathProblem.getBoundingClientRect();
+    const widthScale = rect.width > 0 ? availableWidth / rect.width : 1;
+    const heightScale = rect.height > 0 ? availableHeight / rect.height : 1;
+    const scale = Math.min(1, widthScale, heightScale);
+    let target = Math.max(minPx, Math.floor(maxPx * scale));
+    mathProblem.style.fontSize = `${target}px`;
+
+    // 最終安全弁：実測しながら必ず枠内へ収める
+    for (let i = 0; i < 40; i++) {
+      rect = mathProblem.getBoundingClientRect();
+      if (rect.width <= availableWidth && rect.height <= availableHeight) break;
+      target = Math.max(22, target - 2);
+      mathProblem.style.fontSize = `${target}px`;
+      if (target <= 22) break;
     }
   }
 
@@ -434,12 +487,13 @@
     if (stageIntro || zoneChanged) {
       const fromStage = STAGES.find(s => s.key === previousStageKey) || stage;
       await runStageTransition(fromStage, stage);
+      playStageBGM(stage);
     }
 
     setEnemy(stage);
     currentQuestion = generateQuestion();
     mathProblem.textContent = `${currentQuestion.expression} = ?`;
-    fitMathProblem();
+    requestAnimationFrame(() => fitMathProblem());
     feedbackText.textContent = "";
     feedbackText.className = "feedback-text";
     bottomMessage.textContent = streak === 19 ? "さいごの 1もん！ まおうを たおそう！" : "もんだいに こたえて すすもう！";
@@ -486,6 +540,7 @@
         return;
       }
       const newStage = stageForStreak(streak).key;
+      if (oldStage !== newStage) resetLives();
       await sleep(Math.max(0, CORRECT_DELAY - 390));
       await prepareQuestion({ stageIntro: oldStage !== newStage, previousStageKey: oldStage });
     } else {
@@ -494,18 +549,27 @@
         if (wrongBtn) wrongBtn.classList.add("wrong");
       }
       playSE(wrongSE);
+      lives = Math.max(0, lives - 1);
+      renderLives();
       feedbackText.textContent = timeUp ? `じかんぎれ！ せいかいは ${answer} だよ` : `ざんねん！ せいかいは ${answer} だよ`;
       feedbackText.className = "feedback-text bad";
-      bottomMessage.textContent = "だいじょうぶ！ もういちど 0から すすめるよ！";
       enemySprite.classList.add("hit");
-      streak = 0;
-      journeyFill.style.width = "0%";
-      streakText.textContent = "0 / 20";
-      await sleep(WRONG_DELAY);
-      const previousStageKey = currentZone;
-      currentZone = "forest";
-      document.body.dataset.zone = "forest";
-      await prepareQuestion({ stageIntro: previousStageKey !== "forest", previousStageKey });
+
+      if (lives > 0) {
+        bottomMessage.textContent = `ライフは あと ${lives}。このまま すすもう！`;
+        await sleep(WRONG_DELAY);
+        await prepareQuestion();
+      } else {
+        const stage = stageForStreak(streak);
+        bottomMessage.textContent = "ライフ 0。いまの ステージを はじめから！";
+        await sleep(WRONG_DELAY + 300);
+        streak = stage.minStreak;
+        resetLives();
+        currentZone = stage.key;
+        document.body.dataset.zone = stage.key;
+        renderHud(stage);
+        await prepareQuestion();
+      }
     }
   }
 
@@ -539,6 +603,7 @@
     clearOverlay.hidden = true;
     game.hidden = false;
     streak = 0;
+    resetLives();
     currentZone = "forest";
     recentProblemKeys = [];
     lastSimpleOp = null;
@@ -575,7 +640,7 @@
     const ro = new ResizeObserver(() => {
       if (currentQuestion && !game.hidden) fitMathProblem();
     });
-    ro.observe(mathProblem);
+    ro.observe(equationFitBox);
   }
 
   setSound(true);

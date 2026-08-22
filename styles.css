@@ -437,3 +437,246 @@ body[data-zone="boss"] .scene-background { background-image: url('./assets/bg_bo
   .world-map { width: min(88vw, 650px); }
   .math-problem, .math-problem.long { font-size: 4.5rem; }
 }
+
+/* ===== v5: LIFE + ENHANCED QUESTION GUI ===== */
+.hud {
+  grid-template-columns: minmax(115px,.72fr) minmax(300px,2.25fr) minmax(120px,.72fr) minmax(120px,.72fr) auto !important;
+}
+.life-block {
+  min-width: 118px;
+  padding: 2px 4px;
+}
+.life-pips {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+.life-gem {
+  display: inline-block;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  line-height: 1;
+  transition: transform .28s ease, opacity .28s ease, filter .28s ease, color .28s ease;
+}
+.life-gem.active {
+  color: #8eeaff;
+  text-shadow: 0 0 5px #fff, 0 0 12px rgba(93,220,255,.95), 0 0 22px rgba(44,130,255,.6);
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.25));
+}
+.life-gem.lost {
+  color: rgba(145,160,185,.28);
+  text-shadow: none;
+  filter: grayscale(1);
+  transform: scale(.82);
+}
+
+.problem-card.quest-panel {
+  position: relative;
+  align-self: center;
+  width: 100%;
+  padding: clamp(15px, 2.2vw, 24px);
+  border: 1px solid rgba(255,231,166,.72);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(16,30,52,.97), rgba(8,18,35,.96));
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.35),
+    0 0 0 3px rgba(90,56,20,.72),
+    0 0 0 5px rgba(235,190,91,.68),
+    inset 0 1px 0 rgba(255,255,255,.14);
+  overflow: visible;
+}
+.problem-card.quest-panel::before,
+.problem-card.quest-panel::after {
+  content: "";
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,226,145,.68), transparent);
+}
+.problem-card.quest-panel::before { top: 8px; }
+.problem-card.quest-panel::after { bottom: 8px; }
+
+.problem-card .problem-head {
+  min-height: 28px;
+  margin: 0 3px 10px;
+  color: #f7e4ad;
+}
+.problem-card .problem-title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  color: #fff5cf;
+  background: linear-gradient(180deg, #6e4a1f, #3a2715);
+  border: 1px solid rgba(255,220,135,.72);
+  box-shadow: 0 4px 10px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.15);
+  letter-spacing: .14em;
+  font-weight: 900;
+}
+.problem-card #problemMeta {
+  color: #c9dcf4;
+  font-weight: 700;
+  font-size: .88rem;
+}
+
+.equation-frame {
+  position: relative;
+  width: 100%;
+  padding: 7px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #e7c574 0%, #8f5d1d 28%, #ffe7a0 50%, #8a5418 72%, #d9ad55 100%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.45);
+}
+.equation-frame::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,244,199,.42);
+  pointer-events: none;
+}
+.equation-fit-box {
+  position: relative;
+  width: 100%;
+  height: clamp(108px, 17vh, 150px);
+  min-width: 0;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 11px;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(45,72,77,.22), transparent 52%),
+    linear-gradient(180deg, #13282b 0%, #071619 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(4,9,12,.85),
+    inset 0 16px 30px rgba(0,0,0,.34),
+    0 0 24px rgba(107,203,220,.05);
+}
+.math-problem,
+.math-problem.long {
+  display: inline-block !important;
+  width: max-content !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Yu Gothic UI", monospace;
+  font-weight: 1000;
+  line-height: .98 !important;
+  color: #fff3d1 !important;
+  text-shadow: 0 2px 0 rgba(0,0,0,.7), 0 0 14px rgba(255,229,160,.12) !important;
+  transform-origin: center center;
+}
+.corner {
+  position: absolute;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  border-color: #ffe397;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.42));
+  pointer-events: none;
+}
+.corner.c1 { left: 1px; top: 1px; border-left: 4px solid; border-top: 4px solid; border-radius: 9px 0 0 0; }
+.corner.c2 { right: 1px; top: 1px; border-right: 4px solid; border-top: 4px solid; border-radius: 0 9px 0 0; }
+.corner.c3 { left: 1px; bottom: 1px; border-left: 4px solid; border-bottom: 4px solid; border-radius: 0 0 0 9px; }
+.corner.c4 { right: 1px; bottom: 1px; border-right: 4px solid; border-bottom: 4px solid; border-radius: 0 0 9px 0; }
+
+.problem-card .feedback-text {
+  min-height: 34px;
+  margin: 7px 0 3px;
+  color: #f5e5ba;
+}
+.problem-card .feedback-text.good { color: #9af0bc; text-shadow: 0 0 12px rgba(60,233,130,.2); }
+.problem-card .feedback-text.bad { color: #ffb3ab; text-shadow: 0 0 12px rgba(255,90,80,.18); }
+.choice-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: #f5ddb0;
+  font-size: clamp(.78rem, 1.45vw, .95rem);
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+.choice-caption span { color: #8fdfff; text-shadow: 0 0 9px rgba(76,211,255,.65); }
+
+.answer-deck {
+  gap: clamp(9px, 1.5vw, 15px) !important;
+}
+.answer-deck .answer {
+  position: relative;
+  min-width: 0;
+  min-height: clamp(70px, 10vh, 94px) !important;
+  padding: 8px 10px !important;
+  overflow: hidden;
+  border: 2px solid rgba(255,234,176,.82) !important;
+  border-radius: 15px !important;
+  font-size: clamp(2.05rem, 4.25vw, 3.45rem) !important;
+  color: #fff9df;
+  text-shadow: 0 2px 2px rgba(0,0,0,.48);
+  box-shadow:
+    0 7px 0 rgba(36,20,9,.82),
+    0 10px 20px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.28) !important;
+}
+.answer-deck .answer::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.2);
+  pointer-events: none;
+}
+.answer-deck .answer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -45%;
+  width: 36%;
+  height: 100%;
+  transform: skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  opacity: .7;
+  pointer-events: none;
+}
+.answer-deck .answer:hover:not(:disabled)::after { animation: answerShine .62s ease forwards; }
+.answer-deck .action-blue { background: linear-gradient(180deg, #338ad7, #174987) !important; }
+.answer-deck .action-green { background: linear-gradient(180deg, #65a93e, #316f27) !important; }
+.answer-deck .action-red { background: linear-gradient(180deg, #c95d43, #85352d) !important; }
+@keyframes answerShine { to { left: 120%; } }
+
+@media (max-width: 980px) and (orientation: landscape) {
+  .hud {
+    grid-template-columns: 92px minmax(220px,1fr) 98px 104px 56px !important;
+    padding: 8px 10px !important;
+    gap: 7px !important;
+  }
+  .life-block { min-width: 88px; }
+  .life-pips { gap: 4px; }
+  .life-gem { font-size: 1.12rem; }
+  .problem-card.quest-panel { padding: 12px 14px; }
+  .equation-fit-box { height: clamp(82px, 18vh, 118px); padding: 7px 10px; }
+  .answer-deck .answer { min-height: 62px !important; }
+}
+
+@media (orientation: portrait) {
+  .hud {
+    grid-template-columns: 1fr 1.35fr 1fr 1fr !important;
+    row-gap: 8px !important;
+  }
+  .hud-sound { position: absolute !important; top: -44px !important; right: 0 !important; }
+  .life-pips { gap: 5px; }
+  .equation-fit-box { height: 100px; padding: 8px 10px; }
+  .answer-deck { grid-template-columns: 1fr !important; }
+  .answer-deck .answer { min-height: 62px !important; }
+}

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#12213c">
-  <meta name="description" content="20れんしょうをめざす、さんすうRPGゲーム。">
+  <meta name="description" content="3つのライフで20もんクリアをめざす、さんすうRPGゲーム。">
   <title>さんすうクエスト</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -16,7 +16,7 @@
     <div class="start-card ornate-frame">
       <p class="kicker">MATH FANTASY ADVENTURE</p>
       <h1 class="game-logo"><span>さんすう</span><strong>クエスト</strong></h1>
-      <p class="start-copy">けいさんで モンスターをたおし、<br>20れんしょうで まおうの しろを めざそう。</p>
+      <p class="start-copy">けいさんで モンスターをたおし、<br>20もんを こえて まおうの しろを めざそう。</p>
       <div class="start-party" aria-hidden="true">
         <img src="./assets/hero.png" alt="">
         <div class="versus-wrap">
@@ -33,7 +33,7 @@
       <div class="feature-row">
         <span>60びょうせい</span>
         <span>3たく</span>
-        <span>20れんしょうで クリア</span>
+        <span>ライフ 3</span><span>20もんで クリア</span>
       </div>
     </div>
   </section>
@@ -41,7 +41,7 @@
   <main id="game" class="game-shell" hidden>
     <header class="hud ornate-frame">
       <div class="hud-block streak-block">
-        <span class="hud-label">れんしょう</span>
+        <span class="hud-label">すすみ</span>
         <strong id="streakText">0 / 20</strong>
       </div>
 
@@ -53,6 +53,13 @@
         <div class="journey-track" aria-label="ぼうけんの すすみぐあい">
           <div id="journeyFill" class="journey-fill"></div>
           <div class="journey-marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+
+      <div class="hud-block life-block" aria-label="のこりライフ">
+        <span class="hud-label">ライフ</span>
+        <div id="lifePips" class="life-pips" aria-live="polite">
+          <span class="life-gem active">◆</span><span class="life-gem active">◆</span><span class="life-gem active">◆</span>
         </div>
       </div>
 
@@ -83,17 +90,24 @@
           </div>
         </div>
 
-        <section class="problem-card ornate-frame" aria-live="polite">
+        <section class="problem-card quest-panel" aria-live="polite">
           <div class="problem-head">
             <span class="problem-title">もんだい</span>
             <span id="problemMeta">こたえを えらぼう</span>
           </div>
-          <div id="mathProblem" class="math-problem">3 + 5 = ?</div>
+          <div class="equation-frame">
+            <i class="corner c1" aria-hidden="true"></i><i class="corner c2" aria-hidden="true"></i>
+            <i class="corner c3" aria-hidden="true"></i><i class="corner c4" aria-hidden="true"></i>
+            <div id="equationFitBox" class="equation-fit-box">
+              <div id="mathProblem" class="math-problem">3 + 5 = ?</div>
+            </div>
+          </div>
           <div id="feedbackText" class="feedback-text" aria-live="assertive"></div>
-          <div id="choices" class="choices">
-            <button class="answer action-blue" type="button" data-choice="0">7</button>
-            <button class="answer action-green" type="button" data-choice="1">8</button>
-            <button class="answer action-red" type="button" data-choice="2">9</button>
+          <div class="choice-caption"><span>✦</span> こたえを えらぼう <span>✦</span></div>
+          <div id="choices" class="choices answer-deck">
+            <button class="answer action-blue" type="button" data-choice="0"><span>7</span></button>
+            <button class="answer action-green" type="button" data-choice="1"><span>8</span></button>
+            <button class="answer action-red" type="button" data-choice="2"><span>9</span></button>
           </div>
         </section>
 
@@ -142,9 +156,9 @@
     <div id="confetti" class="confetti" aria-hidden="true"></div>
     <section class="clear-card ornate-frame" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
       <img src="./assets/hero.png" class="clear-hero" alt="ゆうしゃ">
-      <p class="clear-kicker">★ 20れんしょう！ ★</p>
+      <p class="clear-kicker">★ 20もん とうは！ ★</p>
       <h2 id="clearTitle">ぼうけん<br><span>クリア！</span></h2>
-      <p>まおうを たおした！<br>すごい！ 20もん れんぞく せいかい！</p>
+      <p>まおうを たおした！<br>すごい！ さいごの ステージまで クリア！</p>
       <button id="againBtn" class="big-command action-primary" type="button">もういちど ちょうせん</button>
     </section>
   </div>
