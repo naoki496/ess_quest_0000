@@ -115,12 +115,26 @@
     <div id="countdownText" class="countdown-text">3</div>
   </div>
 
-  <div id="stageOverlay" class="overlay stage-overlay" hidden>
-    <div class="stage-card ornate-frame">
-      <small id="stageOverlaySubtitle">エリア いどう</small>
-      <strong id="stageOverlayTitle">ふしぎな どうくつ</strong>
-      <div id="stageRoute" class="stage-route" aria-hidden="true"></div>
-      <p id="stageOverlayCopy">つぎの エリアへ むかっています…</p>
+  <div id="mapOverlay" class="overlay map-overlay" hidden>
+    <section class="world-map-panel ornate-frame" aria-label="ぼうけんの ちず">
+      <div class="map-title">
+        <small>WORLD MAP</small>
+        <strong>ぼうけんの ちず</strong>
+      </div>
+      <div id="worldMap" class="world-map">
+        <img src="./assets/world_map.png" alt="もり、どうくつ、とう、しろ、まおうのへやをつなぐ架空の地図">
+        <div id="mapMarker" class="map-marker" aria-hidden="true">◆</div>
+      </div>
+      <p id="mapMessage" class="map-message">つぎの エリアへ むかっています…</p>
+    </section>
+  </div>
+
+  <div id="stageRevealOverlay" class="overlay stage-reveal-overlay" hidden>
+    <div id="stageRevealBg" class="stage-reveal-bg"></div>
+    <div class="stage-reveal-shade"></div>
+    <div class="stage-reveal-title">
+      <small>NEXT AREA</small>
+      <strong id="stageRevealTitle">ふしぎな どうくつ</strong>
     </div>
   </div>
 

@@ -248,3 +248,192 @@ body[data-zone="boss"] .scene-background { background-image: url('./assets/bg_bo
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* ===== v3: formula auto-fit / map transition / character glow ===== */
+.math-problem {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+  font-size: 5.4rem;
+  padding-inline: 4px;
+}
+.math-problem.long { font-size: 5.4rem; }
+
+.sprite-wrap img {
+  position: relative;
+  z-index: 1;
+  filter:
+    drop-shadow(0 0 2px rgba(255,255,255,.98))
+    drop-shadow(0 0 5px rgba(216,248,255,.95))
+    drop-shadow(0 0 12px rgba(103,215,255,.72))
+    drop-shadow(0 18px 22px rgba(9,15,29,.30));
+  animation: characterAura 3.6s ease-in-out infinite;
+}
+.hero-wrap.attack img { animation: heroAttack .48s ease, characterAura 3.6s ease-in-out infinite; }
+.enemy-wrap.hit img { animation: enemyHit .48s ease, characterAura 3.6s ease-in-out infinite; }
+.enemy-wrap.defeat img { animation: enemyDefeat .72s ease forwards; }
+
+@keyframes characterAura {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 2px rgba(255,255,255,.98))
+      drop-shadow(0 0 5px rgba(216,248,255,.90))
+      drop-shadow(0 0 11px rgba(103,215,255,.58))
+      drop-shadow(0 18px 22px rgba(9,15,29,.30));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 3px rgba(255,255,255,1))
+      drop-shadow(0 0 7px rgba(222,250,255,1))
+      drop-shadow(0 0 17px rgba(118,225,255,.82))
+      drop-shadow(0 18px 22px rgba(9,15,29,.30));
+  }
+}
+
+.map-overlay {
+  z-index: 70;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(31,55,95,.72), rgba(5,11,24,.94)),
+    #08101f;
+  backdrop-filter: blur(8px);
+}
+.world-map-panel {
+  width: min(980px, 92vw);
+  padding: clamp(16px, 2.5vw, 28px);
+  color: #fff;
+  background: linear-gradient(180deg, rgba(17,34,63,.96), rgba(8,17,34,.97));
+}
+.map-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.map-title small {
+  color: #f6dc8d;
+  letter-spacing: .2em;
+  font-size: .78rem;
+  font-weight: 800;
+}
+.map-title strong {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+.world-map {
+  position: relative;
+  width: min(760px, 80vw);
+  aspect-ratio: 1.1 / 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(255,240,191,.45);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.06), 0 18px 35px rgba(0,0,0,.38);
+  background: #d8cf9c;
+}
+.world-map img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.map-marker {
+  position: absolute;
+  left: 16%;
+  top: 80%;
+  width: 42px;
+  height: 42px;
+  margin: -21px 0 0 -21px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: radial-gradient(circle, #9be9ff 0%, #2a8fd7 50%, #164b9b 100%);
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.95),
+    0 0 16px rgba(126,226,255,.95),
+    0 0 32px rgba(78,176,255,.72);
+  text-shadow: 0 2px 4px rgba(0,0,0,.35);
+  font-size: 1.2rem;
+  transition: left 3s cubic-bezier(.45,.05,.2,1), top 3s cubic-bezier(.45,.05,.2,1);
+  z-index: 3;
+}
+.map-marker::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(187,239,255,.7);
+  animation: mapPulse 1.15s ease-out infinite;
+}
+.map-message {
+  margin: 16px 0 0;
+  text-align: center;
+  color: #dceaff;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+@keyframes mapPulse {
+  0% { transform: scale(.7); opacity: .9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+.stage-reveal-overlay {
+  z-index: 68;
+  overflow: hidden;
+  background: #050b18;
+}
+.stage-reveal-bg {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  transform: scale(1.055);
+  animation: stageRevealZoom 1.8s ease-out forwards;
+}
+.stage-reveal-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4,10,22,.16), rgba(4,10,22,.04) 40%, rgba(4,10,22,.42));
+}
+.stage-reveal-title {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 6px 22px rgba(0,0,0,.55);
+  animation: revealTitle 1.7s ease both;
+}
+.stage-reveal-title small {
+  display: block;
+  margin-bottom: 8px;
+  color: #f6dc8d;
+  font-weight: 800;
+  letter-spacing: .28em;
+}
+.stage-reveal-title strong {
+  display: block;
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  letter-spacing: .04em;
+}
+@keyframes stageRevealZoom {
+  from { transform: scale(1.08); filter: brightness(.75) saturate(.9); }
+  to { transform: scale(1); filter: brightness(1) saturate(1); }
+}
+@keyframes revealTitle {
+  0% { opacity: 0; transform: translateY(14px); }
+  28%, 78% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@media (max-width: 980px) and (orientation: landscape) {
+  .world-map-panel { width: min(840px, 94vw); padding: 14px 18px; }
+  .world-map { width: min(620px, 72vw); }
+  .math-problem, .math-problem.long { font-size: 4.5rem; }
+}
+
+@media (orientation: portrait) {
+  .world-map { width: min(88vw, 650px); }
+  .math-problem, .math-problem.long { font-size: 4.5rem; }
+}

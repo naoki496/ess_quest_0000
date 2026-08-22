@@ -27,13 +27,18 @@
   const enemyName = document.getElementById("enemyName");
   const countdownOverlay = document.getElementById("countdownOverlay");
   const countdownText = document.getElementById("countdownText");
-  const stageOverlay = document.getElementById("stageOverlay");
-  const stageOverlayTitle = document.getElementById("stageOverlayTitle");
+  const mapOverlay = document.getElementById("mapOverlay");
+  const mapMarker = document.getElementById("mapMarker");
+  const mapMessage = document.getElementById("mapMessage");
+  const stageRevealOverlay = document.getElementById("stageRevealOverlay");
+  const stageRevealBg = document.getElementById("stageRevealBg");
+  const stageRevealTitle = document.getElementById("stageRevealTitle");
   const clearOverlay = document.getElementById("clearOverlay");
   const againBtn = document.getElementById("againBtn");
   const confetti = document.getElementById("confetti");
 
   const bgm = new Audio("./assets/bgm.mp3");
+  let currentBgmFile = "./assets/bgm.mp3";
   const correctSE = new Audio("./assets/correct.mp3");
   const wrongSE = new Audio("./assets/wrong.mp3");
   const goSE = new Audio("./assets/go.mp3");
@@ -60,6 +65,7 @@
       key: "forest",
       name: "はじまりの もり",
       minStreak: 0,
+      bgm: "./assets/bgm.mp3",
       enemies: [
         ["ぷるるスライム", "slime.png"],
         ["きのこぞう", "mushroom.png"],
@@ -70,6 +76,7 @@
       key: "cave",
       name: "ふしぎな どうくつ",
       minStreak: 5,
+      bgm: "./assets/bgm.mp3",
       enemies: [
         ["いわゴーレム", "golem.png"],
         ["クリスタルン", "crystal.png"],
@@ -80,6 +87,7 @@
       key: "tower",
       name: "まほうの とう",
       minStreak: 10,
+      bgm: "./assets/bgm.mp3",
       enemies: [
         ["まほうつかい", "wizard.png"],
         ["クリスタルン", "crystal.png"],
@@ -90,6 +98,7 @@
       key: "castle",
       name: "まおうの しろ",
       minStreak: 15,
+      bgm: "./assets/bgm.mp3",
       enemies: [
         ["あくまのナイト", "knight.png"],
         ["やみのまほうつかい", "wizard.png"],
@@ -100,6 +109,7 @@
       key: "boss",
       name: "まおうの へや",
       minStreak: 19,
+      bgm: "./assets/bgm.mp3",
       enemies: [["まおうキング", "demon.png"]]
     }
   ];
@@ -253,9 +263,29 @@
     bgmToggle.textContent = `♪ ${soundOn ? "ON" : "OFF"}`;
     if (!soundOn) {
       bgm.pause();
-    } else if (!game.hidden) {
-      bgm.play().catch(() => {});
+    } else if (!game.hidden && mapOverlay.hidden && stageRevealOverlay.hidden) {
+      playStageBGM(stageForStreak(Math.min(streak, 19)));
     }
+  }
+
+  function stopBGM({ reset = false } = {}) {
+    bgm.pause();
+    if (reset) {
+      try { bgm.currentTime = 0; } catch (_) {}
+    }
+  }
+
+  function playStageBGM(stage) {
+    if (!soundOn || !stage) return;
+    const target = stage.bgm || "./assets/bgm.mp3";
+    if (currentBgmFile !== target) {
+      stopBGM({ reset: true });
+      currentBgmFile = target;
+      bgm.src = target;
+      bgm.load();
+    }
+    bgm.loop = true;
+    bgm.play().catch(() => {});
   }
 
   function playSE(audio) {
@@ -304,11 +334,58 @@
     block.classList.toggle("warning", timeLeft <= 10);
   }
 
-  async function showStageIntro(nextStage) {
-    stageOverlayTitle.textContent = nextStage.name;
-    stageOverlay.hidden = false;
-    await sleep(850);
-    stageOverlay.hidden = true;
+  const MAP_POINTS = {
+    forest: { left: 25, top: 72 },
+    cave: { left: 16, top: 43 },
+    tower: { left: 56, top: 44 },
+    castle: { left: 82, top: 15 },
+    boss: { left: 80, top: 70 }
+  };
+
+  const STAGE_BACKGROUNDS = {
+    forest: "./assets/bg_forest.png",
+    cave: "./assets/bg_cave.png",
+    tower: "./assets/bg_tower.png",
+    castle: "./assets/bg_castle.png",
+    boss: "./assets/bg_castle.png"
+  };
+
+  function setMarker(point, instant = false) {
+    if (instant) mapMarker.style.transition = "none";
+    mapMarker.style.left = `${point.left}%`;
+    mapMarker.style.top = `${point.top}%`;
+    if (instant) {
+      void mapMarker.offsetWidth;
+      mapMarker.style.transition = "left 3s cubic-bezier(.45,.05,.2,1), top 3s cubic-bezier(.45,.05,.2,1)";
+    }
+  }
+
+  async function showMapTravel(fromStage, toStage) {
+    stopBGM({ reset: true });
+    const fromPoint = MAP_POINTS[fromStage.key] || MAP_POINTS.forest;
+    const toPoint = MAP_POINTS[toStage.key] || MAP_POINTS.forest;
+    mapMessage.textContent = `${fromStage.name} から ${toStage.name} へ`;
+    setMarker(fromPoint, true);
+    mapOverlay.hidden = false;
+    await sleep(450);
+    setMarker(toPoint, false);
+    await sleep(3200);
+    mapMessage.textContent = `${toStage.name} に とうちゃく！`;
+    await sleep(700);
+    mapOverlay.hidden = true;
+  }
+
+  async function showStageBackground(stage) {
+    stageRevealTitle.textContent = stage.name;
+    stageRevealBg.style.backgroundImage = `url('${STAGE_BACKGROUNDS[stage.key]}')`;
+    stageRevealOverlay.hidden = false;
+    await sleep(1800);
+    stageRevealOverlay.hidden = true;
+  }
+
+  async function runStageTransition(fromStage, toStage) {
+    await showMapTravel(fromStage, toStage);
+    await showStageBackground(toStage);
   }
 
   function setEnemy(stage) {
@@ -326,7 +403,27 @@
     stageStep.textContent = `${streak + 1} / ${MAX_STREAK}`;
   }
 
-  async function prepareQuestion({ stageIntro = false } = {}) {
+  function fitMathProblem() {
+    const el = mathProblem;
+    const maxPx = window.matchMedia("(max-width: 980px) and (orientation: landscape)").matches ? 72 : 88;
+    const minPx = 38;
+    el.style.fontSize = `${maxPx}px`;
+    el.classList.remove("long");
+    const available = Math.max(0, el.clientWidth - 10);
+    let size = maxPx;
+    while (size > minPx && el.scrollWidth > available) {
+      size -= 2;
+      el.style.fontSize = `${size}px`;
+    }
+    if (el.scrollWidth > available) {
+      el.style.fontSize = `${minPx}px`;
+      el.style.letterSpacing = "-.045em";
+    } else {
+      el.style.letterSpacing = "-.02em";
+    }
+  }
+
+  async function prepareQuestion({ stageIntro = false, previousStageKey = null } = {}) {
     locked = true;
     stopTimer();
     const stage = stageForStreak(streak);
@@ -334,11 +431,15 @@
     currentZone = stage.key;
     document.body.dataset.zone = stage.key;
     renderHud(stage);
-    if (stageIntro || zoneChanged) await showStageIntro(stage);
+    if (stageIntro || zoneChanged) {
+      const fromStage = STAGES.find(s => s.key === previousStageKey) || stage;
+      await runStageTransition(fromStage, stage);
+    }
 
     setEnemy(stage);
     currentQuestion = generateQuestion();
     mathProblem.textContent = `${currentQuestion.expression} = ?`;
+    fitMathProblem();
     feedbackText.textContent = "";
     feedbackText.className = "feedback-text";
     bottomMessage.textContent = streak === 19 ? "さいごの 1もん！ まおうを たおそう！" : "もんだいに こたえて すすもう！";
@@ -386,7 +487,7 @@
       }
       const newStage = stageForStreak(streak).key;
       await sleep(Math.max(0, CORRECT_DELAY - 390));
-      await prepareQuestion({ stageIntro: oldStage !== newStage });
+      await prepareQuestion({ stageIntro: oldStage !== newStage, previousStageKey: oldStage });
     } else {
       if (!timeUp) {
         const wrongBtn = answerButtons.find(btn => Number(btn.dataset.value) === selectedValue);
@@ -401,9 +502,10 @@
       journeyFill.style.width = "0%";
       streakText.textContent = "0 / 20";
       await sleep(WRONG_DELAY);
+      const previousStageKey = currentZone;
       currentZone = "forest";
       document.body.dataset.zone = "forest";
-      await prepareQuestion();
+      await prepareQuestion({ stageIntro: previousStageKey !== "forest", previousStageKey });
     }
   }
 
@@ -442,8 +544,8 @@
     lastSimpleOp = null;
     sameSimpleOpCount = 0;
     document.body.dataset.zone = "forest";
-    if (soundOn) bgm.play().catch(() => {});
     await runCountdown();
+    playStageBGM(STAGES[0]);
     await prepareQuestion();
   }
 
@@ -460,10 +562,21 @@
       bgm.pause();
       if (!game.hidden && clearOverlay.hidden && !locked) stopTimer();
     } else if (soundOn && !game.hidden) {
-      bgm.play().catch(() => {});
+      if (mapOverlay.hidden && stageRevealOverlay.hidden) playStageBGM(stageForStreak(Math.min(streak, 19)));
       if (clearOverlay.hidden && !locked) startTimer();
     }
   });
+
+  window.addEventListener("resize", () => {
+    if (currentQuestion && !game.hidden) fitMathProblem();
+  });
+
+  if ("ResizeObserver" in window) {
+    const ro = new ResizeObserver(() => {
+      if (currentQuestion && !game.hidden) fitMathProblem();
+    });
+    ro.observe(mathProblem);
+  }
 
   setSound(true);
 })();
