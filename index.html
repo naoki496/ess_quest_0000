@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17355e">
+  <meta name="description" content="20れんしょうをめざす、しょうがく1ねんせい向けのさんすうRPGゲーム。">
+  <title>さんすうクエスト</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body data-zone="forest">
+  <div class="portrait-hint" aria-hidden="true">↻ よこむきにすると あそびやすいよ！</div>
+
+  <section id="startScreen" class="start-screen" aria-label="タイトルがめん">
+    <div class="start-sky pixels"></div>
+    <div class="start-card pixel-frame">
+      <div class="logo-star">★</div>
+      <p class="kicker">20れんしょうを めざせ！</p>
+      <h1 class="game-logo"><span>さんすう</span><strong>クエスト</strong></h1>
+      <p class="start-copy">けいさんで モンスターを たおして<br>まおうの しろを めざそう！</p>
+      <div class="start-party" aria-hidden="true">
+        <img src="./assets/hero.png" alt="">
+        <span class="versus">VS</span>
+        <img src="./assets/slime.png" alt="">
+      </div>
+      <button id="startBtn" class="big-command pixel-button" type="button">▶ ぼうけんを はじめる</button>
+      <button id="startSoundBtn" class="sound-command" type="button">♪ おんがく：ON</button>
+      <p class="tiny-note">1もん 60びょう　／　3つから えらぼう</p>
+    </div>
+  </section>
+
+  <main id="game" class="game-shell" hidden>
+    <header class="hud pixel-frame">
+      <div class="hud-block streak-block">
+        <span class="hud-label">れんしょう</span>
+        <strong id="streakText">0 / 20</strong>
+      </div>
+      <div class="journey-track" aria-label="ぼうけんの すすみぐあい">
+        <div id="journeyFill" class="journey-fill"></div>
+        <div class="journey-marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="hud-block timer-block">
+        <span class="hud-label">あと</span>
+        <strong id="timerText">60</strong><span class="sec">びょう</span>
+      </div>
+      <button id="bgmToggle" class="hud-sound" type="button">♪ ON</button>
+    </header>
+
+    <section id="battlefield" class="battlefield">
+      <div class="scene-background" aria-hidden="true"></div>
+      <div class="scene-vignette" aria-hidden="true"></div>
+
+      <div class="stage-banner pixel-frame">
+        <span id="stageName">はじまりの もり</span>
+        <small id="stageStep">1 / 20</small>
+      </div>
+
+      <div class="battle-row">
+        <div class="actor hero-side">
+          <div class="nameplate pixel-frame">ゆうしゃ</div>
+          <div id="heroSprite" class="sprite-wrap hero-wrap">
+            <img src="./assets/hero.png" alt="ゆうしゃ">
+            <span id="attackFx" class="attack-fx" aria-hidden="true">✦</span>
+          </div>
+        </div>
+
+        <section class="problem-card pixel-frame" aria-live="polite">
+          <div id="mathProblem" class="math-problem">3 + 5 = ?</div>
+          <div id="feedbackText" class="feedback-text" aria-live="assertive"></div>
+          <div id="choices" class="choices">
+            <button class="answer pixel-button" type="button" data-choice="0">7</button>
+            <button class="answer pixel-button" type="button" data-choice="1">8</button>
+            <button class="answer pixel-button" type="button" data-choice="2">9</button>
+          </div>
+        </section>
+
+        <div class="actor enemy-side">
+          <div id="enemyName" class="nameplate pixel-frame">ぷるるスライム</div>
+          <div id="enemySprite" class="sprite-wrap enemy-wrap">
+            <img id="enemyImage" src="./assets/slime.png" alt="モンスター">
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-message pixel-frame">
+        <span id="bottomMessage">もんだいに こたえて すすもう！</span>
+      </div>
+    </section>
+  </main>
+
+  <div id="countdownOverlay" class="overlay countdown-overlay" hidden>
+    <div id="countdownText" class="countdown-text">3</div>
+  </div>
+
+  <div id="stageOverlay" class="overlay stage-overlay" hidden>
+    <div class="stage-card pixel-frame">
+      <small>つぎの エリア</small>
+      <strong id="stageOverlayTitle">ふしぎな どうくつ</strong>
+      <span>▶▶▶</span>
+    </div>
+  </div>
+
+  <div id="clearOverlay" class="overlay clear-overlay" hidden>
+    <div id="confetti" class="confetti" aria-hidden="true"></div>
+    <section class="clear-card pixel-frame" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+      <img src="./assets/hero.png" class="clear-hero" alt="ゆうしゃ">
+      <p class="clear-kicker">★ 20れんしょう！ ★</p>
+      <h2 id="clearTitle">ぼうけん<br><span>クリア！</span></h2>
+      <p>まおうを たおした！<br>すごい！ 20もん れんぞく せいかい！</p>
+      <button id="againBtn" class="big-command pixel-button" type="button">▶ もういちど</button>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
