@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#17355e">
-  <meta name="description" content="20れんしょうをめざす、しょうがく1ねんせい向けのさんすうRPGゲーム。">
+  <meta name="theme-color" content="#12213c">
+  <meta name="description" content="20れんしょうをめざす、さんすうRPGゲーム。">
   <title>さんすうクエスト</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -12,77 +12,100 @@
   <div class="portrait-hint" aria-hidden="true">↻ よこむきにすると あそびやすいよ！</div>
 
   <section id="startScreen" class="start-screen" aria-label="タイトルがめん">
-    <div class="start-sky pixels"></div>
-    <div class="start-card pixel-frame">
-      <div class="logo-star">★</div>
-      <p class="kicker">20れんしょうを めざせ！</p>
+    <div class="start-backdrop"></div>
+    <div class="start-card ornate-frame">
+      <p class="kicker">MATH FANTASY ADVENTURE</p>
       <h1 class="game-logo"><span>さんすう</span><strong>クエスト</strong></h1>
-      <p class="start-copy">けいさんで モンスターを たおして<br>まおうの しろを めざそう！</p>
+      <p class="start-copy">けいさんで モンスターをたおし、<br>20れんしょうで まおうの しろを めざそう。</p>
       <div class="start-party" aria-hidden="true">
         <img src="./assets/hero.png" alt="">
-        <span class="versus">VS</span>
+        <div class="versus-wrap">
+          <span class="versus-line"></span>
+          <span class="versus">VS</span>
+          <span class="versus-line"></span>
+        </div>
         <img src="./assets/slime.png" alt="">
       </div>
-      <button id="startBtn" class="big-command pixel-button" type="button">▶ ぼうけんを はじめる</button>
-      <button id="startSoundBtn" class="sound-command" type="button">♪ おんがく：ON</button>
-      <p class="tiny-note">1もん 60びょう　／　3つから えらぼう</p>
+      <div class="start-actions">
+        <button id="startBtn" class="big-command action-primary" type="button">ぼうけんを はじめる</button>
+        <button id="startSoundBtn" class="sound-command" type="button">♪ おんがく：ON</button>
+      </div>
+      <div class="feature-row">
+        <span>60びょうせい</span>
+        <span>3たく</span>
+        <span>20れんしょうで クリア</span>
+      </div>
     </div>
   </section>
 
   <main id="game" class="game-shell" hidden>
-    <header class="hud pixel-frame">
+    <header class="hud ornate-frame">
       <div class="hud-block streak-block">
         <span class="hud-label">れんしょう</span>
         <strong id="streakText">0 / 20</strong>
       </div>
-      <div class="journey-track" aria-label="ぼうけんの すすみぐあい">
-        <div id="journeyFill" class="journey-fill"></div>
-        <div class="journey-marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+      <div class="journey-wrap">
+        <div class="journey-topline">
+          <span class="journey-label">ぼうけんの すすみぐあい</span>
+          <span id="stageNameInline">はじまりの もり</span>
+        </div>
+        <div class="journey-track" aria-label="ぼうけんの すすみぐあい">
+          <div id="journeyFill" class="journey-fill"></div>
+          <div class="journey-marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
       </div>
+
       <div class="hud-block timer-block">
-        <span class="hud-label">あと</span>
-        <strong id="timerText">60</strong><span class="sec">びょう</span>
+        <span class="hud-label">のこり</span>
+        <div class="timer-main"><strong id="timerText">60</strong><span class="sec">びょう</span></div>
       </div>
+
       <button id="bgmToggle" class="hud-sound" type="button">♪ ON</button>
     </header>
 
     <section id="battlefield" class="battlefield">
       <div class="scene-background" aria-hidden="true"></div>
       <div class="scene-vignette" aria-hidden="true"></div>
+      <div class="battle-mist" aria-hidden="true"></div>
 
-      <div class="stage-banner pixel-frame">
+      <div class="stage-banner ornate-frame">
         <span id="stageName">はじまりの もり</span>
         <small id="stageStep">1 / 20</small>
       </div>
 
       <div class="battle-row">
         <div class="actor hero-side">
-          <div class="nameplate pixel-frame">ゆうしゃ</div>
+          <div class="nameplate ornate-frame">ゆうしゃ</div>
           <div id="heroSprite" class="sprite-wrap hero-wrap">
             <img src="./assets/hero.png" alt="ゆうしゃ">
             <span id="attackFx" class="attack-fx" aria-hidden="true">✦</span>
           </div>
         </div>
 
-        <section class="problem-card pixel-frame" aria-live="polite">
+        <section class="problem-card ornate-frame" aria-live="polite">
+          <div class="problem-head">
+            <span class="problem-title">もんだい</span>
+            <span id="problemMeta">こたえを えらぼう</span>
+          </div>
           <div id="mathProblem" class="math-problem">3 + 5 = ?</div>
           <div id="feedbackText" class="feedback-text" aria-live="assertive"></div>
           <div id="choices" class="choices">
-            <button class="answer pixel-button" type="button" data-choice="0">7</button>
-            <button class="answer pixel-button" type="button" data-choice="1">8</button>
-            <button class="answer pixel-button" type="button" data-choice="2">9</button>
+            <button class="answer action-blue" type="button" data-choice="0">7</button>
+            <button class="answer action-green" type="button" data-choice="1">8</button>
+            <button class="answer action-red" type="button" data-choice="2">9</button>
           </div>
         </section>
 
         <div class="actor enemy-side">
-          <div id="enemyName" class="nameplate pixel-frame">ぷるるスライム</div>
+          <div id="enemyName" class="nameplate ornate-frame">ぷるるスライム</div>
           <div id="enemySprite" class="sprite-wrap enemy-wrap">
             <img id="enemyImage" src="./assets/slime.png" alt="モンスター">
           </div>
         </div>
       </div>
 
-      <div class="bottom-message pixel-frame">
+      <div class="bottom-message ornate-frame">
         <span id="bottomMessage">もんだいに こたえて すすもう！</span>
       </div>
     </section>
@@ -93,21 +116,22 @@
   </div>
 
   <div id="stageOverlay" class="overlay stage-overlay" hidden>
-    <div class="stage-card pixel-frame">
-      <small>つぎの エリア</small>
+    <div class="stage-card ornate-frame">
+      <small id="stageOverlaySubtitle">エリア いどう</small>
       <strong id="stageOverlayTitle">ふしぎな どうくつ</strong>
-      <span>▶▶▶</span>
+      <div id="stageRoute" class="stage-route" aria-hidden="true"></div>
+      <p id="stageOverlayCopy">つぎの エリアへ むかっています…</p>
     </div>
   </div>
 
   <div id="clearOverlay" class="overlay clear-overlay" hidden>
     <div id="confetti" class="confetti" aria-hidden="true"></div>
-    <section class="clear-card pixel-frame" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+    <section class="clear-card ornate-frame" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
       <img src="./assets/hero.png" class="clear-hero" alt="ゆうしゃ">
       <p class="clear-kicker">★ 20れんしょう！ ★</p>
       <h2 id="clearTitle">ぼうけん<br><span>クリア！</span></h2>
       <p>まおうを たおした！<br>すごい！ 20もん れんぞく せいかい！</p>
-      <button id="againBtn" class="big-command pixel-button" type="button">▶ もういちど</button>
+      <button id="againBtn" class="big-command action-primary" type="button">もういちど ちょうせん</button>
     </section>
   </div>
 
