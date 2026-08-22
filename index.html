@@ -11,29 +11,33 @@
 <body data-zone="forest">
   <div class="portrait-hint" aria-hidden="true">↻ よこむきにすると あそびやすいよ！</div>
 
-  <section id="startScreen" class="start-screen" aria-label="タイトルがめん">
+  <section id="startScreen" class="start-screen start-screen-v8" aria-label="タイトルがめん">
     <div class="start-backdrop"></div>
-    <div class="start-card ornate-frame">
-      <p class="kicker">MATH FANTASY ADVENTURE</p>
-      <h1 class="game-logo"><span>さんすう</span><strong>クエスト</strong></h1>
-      <p class="start-copy">けいさんで モンスターをたおし、<br>20もんを こえて まおうの しろを めざそう。</p>
-      <div class="start-party" aria-hidden="true">
-        <img src="./assets/hero.png" alt="">
-        <div class="versus-wrap">
-          <span class="versus-line"></span>
-          <span class="versus">VS</span>
-          <span class="versus-line"></span>
+    <div class="start-v8-shell ornate-frame">
+      <div class="start-v8-main">
+        <div class="start-v8-copy">
+          <p class="kicker">MATH FANTASY ADVENTURE</p>
+          <h1 class="game-logo game-logo-v8"><span>さんすう</span><strong>クエスト</strong></h1>
+          <p class="start-lead">計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。</p>
+          <div class="start-actions start-actions-v8">
+            <button id="startBtn" class="big-command action-primary" type="button"><span>▶</span> ぼうけんを はじめる</button>
+            <button id="startSoundBtn" class="sound-command sound-command-v8" type="button">♪ おんがく：ON</button>
+          </div>
         </div>
-        <img src="./assets/slime.png" alt="">
+
+        <div class="start-v8-art" aria-hidden="true">
+          <div class="start-hero-aura"></div>
+          <img class="start-hero-img" src="./assets/hero.png" alt="">
+          <div class="start-vs-emblem"><small>QUEST</small><strong>VS</strong></div>
+          <img class="start-enemy-img" src="./assets/slime.png" alt="">
+        </div>
       </div>
-      <div class="start-actions">
-        <button id="startBtn" class="big-command action-primary" type="button">ぼうけんを はじめる</button>
-        <button id="startSoundBtn" class="sound-command" type="button">♪ おんがく：ON</button>
-      </div>
-      <div class="feature-row">
-        <span>60びょうせい</span>
-        <span>3たく</span>
-        <span>ライフ 3</span><span>20もんで クリア</span>
+
+      <div class="start-rule-grid" aria-label="ゲームのルール">
+        <div class="start-rule-card"><b>60</b><span>びょう</span><small>1もんの じかん</small></div>
+        <div class="start-rule-card"><b>3</b><span>たく</span><small>こたえを えらぶ</small></div>
+        <div class="start-rule-card"><b>3</b><span>ライフ</span><small>3かいミスで ステージやりなおし</small></div>
+        <div class="start-rule-card accent"><b>20</b><span>もん</span><small>さいごまで クリア</small></div>
       </div>
     </div>
   </section>

@@ -19,7 +19,6 @@
   const stageName = document.getElementById("stageName");
   const stageStep = document.getElementById("stageStep");
   const mathProblem = document.getElementById("mathProblem");
-  const equationFitBox = document.getElementById("equationFitBox");
   const feedbackText = document.getElementById("feedbackText");
   const choicesEl = document.getElementById("choices");
   const answerButtons = [...document.querySelectorAll(".answer")];
@@ -401,6 +400,36 @@
     }
   }
 
+  async function showInitialMap(stage) {
+    stopBGM({ reset: true });
+    const startPoint = { left: 5.5, top: 61.5 };
+    const toPoint = MAP_POINTS[stage.key] || MAP_POINTS.forest;
+
+    mapMessage.textContent = "ぼうけんの はじまりへ…";
+    worldMap?.classList.remove("traveling", "arrived", "boss-entering");
+    mapMarker.classList.remove("traveling", "arrived");
+    setMarker(startPoint, true);
+    mapOverlay.hidden = false;
+
+    await sleep(650);
+    worldMap?.classList.add("traveling");
+    mapMarker.classList.add("traveling");
+    setMarker(toPoint, false);
+    await sleep(2700);
+
+    mapMarker.classList.remove("traveling");
+    mapMarker.classList.add("arrived");
+    worldMap?.classList.remove("traveling");
+    worldMap?.classList.add("arrived");
+    mapMessage.textContent = `${stage.name} から ぼうけん スタート`;
+    await sleep(650);
+
+    worldMap?.classList.remove("arrived");
+    mapMarker.classList.remove("arrived");
+    mapOverlay.hidden = true;
+    await showStageBackground(stage);
+  }
+
   async function showMapTravel(fromStage, toStage) {
     stopBGM({ reset: true });
     const fromPoint = MAP_POINTS[fromStage.key] || MAP_POINTS.forest;
@@ -468,76 +497,12 @@
     renderLives();
   }
 
-  function fitMathProblem() {
-    if (!mathProblem || !equationFitBox) return;
-
-    const isCompactLandscape = window.matchMedia("(max-width: 980px) and (orientation: landscape)").matches;
-    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-    const isThreeTerm = (currentQuestion?.nums?.length || 2) >= 3;
-
-    // v7: 現在の問題文そのものを測らない。
-    // 各形式で最長になり得る基準式を測り、同じ形式の全問題を同じ文字サイズに固定する。
-    // これにより「大→小→大→小」と前問ごとにサイズが揺れる現象を根本的に防ぐ。
-    const referenceText = isThreeTerm ? "99 + 99 + 99 = ?" : "99 + 99 = ?";
-    const maxPx = isCompactLandscape
-      ? (isThreeTerm ? 52 : 70)
-      : isPortrait
-        ? (isThreeTerm ? 48 : 66)
-        : (isThreeTerm ? 64 : 88);
-    const minPx = isThreeTerm ? 30 : 38;
-    const letterSpacing = isThreeTerm ? "-.025em" : "-.012em";
-
-    mathProblem.classList.toggle("three-term", isThreeTerm);
-    mathProblem.style.letterSpacing = letterSpacing;
-    mathProblem.style.transform = "none";
-
-    const boxStyle = getComputedStyle(equationFitBox);
-    const padX = parseFloat(boxStyle.paddingLeft || 0) + parseFloat(boxStyle.paddingRight || 0);
-    const padY = parseFloat(boxStyle.paddingTop || 0) + parseFloat(boxStyle.paddingBottom || 0);
-    const availableWidth = Math.max(130, equationFitBox.clientWidth - padX - 18);
-    const availableHeight = Math.max(54, equationFitBox.clientHeight - padY - 10);
-
-    let probe = equationFitBox.querySelector(".equation-measure-probe");
-    if (!probe) {
-      probe = document.createElement("span");
-      probe.className = "equation-measure-probe";
-      probe.setAttribute("aria-hidden", "true");
-      equationFitBox.appendChild(probe);
-    }
-    const visibleStyle = getComputedStyle(mathProblem);
-    probe.textContent = referenceText;
-    probe.style.fontFamily = visibleStyle.fontFamily;
-    probe.style.fontWeight = visibleStyle.fontWeight;
-    probe.style.letterSpacing = letterSpacing;
-
-    const fits = px => {
-      probe.style.fontSize = `${px}px`;
-      const rect = probe.getBoundingClientRect();
-      return rect.width <= availableWidth && rect.height <= availableHeight;
-    };
-
-    let lo = minPx;
-    let hi = maxPx;
-    let best = minPx;
-    while (lo <= hi) {
-      const mid = Math.floor((lo + hi) / 2);
-      if (fits(mid)) {
-        best = mid;
-        lo = mid + 1;
-      } else {
-        hi = mid - 1;
-      }
-    }
-
-    // 3項式を含め、基準式が必ず収まるサイズを全問題へ共通適用。
-    mathProblem.style.fontSize = `${best}px`;
-    mathProblem.classList.remove("fitting");
-  }
-
-  function scheduleMathFit() {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => fitMathProblem());
-    });
+  function renderEquation(question) {
+    // v8: 問題ごとの自動縮小は廃止。
+    // すべての問題を同じ固定サイズで表示する。
+    const compactExpression = question.expression.replace(/\s+/g, "");
+    mathProblem.textContent = `${compactExpression}=?`;
+    mathProblem.classList.toggle("three-term", question.nums.length >= 3);
   }
 
   async function prepareQuestion({ stageIntro = false, previousStageKey = null } = {}) {
@@ -556,9 +521,7 @@
 
     setEnemy(stage);
     currentQuestion = generateQuestion();
-    mathProblem.classList.add("fitting");
-    mathProblem.textContent = `${currentQuestion.expression} = ?`;
-    scheduleMathFit();
+    renderEquation(currentQuestion);
     feedbackText.textContent = "";
     feedbackText.className = "feedback-text";
     bottomMessage.textContent = streak === 19 ? "さいごの 1もん！ まおうを たおそう！" : "もんだいに こたえて すすもう！";
@@ -674,7 +637,8 @@
     lastSimpleOp = null;
     sameSimpleOpCount = 0;
     document.body.dataset.zone = "forest";
-    await runCountdown();
+    renderHud(STAGES[0]);
+    await showInitialMap(STAGES[0]);
     playStageBGM(STAGES[0]);
     await prepareQuestion();
   }
@@ -697,16 +661,6 @@
     }
   });
 
-  window.addEventListener("resize", () => {
-    if (currentQuestion && !game.hidden) scheduleMathFit();
-  });
-
-  if ("ResizeObserver" in window) {
-    const ro = new ResizeObserver(() => {
-      if (currentQuestion && !game.hidden) scheduleMathFit();
-    });
-    ro.observe(equationFitBox);
-  }
 
   setSound(true);
 })();
