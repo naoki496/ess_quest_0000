@@ -31,6 +31,7 @@
   const countdownOverlay = document.getElementById("countdownOverlay");
   const countdownText = document.getElementById("countdownText");
   const mapOverlay = document.getElementById("mapOverlay");
+  const worldMap = document.getElementById("worldMap");
   const mapMarker = document.getElementById("mapMarker");
   const mapMessage = document.getElementById("mapMessage");
   const stageRevealOverlay = document.getElementById("stageRevealOverlay");
@@ -373,12 +374,13 @@
   }
 
   const MAP_POINTS = {
-    forest: { left: 17.1, top: 75.6 },
-    cave: { left: 16.7, top: 47.0 },
-    tower: { left: 46.5, top: 47.8 },
-    castle: { left: 80.8, top: 33.3 },
-    // 最終ステージは「城の外」ではなく、城内の魔王の部屋へ進入する。
-    boss: { left: 84.0, top: 25.0 }
+    // world_map_v3.png 上の位置。前版の地理関係（森→洞窟→塔→城）を維持。
+    forest: { left: 12.8, top: 52.0 },
+    cave: { left: 34.6, top: 47.8 },
+    tower: { left: 53.6, top: 56.0 },
+    castle: { left: 74.1, top: 41.9 },
+    // 最終ステージは「別の土地」ではなく、城内部の拡大表示（玉座の間）へ進む。
+    boss: { left: 88.0, top: 66.2 }
   };
 
   const STAGE_BACKGROUNDS = {
@@ -395,7 +397,7 @@
     mapMarker.style.top = `${point.top}%`;
     if (instant) {
       void mapMarker.offsetWidth;
-      mapMarker.style.transition = "left 3s cubic-bezier(.45,.05,.2,1), top 3s cubic-bezier(.45,.05,.2,1)";
+      mapMarker.style.transition = "left 2.65s cubic-bezier(.42,.08,.18,1), top 2.65s cubic-bezier(.42,.08,.18,1)";
     }
   }
 
@@ -403,18 +405,37 @@
     stopBGM({ reset: true });
     const fromPoint = MAP_POINTS[fromStage.key] || MAP_POINTS.forest;
     const toPoint = MAP_POINTS[toStage.key] || MAP_POINTS.forest;
-    mapMessage.textContent = toStage.key === "boss"
-      ? "まおうの しろ の なかへ…"
+    const enteringBossRoom = toStage.key === "boss";
+
+    mapMessage.textContent = enteringBossRoom
+      ? "まおうの しろ の おくへ…"
       : `${fromStage.name} から ${toStage.name} へ`;
+
+    worldMap?.classList.remove("traveling", "arrived", "boss-entering");
+    mapMarker.classList.remove("traveling", "arrived");
     setMarker(fromPoint, true);
     mapOverlay.hidden = false;
-    await sleep(450);
+
+    // 地図を見せるための導入。BGMはここから無音。
+    await sleep(520);
+    worldMap?.classList.add("traveling");
+    if (enteringBossRoom) worldMap?.classList.add("boss-entering");
+    mapMarker.classList.add("traveling");
     setMarker(toPoint, false);
-    await sleep(3200);
-    mapMessage.textContent = toStage.key === "boss"
-      ? "まおうの へや に とうちゃく！"
+
+    // 光の軌跡とゆるいズームを伴う移動。
+    await sleep(2700);
+    mapMarker.classList.remove("traveling");
+    mapMarker.classList.add("arrived");
+    worldMap?.classList.remove("traveling");
+    worldMap?.classList.add("arrived");
+    mapMessage.textContent = enteringBossRoom
+      ? "まおうの へや へ…"
       : `${toStage.name} に とうちゃく！`;
-    await sleep(700);
+
+    await sleep(520);
+    worldMap?.classList.remove("arrived", "boss-entering");
+    mapMarker.classList.remove("arrived");
     mapOverlay.hidden = true;
   }
 
@@ -422,7 +443,7 @@
     stageRevealTitle.textContent = stage.name;
     stageRevealBg.style.backgroundImage = `url('${STAGE_BACKGROUNDS[stage.key]}')`;
     stageRevealOverlay.hidden = false;
-    await sleep(1800);
+    await sleep(1250);
     stageRevealOverlay.hidden = true;
   }
 
@@ -452,36 +473,49 @@
 
     const isCompactLandscape = window.matchMedia("(max-width: 980px) and (orientation: landscape)").matches;
     const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-    const termCount = currentQuestion?.nums?.length || 2;
-    const isThreeTerm = termCount >= 3;
+    const isThreeTerm = (currentQuestion?.nums?.length || 2) >= 3;
 
-    const maxPx = isCompactLandscape ? (isThreeTerm ? 58 : 74) : (isPortrait ? (isThreeTerm ? 54 : 72) : (isThreeTerm ? 68 : 94));
-    const minPx = isCompactLandscape ? (isThreeTerm ? 32 : 38) : (isPortrait ? (isThreeTerm ? 30 : 36) : (isThreeTerm ? 36 : 44));
+    // v7: 現在の問題文そのものを測らない。
+    // 各形式で最長になり得る基準式を測り、同じ形式の全問題を同じ文字サイズに固定する。
+    // これにより「大→小→大→小」と前問ごとにサイズが揺れる現象を根本的に防ぐ。
+    const referenceText = isThreeTerm ? "99 + 99 + 99 = ?" : "99 + 99 = ?";
+    const maxPx = isCompactLandscape
+      ? (isThreeTerm ? 52 : 70)
+      : isPortrait
+        ? (isThreeTerm ? 48 : 66)
+        : (isThreeTerm ? 64 : 88);
+    const minPx = isThreeTerm ? 30 : 38;
+    const letterSpacing = isThreeTerm ? "-.025em" : "-.012em";
 
     mathProblem.classList.toggle("three-term", isThreeTerm);
-    mathProblem.style.letterSpacing = isThreeTerm ? "-.055em" : "-.025em";
+    mathProblem.style.letterSpacing = letterSpacing;
     mathProblem.style.transform = "none";
 
     const boxStyle = getComputedStyle(equationFitBox);
     const padX = parseFloat(boxStyle.paddingLeft || 0) + parseFloat(boxStyle.paddingRight || 0);
     const padY = parseFloat(boxStyle.paddingTop || 0) + parseFloat(boxStyle.paddingBottom || 0);
-    const availableWidth = Math.max(120, equationFitBox.clientWidth - padX - 10);
-    const availableHeight = Math.max(52, equationFitBox.clientHeight - padY - 8);
+    const availableWidth = Math.max(130, equationFitBox.clientWidth - padX - 18);
+    const availableHeight = Math.max(54, equationFitBox.clientHeight - padY - 10);
 
-    // 要素自体は幅100%なので、要素幅ではなく「文字列そのもの」の実測値を使う。
-    const textRange = document.createRange();
-    textRange.selectNodeContents(mathProblem);
-    const measure = px => {
-      mathProblem.style.fontSize = `${px}px`;
-      const rect = textRange.getBoundingClientRect();
-      return { width: rect.width, height: rect.height };
-    };
+    let probe = equationFitBox.querySelector(".equation-measure-probe");
+    if (!probe) {
+      probe = document.createElement("span");
+      probe.className = "equation-measure-probe";
+      probe.setAttribute("aria-hidden", "true");
+      equationFitBox.appendChild(probe);
+    }
+    const visibleStyle = getComputedStyle(mathProblem);
+    probe.textContent = referenceText;
+    probe.style.fontFamily = visibleStyle.fontFamily;
+    probe.style.fontWeight = visibleStyle.fontWeight;
+    probe.style.letterSpacing = letterSpacing;
+
     const fits = px => {
-      const rect = measure(px);
-      return rect.width <= availableWidth + 1 && rect.height <= availableHeight + 1;
+      probe.style.fontSize = `${px}px`;
+      const rect = probe.getBoundingClientRect();
+      return rect.width <= availableWidth && rect.height <= availableHeight;
     };
 
-    // 毎回ゼロから「枠内に入る最大サイズ」を探索するため、前問のサイズに引きずられない。
     let lo = minPx;
     let hi = maxPx;
     let best = minPx;
@@ -495,14 +529,9 @@
       }
     }
 
-    // 最小値でも入らない特殊な狭幅だけ、24pxまで安全に下げる。
-    if (!fits(best)) {
-      let size = best;
-      while (size > 24 && !fits(size)) size -= 1;
-      best = size;
-    }
+    // 3項式を含め、基準式が必ず収まるサイズを全問題へ共通適用。
     mathProblem.style.fontSize = `${best}px`;
-    textRange.detach?.();
+    mathProblem.classList.remove("fitting");
   }
 
   function scheduleMathFit() {
@@ -527,6 +556,7 @@
 
     setEnemy(stage);
     currentQuestion = generateQuestion();
+    mathProblem.classList.add("fitting");
     mathProblem.textContent = `${currentQuestion.expression} = ?`;
     scheduleMathFit();
     feedbackText.textContent = "";
