@@ -68,8 +68,8 @@
   <div class="sub-shell panel-gold">
     <header class="sub-header"><div><small>ITEM SHOP</small><h2>ショップ</h2></div><div class="wallet">所持 <strong id="shopGold">0 G</strong></div></header>
     <div id="shopFilters" class="filters"></div>
-    <div id="shopList" class="shop-list"></div>
-    <button id="shopBackBtn" class="back-btn">タイトルにもどる</button>
+    <div class="shop-viewport"><div id="shopList" class="shop-list"></div></div>
+    <footer class="sub-footer"><button id="shopBackBtn" class="back-btn">タイトルにもどる</button></footer>
   </div>
 </section>
 
@@ -78,10 +78,10 @@
   <div class="sub-shell panel-gold collection-shell">
     <header class="sub-header"><div><small>COLLECTION</small><h2>コレクション</h2></div><div class="wallet"><strong id="collectionCount">0 / 100</strong></div></header>
     <div class="collection-layout">
-      <div id="collectionGrid" class="collection-grid"></div>
+      <div class="collection-grid-wrap"><div id="collectionGrid" class="collection-grid"></div></div>
       <aside id="collectionDetail" class="collection-detail"><div class="detail-icon">?</div><h3>アイテムを えらぼう</h3><p>手に入れたアイテムの詳細を鑑賞できます。</p></aside>
     </div>
-    <button id="collectionBackBtn" class="back-btn">タイトルにもどる</button>
+    <footer class="sub-footer"><button id="collectionBackBtn" class="back-btn">タイトルにもどる</button></footer>
   </div>
 </section>
 
@@ -112,7 +112,7 @@
 <div id="stageOverlay" class="overlay" hidden><div id="stagePreview" class="stage-preview"></div><div class="stage-overlay-copy"><small id="stageOverlayLabel">STAGE 1</small><strong id="stageOverlayName">はじまりの もり</strong></div></div>
 <div id="stageClearOverlay" class="overlay clear-stage" hidden><div class="clear-flash"></div><div><small>STAGE CLEAR</small><strong id="stageClearName">はじまりの もり</strong><span>＋5 G</span></div></div>
 
-<div id="resultOverlay" class="overlay" hidden><section class="result-card panel-gold"><header><small>ADVENTURE RESULT</small><h2>リザルト</h2></header><div class="result-stats"><div><span>ミス</span><b id="resultMistakes">0</b></div><div><span>時間切れ</span><b id="resultTimeouts">0</b></div><div><span>やりなおし</span><b id="resultRestarts">0</b></div><div><span>獲得ゴルド</span><b id="resultGold">25 G</b></div></div><h3>まちがえた問題</h3><div id="resultErrors" class="result-errors"></div><div class="result-actions"><button id="replayBtn" class="menu-btn primary">最初から遊ぶ</button><button id="toTitleBtn" class="menu-btn">タイトルにもどる</button></div></section></div>
+<div id="resultOverlay" class="overlay" hidden><section class="result-card panel-gold"><header class="result-head"><small>ADVENTURE RESULT</small><h2>リザルト</h2></header><div class="result-stats"><div><span>ミス</span><b id="resultMistakes">0</b></div><div><span>時間切れ</span><b id="resultTimeouts">0</b></div><div><span>やりなおし</span><b id="resultRestarts">0</b></div><div><span>獲得ゴルド</span><b id="resultGold">25 G</b></div></div><div class="result-log"><h3>まちがえた問題</h3><div id="resultErrors" class="result-errors"></div></div><div class="result-actions"><button id="replayBtn" class="menu-btn primary">最初から遊ぶ</button><button id="toTitleBtn" class="menu-btn">タイトルにもどる</button></div></section></div>
 
 <div id="rewardOverlay" class="overlay" hidden><section class="reward-card panel-gold"><small>NEW ITEM</small><div id="rewardIcon" class="reward-icon">✦</div><h2 id="rewardName">時空の鍵</h2><p id="rewardText">新しいアイテムを手に入れた！</p><button id="rewardOkBtn" class="menu-btn primary">OK</button></section></div>
 <script src="./app.js"></script>
