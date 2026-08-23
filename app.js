@@ -38,7 +38,7 @@
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),
     battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),enemyActor:$('enemyActor'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
-    mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapImage:$('mapImage'),mapMarker:$('mapMarker'),mapMessage:$('mapMessage'),
+    mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapImage:$('mapImage'),mapMessage:$('mapMessage'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
     resultOverlay:$('resultOverlay'),resultMistakes:$('resultMistakes'),resultTimeouts:$('resultTimeouts'),resultRestarts:$('resultRestarts'),resultGold:$('resultGold'),resultErrors:$('resultErrors'),replayBtn:$('replayBtn'),toTitleBtn:$('toTitleBtn'),
@@ -115,7 +115,7 @@
   const ITEMS=buildItems();
   const rarityLabel={common:'コモン',uncommon:'アンコモン',rare:'レア'};
 
-  function titleTrackLabel(){return 'OFF';}
+  function titleTrackLabel(){return mode==='front'?'TITLE : OFF':'TITLE : OFF';}
   function stopTitleBgm(){}
   async function fadeTitleBgm(){return;}
   async function playTitleBgm(){return;}
@@ -291,9 +291,22 @@
   }
 
   async function showMapSequence(initial=false){
-    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':'NIGHT TOKYO';els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':'ウラのせかい';els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':'./assets/back_map.png';els.mapOverlay.hidden=false;
-    const posFront=[[9,68],[30,60],[54,54],[77,58],[84,54]],posBack=[[15,60],[40,34],[67,50],[34,69],[82,72]],pos=(mode==='front'?posFront:posBack)[stageIndex];els.mapMarker.style.transition='none';els.mapMarker.style.left=initial?'4%':`${Math.max(4,pos[0]-16)}%`;els.mapMarker.style.top=initial?'78%':`${Math.min(85,pos[1]+10)}%`;void els.mapMarker.offsetWidth;els.mapMarker.style.transition='left 3.2s ease-in-out,top 3.2s ease-in-out';els.mapMarker.style.left=`${pos[0]}%`;els.mapMarker.style.top=`${pos[1]}%`;els.mapMessage.textContent=initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…';await sleep(3900);els.mapOverlay.hidden=true;
-    const s=currentStage();els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;els.stageOverlayLabel.textContent=`STAGE ${stageIndex+1}`;els.stageOverlayName.textContent=s.name;els.stageOverlay.hidden=false;await sleep(1500);els.stageOverlay.hidden=true;
+    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':'NIGHT TOKYO';
+    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':'ウラのせかい';
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':'./assets/back_map.png';
+    const s=currentStage();
+    const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
+    const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
+    els.mapMessage.textContent=(mode==='front'?mapLinesFront:mapLinesBack)[stageIndex] || (initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
+    els.mapOverlay.hidden=false;
+    await sleep(initial?3000:3300);
+    els.mapOverlay.hidden=true;
+    els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;
+    els.stageOverlayLabel.textContent=`STAGE ${stageIndex+1}`;
+    els.stageOverlayName.textContent=s.name;
+    els.stageOverlay.hidden=false;
+    await sleep(1600);
+    els.stageOverlay.hidden=true;
   }
 
   async function startAdventure(){resetRun();primeStageBgm();await transitionTo(()=>showOnly(els.gameScreen),mode==='back'?'back':'normal',1500);await showMapSequence(true);await playStageBgm();await nextQuestion();}
