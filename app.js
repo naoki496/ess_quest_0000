@@ -23,10 +23,10 @@
     {name:'まおうの へや',key:'boss',count:5,bgm:'Geology.mp3',bg:'bg_boss.png',enemy:[['まおうキング','demon.png']]}
   ];
   const BACK_STAGES=[
-    {name:'渋谷スクランブル交差点',key:'shibuya',count:10,bgm:'C Breaker.mp3',bg:'back_shibuya.png',enemy:[['ネオン・シェイド','crystal.png']]},
-    {name:'浅草寺 仲見世通り',key:'asakusa',count:10,bgm:'my war.mp3',bg:'back_asakusa.png',enemy:[['紅灯の使い魔','wizard.png']]},
-    {name:'東京スカイツリー',key:'skytree',count:10,bgm:'inside out.mp3',bg:'back_skytree.png',enemy:[['塔影のファントム','bat.png']]},
-    {name:'新宿 東京都庁',key:'tocho',count:10,bgm:'COKE.mp3',bg:'back_tocho.png',enemy:[['クロム・ナイト','knight.png']]},
+    {name:'渋谷スクランブル交差点',key:'shibuya',count:10,bgm:'C Breaker.mp3',bg:'back_shibuya.png',enemy:[['ネオンラット','back_mouse.png'],['ぷるるスライム','slime.png']]},
+    {name:'浅草寺 仲見世通り',key:'asakusa',count:10,bgm:'my war.mp3',bg:'back_asakusa.png',enemy:[['デビルスマホ','back_phone.png'],['紅灯の使い魔','wizard.png']]},
+    {name:'東京スカイツリー',key:'skytree',count:10,bgm:'inside out.mp3',bg:'back_skytree.png',enemy:[['グリッチウイルス','back_virus.png'],['そらバット','bat.png']]},
+    {name:'新宿 東京都庁',key:'tocho',count:10,bgm:'COKE.mp3',bg:'back_tocho.png',enemy:[['クロム・ナイト','back_knight.png'],['あくまのナイト','knight.png']]},
     {name:'魔王の部屋',key:'backboss',count:5,bgm:'FUSE.mp3',bg:'back_boss.png',enemy:[['時空魔王','demon.png']]}
   ];
 
