@@ -13,3 +13,86 @@ body[data-mode="back"] .actor.hero img {
   object-fit: contain;
   object-position: center bottom;
 }
+
+/* v13: semantic collection icons */
+.item-icon{
+  width:42px;height:42px;margin:auto;display:grid;place-items:center;
+  border-radius:12px;font-size:1.55rem;line-height:1;
+  background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.18),rgba(255,255,255,.03) 48%,rgba(0,0,0,.18));
+  border:1px solid rgba(234,198,108,.34);box-shadow:inset 0 0 12px rgba(255,220,130,.06),0 5px 12px rgba(0,0,0,.2)
+}
+.collection-cell{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.detail-icon{filter:drop-shadow(0 7px 12px rgba(0,0,0,.32))}
+
+/* v13: richer transitions — front = gold diagonal tiles, back = neon glitch grid */
+.transition-fx{
+  position:fixed;inset:0;z-index:100;pointer-events:none;overflow:hidden;
+  background:transparent;animation:none;perspective:900px
+}
+.transition-fx .transition-tiles,.transition-fx .transition-grid,.transition-fx .transition-core,.transition-fx .transition-sigil{position:absolute;inset:-12%;opacity:0}
+.transition-fx .transition-tiles{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.12) 25%,transparent 25% 50%,rgba(255,255,255,.12) 50% 75%,transparent 75%) 0 0/72px 72px,
+    linear-gradient(135deg,#8b5818,#e9ba58 44%,#fff1ad 50%,#c47b22 56%,#4b2a08);
+  transform:translate3d(-115%,65%,0) rotate(-6deg) scale(1.22);
+  clip-path:polygon(0 18%,82% 0,100% 78%,18% 100%);
+  box-shadow:0 0 80px rgba(255,210,100,.65)
+}
+.transition-fx .transition-grid{
+  background:
+    repeating-linear-gradient(135deg,transparent 0 30px,rgba(255,255,255,.14) 30px 32px),
+    repeating-linear-gradient(45deg,transparent 0 54px,rgba(255,226,144,.13) 54px 56px);
+  mix-blend-mode:screen;transform:translateX(-18%) scale(1.18)
+}
+.transition-fx .transition-core{
+  inset:0;background:radial-gradient(circle at center,#fff 0 4%,#fff0af 14%,rgba(255,190,68,.68) 32%,rgba(30,13,3,.82) 72%,rgba(5,8,16,.98) 100%);
+  transform:scale(.15)
+}
+.transition-fx .transition-sigil{
+  inset:50% auto auto 50%;width:1em;height:1em;display:grid;place-items:center;
+  color:#fff6be;font-family:Georgia,serif;font-size:min(26vw,250px);line-height:1;
+  text-shadow:0 0 18px #fff,0 0 48px #ffc64d,0 0 100px #d87816;
+  transform:translate(-50%,-50%) rotate(-45deg) scale(.2)
+}
+.transition-fx.active .transition-tiles{animation:v13TileSweep 1.28s cubic-bezier(.72,.02,.2,1) both}
+.transition-fx.active .transition-grid{animation:v13GridSweep 1.28s ease-in-out both}
+.transition-fx.active .transition-core{animation:v13CoreFlash 1.28s ease-in-out both}
+.transition-fx.active .transition-sigil{animation:v13Sigil 1.28s cubic-bezier(.2,.8,.2,1) both}
+
+.transition-fx.back{background:transparent}
+.transition-fx.back .transition-tiles{
+  background:
+    linear-gradient(135deg,rgba(0,255,255,.22) 25%,transparent 25% 50%,rgba(255,32,106,.23) 50% 75%,transparent 75%) 0 0/64px 64px,
+    linear-gradient(135deg,#070719,#172051 33%,#6b135f 60%,#190613);
+  box-shadow:0 0 90px rgba(58,226,255,.5),0 0 120px rgba(255,40,127,.34)
+}
+.transition-fx.back .transition-grid{
+  background:
+    repeating-linear-gradient(90deg,transparent 0 42px,rgba(62,232,255,.22) 42px 44px),
+    repeating-linear-gradient(0deg,transparent 0 30px,rgba(255,58,127,.17) 30px 32px),
+    repeating-linear-gradient(135deg,transparent 0 70px,rgba(255,255,255,.1) 70px 72px);
+  filter:drop-shadow(0 0 12px #4be6ff)
+}
+.transition-fx.back .transition-core{
+  background:radial-gradient(circle at center,#dffcff 0 3%,#58eaff 10%,#8c35ff 25%,rgba(255,37,118,.68) 43%,rgba(12,3,29,.92) 72%,#03030d 100%)
+}
+.transition-fx.back .transition-sigil{
+  color:#c9fbff;text-shadow:0 0 14px #fff,0 0 42px #49eaff,0 0 82px #bb35ff,0 0 110px #ff315f
+}
+.transition-fx.back.active .transition-tiles{animation:v13BackTiles 1.34s cubic-bezier(.68,.01,.25,1) both}
+.transition-fx.back.active .transition-grid{animation:v13BackGrid 1.34s steps(9,end) both}
+.transition-fx.back.active .transition-core{animation:v13CoreFlash 1.34s ease-in-out both}
+.transition-fx.back.active .transition-sigil{animation:v13BackSigil 1.34s steps(10,end) both}
+
+@keyframes v13TileSweep{
+  0%{opacity:0;transform:translate3d(-115%,65%,0) rotate(-6deg) scale(1.22)}
+  18%{opacity:1}48%{opacity:1;transform:translate3d(-6%,1%,0) rotate(0) scale(1.05)}
+  70%{opacity:1;transform:translate3d(7%,-3%,0) rotate(2deg) scale(1.08)}
+  100%{opacity:0;transform:translate3d(116%,-62%,0) rotate(7deg) scale(1.24)}
+}
+@keyframes v13GridSweep{0%,100%{opacity:0;transform:translateX(-18%) scale(1.18)}35%,68%{opacity:.72;transform:translateX(0) scale(1.03)}}
+@keyframes v13CoreFlash{0%,100%{opacity:0;transform:scale(.15)}42%{opacity:.18;transform:scale(.8)}55%{opacity:.92;transform:scale(1.55)}68%{opacity:.18;transform:scale(2.1)}}
+@keyframes v13Sigil{0%,100%{opacity:0;transform:translate(-50%,-50%) rotate(-45deg) scale(.2)}42%{opacity:.15}55%{opacity:1;transform:translate(-50%,-50%) rotate(0) scale(1)}72%{opacity:.2;transform:translate(-50%,-50%) rotate(35deg) scale(1.7)}}
+@keyframes v13BackTiles{0%{opacity:0;transform:translate3d(-115%,65%,0) skewX(-14deg) scale(1.25)}20%{opacity:1}50%{opacity:1;transform:translate3d(0,0,0) skewX(5deg) scale(1.05)}75%{opacity:1;transform:translate3d(9%,-4%,0) skewX(-4deg) scale(1.1)}100%{opacity:0;transform:translate3d(115%,-65%,0) skewX(15deg) scale(1.25)}}
+@keyframes v13BackGrid{0%,100%{opacity:0;transform:translate(-8%,4%) scale(1.15)}20%{opacity:.25;transform:translate(4%,-2%) scale(1.08)}36%{opacity:.8;transform:translate(-3%,2%) scale(1.02)}50%{opacity:.35;transform:translate(6%,0) scale(1.05)}66%{opacity:.9;transform:translate(-2%,-3%) scale(1.02)}80%{opacity:.2;transform:translate(4%,2%) scale(1.08)}}
+@keyframes v13BackSigil{0%,100%{opacity:0;transform:translate(-50%,-50%) rotate(-40deg) scale(.2)}32%{opacity:.35;transform:translate(-48%,-51%) rotate(-18deg) scale(.7)}48%{opacity:1;transform:translate(-52%,-49%) rotate(4deg) scale(1.03)}54%{opacity:.45;transform:translate(-47%,-52%) rotate(-3deg) scale(.98)}62%{opacity:1;transform:translate(-50%,-50%) rotate(12deg) scale(1.12)}80%{opacity:.1;transform:translate(-50%,-50%) rotate(45deg) scale(1.8)}}
