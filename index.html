@@ -12,26 +12,53 @@
 
 <section id="titleScreen" class="screen title-screen">
   <div class="title-bg"></div><div class="title-shade"></div>
+  <div class="title-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="title-shell panel-gold">
-    <div class="title-copy">
-      <p id="titleEyebrow" class="eyebrow">MATH FANTASY ADVENTURE</p>
-      <h1>さんすう<span>クエスト</span></h1>
-      <p id="titleSubtitle" class="title-sub">計算で道をひらき、魔王を倒せ。</p>
-      <div class="title-menu">
-        <button id="playBtn" class="menu-btn primary">ぼうけんを はじめる</button>
-        <button id="shopBtn" class="menu-btn">ショップ</button>
-        <button id="collectionBtn" class="menu-btn">コレクション</button>
-        <button id="backWorldBtn" class="menu-btn secret" hidden>ウラステージへ</button>
-        <button id="frontWorldBtn" class="menu-btn secret-back" hidden>表のタイトルへ</button>
-      </div>
-      <div class="title-footer"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
+    <div class="title-corner corner-tl" aria-hidden="true">✦</div>
+    <div class="title-corner corner-tr" aria-hidden="true">✦</div>
+    <div class="title-corner corner-bl" aria-hidden="true">✦</div>
+    <div class="title-corner corner-br" aria-hidden="true">✦</div>
+
+    <div class="title-topbar">
+      <div class="title-mode-plate"><span class="mode-orb"></span><b id="titleModeName">光の世界</b></div>
+      <div class="title-track"><span>♪ TITLE BGM</span><strong id="titleTrackName">goodbye</strong></div>
+      <div class="title-wallet"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
     </div>
-    <div class="title-art"><img id="titleHero" src="./assets/hero.png" alt="主人公"></div>
+
+    <div class="title-main">
+      <div class="title-copy">
+        <p id="titleEyebrow" class="eyebrow">MATH FANTASY ADVENTURE</p>
+        <div class="title-logo-wrap">
+          <span class="title-logo-gem" aria-hidden="true">◆</span>
+          <h1>さんすう<span>クエスト</span></h1>
+          <span class="title-logo-gem" aria-hidden="true">◆</span>
+        </div>
+        <div class="title-divider" aria-hidden="true"><i></i><b>✦</b><i></i></div>
+        <p id="titleSubtitle" class="title-sub">計算で道をひらき、魔王を倒せ。</p>
+
+        <nav class="title-menu" aria-label="メインメニュー">
+          <button id="playBtn" class="menu-btn primary"><span class="menu-glyph">⚔</span><span>ぼうけんを はじめる</span></button>
+          <button id="shopBtn" class="menu-btn"><span class="menu-glyph">◆</span><span>ショップ</span></button>
+          <button id="collectionBtn" class="menu-btn"><span class="menu-glyph">✦</span><span>コレクション</span></button>
+          <button id="backWorldBtn" class="menu-btn secret" hidden><span class="menu-glyph">∞</span><span>ウラステージへ</span></button>
+          <button id="frontWorldBtn" class="menu-btn secret-back" hidden><span class="menu-glyph">↩</span><span>表のタイトルへ</span></button>
+        </nav>
+
+        <div class="title-caption"><span></span><p>5つのステージを越え、最後の一問へ。</p><span></span></div>
+      </div>
+
+      <div class="title-art">
+        <div class="hero-aura" aria-hidden="true"></div>
+        <img id="titleHero" src="./assets/hero.png" alt="主人公">
+        <div class="hero-pedestal" aria-hidden="true"><i></i><b>QUEST</b><i></i></div>
+      </div>
+    </div>
+
     <div class="rule-grid">
-      <div><strong>60</strong><span>びょう</span><small>1もん</small></div>
-      <div><strong>3</strong><span>たく</span><small>こたえ</small></div>
-      <div><strong>3</strong><span>ライフ</span><small>ミス</small></div>
-      <div><strong>45</strong><span>もん</span><small>クリア</small></div>
+      <div><span class="rule-icon">◷</span><div><strong>60</strong><span>びょう</span><small>1もんの制限時間</small></div></div>
+      <div><span class="rule-icon">◇</span><div><strong>3</strong><span>たく</span><small>こたえを選択</small></div></div>
+      <div><span class="rule-icon">♥</span><div><strong>3</strong><span>ライフ</span><small>3ミスでステージ再挑戦</small></div></div>
+      <div><span class="rule-icon">★</span><div><strong>45</strong><span>もん</span><small>全5ステージ</small></div></div>
     </div>
   </div>
 </section>

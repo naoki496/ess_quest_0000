@@ -32,7 +32,7 @@
 
   const els={
     titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),gameScreen:$('gameScreen'),
-    titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),
+    titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),
     playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
@@ -47,7 +47,7 @@
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
-  let currentQuestion=null,currentBgm=null;
+  let currentQuestion=null,currentBgm=null,currentTitleBgm=null,currentTitleBgmFile='';
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
 
@@ -112,10 +112,40 @@
   const ITEMS=buildItems();
   const rarityLabel={common:'コモン',uncommon:'アンコモン',rare:'レア'};
 
+  function titleTrackFile(){return mode==='front'?'goodbye.mp3':'FLAKE.mp3';}
+  function titleTrackLabel(){return mode==='front'?'goodbye':'FLAKE';}
+  function stopTitleBgm(immediate=true){
+    if(!currentTitleBgm)return;
+    currentTitleBgm.pause();
+    if(immediate)currentTitleBgm.currentTime=0;
+    currentTitleBgm=null;currentTitleBgmFile='';
+  }
+  async function fadeTitleBgm(ms=520){
+    if(!currentTitleBgm)return;
+    const a=currentTitleBgm,start=a.volume||.28,steps=10;
+    for(let i=1;i<=steps;i++){a.volume=start*(1-i/steps);await sleep(ms/steps);}
+    a.pause();a.currentTime=0;a.volume=.28;
+    if(currentTitleBgm===a){currentTitleBgm=null;currentTitleBgmFile='';}
+  }
+  async function playTitleBgm(){
+    if(!soundOn||els.titleScreen.hidden)return;
+    const file=titleTrackFile();
+    if(currentTitleBgm&&currentTitleBgmFile===file&&!currentTitleBgm.paused)return;
+    stopTitleBgm();
+    let a=new Audio(`./assets/${file}`);a.loop=true;a.volume=.28;
+    try{await a.play();currentTitleBgm=a;currentTitleBgmFile=file;}
+    catch{
+      a=new Audio('./assets/bgm.mp3');a.loop=true;a.volume=.22;
+      try{await a.play();currentTitleBgm=a;currentTitleBgmFile=file+'::fallback';}catch{}
+    }
+  }
+
   function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.gameScreen].forEach(x=>x.hidden=x!==el);}
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${save.gold} G`;
+    els.titleModeName.textContent=mode==='front'?'光の世界':'夜の東京';
+    els.titleTrackName.textContent=titleTrackLabel();
     if(mode==='front'){
       els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';els.playBtn.textContent='ぼうけんを はじめる';
       els.backWorldBtn.hidden=!save.backUnlocked;els.frontWorldBtn.hidden=true;
@@ -230,7 +260,7 @@
     const s=currentStage();els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;els.stageOverlayLabel.textContent=`STAGE ${stageIndex+1}`;els.stageOverlayName.textContent=s.name;els.stageOverlay.hidden=false;await sleep(1500);els.stageOverlay.hidden=true;
   }
 
-  async function startAdventure(){resetRun();await transitionTo(()=>showOnly(els.gameScreen),mode==='back'?'back':'normal',1500);await showMapSequence(true);await playStageBgm();await nextQuestion();}
+  async function startAdventure(){resetRun();const titleFade=fadeTitleBgm(560);await transitionTo(()=>showOnly(els.gameScreen),mode==='back'?'back':'normal',1500);await titleFade;await showMapSequence(true);await playStageBgm();await nextQuestion();}
   async function nextQuestion(){locked=true;clearBattleFx();renderGame();currentQuestion=mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex);els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});locked=false;startTimer();}
 
   async function resolveAnswer(value,timeout=false){if(locked)return;locked=true;stopTimer();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
@@ -258,18 +288,22 @@
   function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${e.q}=?</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
 
   els.playBtn.onclick=startAdventure;
-  els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode==='back'?'back':'normal',1450);};
-  els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode==='back'?'back':'normal',1450);};
-  els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1450);};
+  els.shopBtn.onclick=async()=>{const fade=fadeTitleBgm(420);await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode==='back'?'back':'normal',1450);await fade;};
+  els.collectionBtn.onclick=async()=>{const fade=fadeTitleBgm(420);await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode==='back'?'back':'normal',1450);await fade;};
+  els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1450);await playTitleBgm();};
   els.collectionBackBtn.onclick=els.shopBackBtn.onclick;
-  els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
-  els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
+  els.backWorldBtn.onclick=async()=>{const fade=fadeTitleBgm(520);await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);await fade;await playTitleBgm();};
+  els.frontWorldBtn.onclick=async()=>{const fade=fadeTitleBgm(520);await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);await fade;await playTitleBgm();};
   els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn&&currentBgm)currentBgm.pause();else if(soundOn&&currentBgm)currentBgm.play().catch(()=>{});};
   els.replayBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);},mode==='back'?'back':'normal',1500);resetRun();await showMapSequence(true);await playStageBgm();await nextQuestion();};
-  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
+  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);await playTitleBgm();};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
 
-  document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),180);});
+  let titleAudioUnlocked=false;
+  document.addEventListener('pointerdown',e=>{
+    if(!titleAudioUnlocked){titleAudioUnlocked=true;if(!els.titleScreen.hidden)playTitleBgm();}
+    const b=e.target.closest('button');if(!b||b.disabled)return;b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),180);
+  });
 
-  renderTitle();showOnly(els.titleScreen);
+  renderTitle();showOnly(els.titleScreen);playTitleBgm();
 })();
