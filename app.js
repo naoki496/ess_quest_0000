@@ -37,7 +37,7 @@
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),
-    battleBg:$('battleBg'),heroName:$('heroName'),heroImage:$('heroImage'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
+    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),enemyActor:$('enemyActor'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapImage:$('mapImage'),mapMarker:$('mapMarker'),mapMessage:$('mapMessage'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
@@ -49,6 +49,7 @@
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
+  const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
 
   function loadSave(){
     try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY));return {...DEFAULT_SAVE,...s,owned:Array.isArray(s?.owned)?s.owned:[100]};}catch{return {...DEFAULT_SAVE,owned:[100]};}
@@ -124,17 +125,21 @@
     }
   }
 
-  async function transition(kind='normal',ms=1400){
-    const duration=Math.max(ms,1300);
+  async function transitionTo(swap,kind='normal',ms=1500){
+    const duration=Math.max(ms,1400),coverAt=Math.round(duration*0.46);
+    els.transitionFx.style.setProperty('--transition-ms',`${duration}ms`);
     els.transitionFx.classList.remove('active','back');
     if(kind==='back')els.transitionFx.classList.add('back');
     els.transitionFx.hidden=false;
     void els.transitionFx.offsetWidth;
     els.transitionFx.classList.add('active');
-    await sleep(duration);
+    await sleep(coverAt);
+    if(typeof swap==='function') await swap();
+    await sleep(duration-coverAt+90);
     els.transitionFx.classList.remove('active');
     els.transitionFx.hidden=true;
   }
+  async function transition(kind='normal',ms=1500){return transitionTo(null,kind,ms);}
 
   function renderShop(filter='all'){
     els.shopGold.textContent=`${save.gold} G`;
@@ -190,6 +195,32 @@
 
   function stopTimer(){clearInterval(timerId);timerId=null;}function startTimer(){stopTimer();timeLeft=60;els.timerText.textContent=timeLeft;timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);}
   function playSE(a){if(!soundOn)return;try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
+  function playAttackSE(){
+    if(!soundOn)return;
+    const a=mode==='front'?swordSE:magicSE;
+    try{a.currentTime=0;a.play().catch(()=>playSE(correctSE));}catch{playSE(correctSE);}
+  }
+  function clearBattleFx(){
+    els.heroActor.classList.remove('attack-front','attack-back');
+    els.enemyActor.classList.remove('hit');
+    els.answerMark.hidden=true;
+    els.answerMark.className='answer-mark';
+  }
+  function showAnswerMark(ok){
+    els.answerMark.textContent=ok?'〇':'×';
+    els.answerMark.className=`answer-mark ${ok?'mark-correct':'mark-wrong'}`;
+    els.answerMark.hidden=false;
+    void els.answerMark.offsetWidth;
+    els.answerMark.classList.add('show');
+  }
+  function runAttackMotion(){
+    els.heroActor.classList.remove('attack-front','attack-back');
+    els.enemyActor.classList.remove('hit');
+    void els.heroActor.offsetWidth;
+    els.heroActor.classList.add(mode==='front'?'attack-front':'attack-back');
+    els.enemyActor.classList.add('hit');
+    playAttackSE();
+  }
   async function stopBgmFade(ms=1100){if(!currentBgm)return;const a=currentBgm,start=a.volume||.32,steps=14;for(let i=1;i<=steps;i++){a.volume=start*(1-i/steps);await sleep(ms/steps);}a.pause();a.currentTime=0;a.volume=.32;currentBgm=null;}
   async function playStageBgm(){if(!soundOn)return;const file=currentStage().bgm;let a=new Audio(`./assets/${file}`);a.loop=true;a.volume=.32;try{await a.play();currentBgm=a;}catch{a=new Audio('./assets/bgm.mp3');a.loop=true;a.volume=.32;a.play().catch(()=>{});currentBgm=a;}}
 
@@ -199,12 +230,14 @@
     const s=currentStage();els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;els.stageOverlayLabel.textContent=`STAGE ${stageIndex+1}`;els.stageOverlayName.textContent=s.name;els.stageOverlay.hidden=false;await sleep(1500);els.stageOverlay.hidden=true;
   }
 
-  async function startAdventure(){resetRun();showOnly(els.gameScreen);await transition(mode==='back'?'back':'normal',1300);await showMapSequence(true);await playStageBgm();await nextQuestion();}
-  async function nextQuestion(){locked=true;renderGame();currentQuestion=mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex);els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});locked=false;startTimer();}
+  async function startAdventure(){resetRun();await transitionTo(()=>showOnly(els.gameScreen),mode==='back'?'back':'normal',1500);await showMapSequence(true);await playStageBgm();await nextQuestion();}
+  async function nextQuestion(){locked=true;clearBattleFx();renderGame();currentQuestion=mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex);els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});locked=false;startTimer();}
 
   async function resolveAnswer(value,timeout=false){if(locked)return;locked=true;stopTimer();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
-    if(!timeout&&value===currentQuestion.answer){playSE(correctSE);els.feedbackText.textContent='せいかい！';await sleep(650);stageQuestion++;totalProgress++;if(stageQuestion>=currentStage().count){await clearStage();}else await nextQuestion();return;}
-    playSE(wrongSE);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1500);if(lives<=0){stats.restarts++;lives=3;totalProgress=stageStartTotal(stageIndex);stageQuestion=0;}await nextQuestion();
+    if(!timeout&&value===currentQuestion.answer){
+      els.feedbackText.textContent='せいかい！';showAnswerMark(true);runAttackMotion();await sleep(180);playSE(correctSE);await sleep(720);stageQuestion++;totalProgress++;if(stageQuestion>=currentStage().count){await clearStage();}else await nextQuestion();return;
+    }
+    playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1550);if(lives<=0){stats.restarts++;lives=3;totalProgress=stageStartTotal(stageIndex);stageQuestion=0;}await nextQuestion();
   }
 
   async function clearStage(){
@@ -225,16 +258,18 @@
   function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${e.q}=?</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
 
   els.playBtn.onclick=startAdventure;
-  els.shopBtn.onclick=async()=>{await transition(mode==='back'?'back':'normal',900);showOnly(els.shopScreen);renderShop();};
-  els.collectionBtn.onclick=async()=>{await transition(mode==='back'?'back':'normal',900);showOnly(els.collectionScreen);renderCollection();};
-  els.shopBackBtn.onclick=async()=>{await transition(mode==='back'?'back':'normal',900);showOnly(els.titleScreen);renderTitle();};
+  els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode==='back'?'back':'normal',1450);};
+  els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode==='back'?'back':'normal',1450);};
+  els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1450);};
   els.collectionBackBtn.onclick=els.shopBackBtn.onclick;
-  els.backWorldBtn.onclick=async()=>{await transition('back',1500);mode='back';renderTitle();showOnly(els.titleScreen);};
-  els.frontWorldBtn.onclick=async()=>{await transition('normal',1500);mode='front';renderTitle();showOnly(els.titleScreen);};
+  els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
+  els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
   els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn&&currentBgm)currentBgm.pause();else if(soundOn&&currentBgm)currentBgm.play().catch(()=>{});};
-  els.replayBtn.onclick=async()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;await startAdventure();};
-  els.toTitleBtn.onclick=async()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;await transition(mode==='back'?'back':'normal',1100);showOnly(els.titleScreen);renderTitle();};
+  els.replayBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);},mode==='back'?'back':'normal',1500);resetRun();await showMapSequence(true);await playStageBgm();await nextQuestion();};
+  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
+
+  document.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),180);});
 
   renderTitle();showOnly(els.titleScreen);
 })();

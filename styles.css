@@ -96,3 +96,69 @@ body[data-mode="back"] .actor.hero img {
 @keyframes v13BackTiles{0%{opacity:0;transform:translate3d(-115%,65%,0) skewX(-14deg) scale(1.25)}20%{opacity:1}50%{opacity:1;transform:translate3d(0,0,0) skewX(5deg) scale(1.05)}75%{opacity:1;transform:translate3d(9%,-4%,0) skewX(-4deg) scale(1.1)}100%{opacity:0;transform:translate3d(115%,-65%,0) skewX(15deg) scale(1.25)}}
 @keyframes v13BackGrid{0%,100%{opacity:0;transform:translate(-8%,4%) scale(1.15)}20%{opacity:.25;transform:translate(4%,-2%) scale(1.08)}36%{opacity:.8;transform:translate(-3%,2%) scale(1.02)}50%{opacity:.35;transform:translate(6%,0) scale(1.05)}66%{opacity:.9;transform:translate(-2%,-3%) scale(1.02)}80%{opacity:.2;transform:translate(4%,2%) scale(1.08)}}
 @keyframes v13BackSigil{0%,100%{opacity:0;transform:translate(-50%,-50%) rotate(-40deg) scale(.2)}32%{opacity:.35;transform:translate(-48%,-51%) rotate(-18deg) scale(.7)}48%{opacity:1;transform:translate(-52%,-49%) rotate(4deg) scale(1.03)}54%{opacity:.45;transform:translate(-47%,-52%) rotate(-3deg) scale(.98)}62%{opacity:1;transform:translate(-50%,-50%) rotate(12deg) scale(1.12)}80%{opacity:.1;transform:translate(-50%,-50%) rotate(45deg) scale(1.8)}}
+
+/* ===== v14 polish / bug fixes ===== */
+/* Transition now fully covers the old screen before the DOM swap. */
+.transition-fx{--transition-ms:1500ms;isolation:isolate}
+.transition-cover{position:absolute;inset:-4%;z-index:0;opacity:0;background:#071227;pointer-events:none}
+.transition-fx.back .transition-cover{background:#090514}
+.transition-tiles,.transition-grid,.transition-core,.transition-sigil{z-index:1}
+.transition-sigil{z-index:2}
+.transition-fx.active .transition-cover{animation:v14Cover var(--transition-ms) ease-in-out both}
+@keyframes v14Cover{0%{opacity:0}30%{opacity:.2}42%,62%{opacity:1}76%{opacity:.22}100%{opacity:0}}
+
+/* Front map: preserve the original wide composition instead of cropping it with cover. */
+.map-card{width:min(900px,92vw)}
+.map-visual{width:100%;height:auto;aspect-ratio:1414/675;background:#061326;border:1px solid rgba(255,226,156,.25);box-shadow:inset 0 0 26px rgba(0,0,0,.48)}
+.map-visual img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+body[data-mode="back"] .map-card{width:min(820px,92vw)}
+body[data-mode="back"] .map-visual{aspect-ratio:3/2;background:#05091b}
+
+/* Title: light structural polish without changing any menu destinations. */
+.title-shell{border-radius:30px;box-shadow:0 34px 90px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.18)}
+.title-copy{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,0) 62%)}
+.title-copy:after{content:"";display:block;width:min(430px,86%);height:1px;margin-top:20px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.7}
+.title-menu{position:relative;padding:15px;border-radius:18px;background:rgba(11,27,53,.08);box-shadow:inset 0 0 0 1px rgba(106,72,25,.15)}
+body[data-mode="back"] .title-menu{background:rgba(5,11,28,.32);box-shadow:inset 0 0 0 1px rgba(80,229,255,.18),0 0 26px rgba(123,31,148,.12)}
+.title-art:before{content:"";position:absolute;width:74%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,239,180,.26),rgba(255,223,120,.08) 48%,transparent 70%);filter:blur(3px)}
+body[data-mode="back"] .title-art:before{background:radial-gradient(circle,rgba(75,234,255,.28),rgba(145,44,201,.12) 48%,transparent 70%)}
+.title-art img{position:relative;z-index:1}
+.title-footer{display:inline-flex;padding:9px 14px;border-radius:999px;background:rgba(8,25,48,.1);border:1px solid rgba(106,72,25,.16)}
+body[data-mode="back"] .title-footer{background:rgba(5,15,35,.38);border-color:rgba(80,229,255,.2)}
+.rule-grid{border-top:2px solid rgba(132,87,28,.28);gap:0}
+.rule-grid>div{position:relative}
+.rule-grid>div+div:before{content:"";position:absolute;left:0;top:18%;bottom:18%;width:1px;background:linear-gradient(transparent,rgba(114,77,31,.36),transparent)}
+body[data-mode="back"] .rule-grid{border-top-color:rgba(70,226,255,.25)}
+body[data-mode="back"] .rule-grid>div+div:before{background:linear-gradient(transparent,rgba(76,226,255,.3),transparent)}
+
+/* Answer buttons: fixed flex centering and stable numeric metrics. */
+.choices button{display:flex;align-items:center;justify-content:center;padding:0 8px 0;font-variant-numeric:tabular-nums lining-nums;line-height:1;text-align:center;vertical-align:middle}
+
+/* Large answer mark. */
+.answer-mark{position:absolute;z-index:18;left:50%;top:50%;transform:translate(-50%,-50%) scale(.4);font-family:Georgia,"Yu Mincho",serif;font-size:clamp(11rem,29vw,24rem);font-weight:900;line-height:.8;opacity:0;pointer-events:none;filter:drop-shadow(0 0 18px currentColor) drop-shadow(0 10px 20px rgba(0,0,0,.35))}
+.answer-mark.mark-correct{color:#ff5959;text-shadow:0 0 5px #fff,0 0 30px rgba(255,71,71,.72)}
+.answer-mark.mark-wrong{color:#67bfff;text-shadow:0 0 5px #fff,0 0 30px rgba(69,173,255,.78)}
+.answer-mark.show{animation:v14AnswerMark .88s cubic-bezier(.2,.85,.2,1) both}
+@keyframes v14AnswerMark{0%{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(-7deg)}28%{opacity:.9;transform:translate(-50%,-50%) scale(1.12) rotate(1deg)}72%{opacity:.76;transform:translate(-50%,-50%) scale(.98)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.16)}}
+
+/* Attack motion / impact. */
+.attack-effect{position:absolute;z-index:5;left:64%;top:38%;width:150px;height:150px;opacity:0;pointer-events:none}
+.actor.hero.attack-front img{animation:v14SwordAttack .62s cubic-bezier(.18,.82,.22,1)}
+.actor.hero.attack-front .attack-effect{opacity:1;transform:rotate(-25deg);background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.98) 47%,#ffd868 51%,rgba(255,255,255,.85) 55%,transparent 61%);filter:drop-shadow(0 0 12px #fff) drop-shadow(0 0 28px #ffd45d);animation:v14Slash .62s ease-out both}
+.actor.hero.attack-back img{animation:v14MagicCast .76s cubic-bezier(.18,.82,.22,1)}
+.actor.hero.attack-back .attack-effect{opacity:1;border:4px solid #78efff;border-radius:50%;box-shadow:0 0 12px #fff,inset 0 0 28px #4ee9ff,0 0 35px #b54cff;background:radial-gradient(circle,rgba(255,255,255,.85) 0 6%,rgba(76,238,255,.35) 7% 28%,transparent 30%);animation:v14MagicRing .76s ease-out both}
+.actor.enemy.hit img{animation:v14EnemyHit .56s ease-out}
+@keyframes v14SwordAttack{0%{transform:translateX(0) rotate(0)}38%{transform:translateX(28%) rotate(-5deg) scale(1.04)}62%{transform:translateX(34%) rotate(3deg) scale(1.05)}100%{transform:translateX(0) rotate(0)}}
+@keyframes v14Slash{0%{opacity:0;transform:translate(-45px,30px) rotate(-36deg) scale(.3)}38%{opacity:1;transform:translate(30px,-20px) rotate(-12deg) scale(1.25)}100%{opacity:0;transform:translate(85px,-55px) rotate(8deg) scale(1.6)}}
+@keyframes v14MagicCast{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-10px) scale(1.025)}70%{transform:translateY(-5px) scale(1.04);filter:drop-shadow(0 0 14px #fff) drop-shadow(0 0 40px #65edff)}100%{transform:translateY(0) scale(1)}}
+@keyframes v14MagicRing{0%{opacity:0;transform:scale(.2) rotate(-35deg)}35%{opacity:1;transform:scale(.85) rotate(8deg)}100%{opacity:0;transform:translateX(160px) scale(1.35) rotate(65deg)}}
+@keyframes v14EnemyHit{0%,100%{transform:scaleX(-1) translateX(0);filter:drop-shadow(0 0 7px rgba(255,255,255,.95)) drop-shadow(0 0 18px rgba(69,214,255,.75))}20%{transform:scaleX(-1) translateX(-12px);filter:brightness(1.8) drop-shadow(0 0 22px #fff)}45%{transform:scaleX(-1) translateX(12px)}70%{transform:scaleX(-1) translateX(-7px);filter:brightness(1.35)}}
+
+/* Clear tactile feedback for every actionable button. */
+button{transform:translateY(0) scale(1);transition:transform .10s ease,filter .10s ease,box-shadow .12s ease,background .12s ease}
+button:hover:not(:disabled){filter:brightness(1.06)}
+button:active:not(:disabled),button.pressed:not(:disabled){transform:translateY(3px) scale(.975);filter:brightness(.9) saturate(1.08);box-shadow:inset 0 4px 10px rgba(0,0,0,.28),0 2px 5px rgba(0,0,0,.22)!important}
+.menu-btn:active:not(:disabled),.menu-btn.pressed:not(:disabled){outline:2px solid rgba(255,231,151,.65);outline-offset:-4px}
+body[data-mode="back"] .menu-btn:active:not(:disabled),body[data-mode="back"] .menu-btn.pressed:not(:disabled){outline-color:rgba(85,237,255,.72)}
+
+@media(max-width:980px) and (orientation:landscape){.map-card{width:min(820px,94vw)}body[data-mode="back"] .map-card{width:min(720px,92vw)}.attack-effect{width:120px;height:120px}}

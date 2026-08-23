@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body data-mode="front" data-stage="0">
-<div id="transitionFx" class="transition-fx" hidden><div class="transition-tiles"></div><div class="transition-grid"></div><div class="transition-core"></div><div class="transition-sigil">✦</div></div>
+<div id="transitionFx" class="transition-fx" hidden><div class="transition-cover"></div><div class="transition-tiles"></div><div class="transition-grid"></div><div class="transition-core"></div><div class="transition-sigil">✦</div></div>
 
 <section id="titleScreen" class="screen title-screen">
   <div class="title-bg"></div><div class="title-shade"></div>
@@ -68,7 +68,7 @@
   </header>
   <section class="battlefield">
     <div id="battleBg" class="battle-bg"></div><div class="battle-shade"></div>
-    <div class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"></div>
+    <div id="heroActor" class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"><div id="attackEffect" class="attack-effect" aria-hidden="true"></div></div>
     <section class="question-panel">
       <div class="question-cap">もんだい</div>
       <div class="equation-box"><div id="mathProblem" class="math-problem">7+5=?</div></div>
@@ -76,7 +76,8 @@
       <div class="choice-caption">こたえを えらぼう</div>
       <div id="choices" class="choices"><button>11</button><button>12</button><button>13</button></div>
     </section>
-    <div class="actor enemy"><div class="actor-name" id="enemyName">スライム</div><img id="enemyImage" src="./assets/slime.png" alt="敵"></div>
+    <div id="enemyActor" class="actor enemy"><div class="actor-name" id="enemyName">スライム</div><img id="enemyImage" src="./assets/slime.png" alt="敵"></div>
+    <div id="answerMark" class="answer-mark" hidden aria-hidden="true"></div>
   </section>
 </main>
 
