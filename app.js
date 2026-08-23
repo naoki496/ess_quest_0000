@@ -291,27 +291,63 @@
     }
   }
 
-  async function showMapSequence(initial=false){
+  function prepareMapOverlay(initial=false){
     els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':'NIGHT TOKYO';
     els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':'ウラのせかい';
     els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':'./assets/back_map.png';
-    const s=currentStage();
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
     const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
     els.mapMessage.textContent=(mode==='front'?mapLinesFront:mapLinesBack)[stageIndex] || (initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
     els.mapOverlay.hidden=false;
-    await sleep(initial?3000:3300);
-    els.mapOverlay.hidden=true;
+  }
+
+  function prepareStageOverlay(){
+    const s=currentStage();
     els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;
     els.stageOverlayLabel.textContent=`STAGE ${stageIndex+1}`;
     els.stageOverlayName.textContent=s.name;
     els.stageOverlay.hidden=false;
-    await sleep(1600);
-    els.stageOverlay.hidden=true;
   }
 
-  async function startAdventure(){resetRun();primeStageBgm();await transitionTo(()=>showOnly(els.gameScreen),mode==='back'?'back':'normal',1500);await showMapSequence(true);await playStageBgm();await nextQuestion();}
-  async function nextQuestion(){locked=true;clearBattleFx();renderGame();currentQuestion=mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex);els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});locked=false;startTimer();}
+  function prepareQuestion(){
+    locked=true;
+    clearBattleFx();
+    renderGame();
+    currentQuestion=mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex);
+    els.mathProblem.textContent=`${currentQuestion.expression}=?`;
+    els.feedbackText.textContent='';
+    els.choices.innerHTML='';
+    makeChoices(currentQuestion.answer).forEach(v=>{
+      const b=document.createElement('button');
+      b.textContent=v;
+      b.onclick=()=>resolveAnswer(v,false);
+      els.choices.appendChild(b);
+    });
+    locked=false;
+  }
+
+  async function showMapSequence(initial=false,mapAlreadyVisible=false){
+    if(!mapAlreadyVisible)prepareMapOverlay(initial);
+    await sleep(initial?3000:3300);
+
+    // 次のステージ紹介を先に最前面へ出してから、マップを消す。
+    prepareStageOverlay();
+    await new Promise(requestAnimationFrame);
+    els.mapOverlay.hidden=true;
+
+    await sleep(1600);
+
+    // ステージ紹介が画面を覆っている間に、次の戦闘画面を完全に準備する。
+    prepareQuestion();
+    const bgmStart=playStageBgm();
+    await new Promise(requestAnimationFrame);
+    els.stageOverlay.hidden=true;
+    startTimer();
+    await bgmStart;
+  }
+
+  async function startAdventure(){resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);}
+  async function nextQuestion(){prepareQuestion();startTimer();}
 
   async function resolveAnswer(value,timeout=false){if(locked)return;locked=true;stopTimer();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
     if(!timeout&&value===currentQuestion.answer){
@@ -322,9 +358,27 @@
 
   async function clearStage(){
     if(!runStageRewards.has(stageIndex)){runStageRewards.add(stageIndex);save.gold+=5;stats.gold+=5;persist();}
-    els.stageClearName.textContent=currentStage().name;els.stageClearOverlay.hidden=false;const fade=stopBgmFade(1200);await sleep(1250);els.stageClearOverlay.hidden=true;await fade;
-    if(stageIndex>=getStages().length-1){await finishRun();return;}
-    stageIndex++;stageQuestion=0;lives=3;await showMapSequence(false);await playStageBgm();await nextQuestion();
+    els.stageClearName.textContent=currentStage().name;
+    els.stageClearOverlay.hidden=false;
+    const fade=stopBgmFade(1200);
+    await sleep(1150);
+
+    if(stageIndex>=getStages().length-1){
+      els.stageClearOverlay.hidden=true;
+      await fade;
+      await finishRun();
+      return;
+    }
+
+    // クリア画面の裏で次のマップを準備し、前の戦闘画面を一瞬も露出させない。
+    stageIndex++;
+    stageQuestion=0;
+    lives=3;
+    prepareMapOverlay(false);
+    await new Promise(requestAnimationFrame);
+    els.stageClearOverlay.hidden=true;
+    await fade;
+    await showMapSequence(false,true);
   }
 
   async function finishRun(){
@@ -345,7 +399,7 @@
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
   els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn&&currentBgm)currentBgm.pause();else if(soundOn&&currentBgm)currentBgm.play().catch(()=>{});};
-  els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);},mode==='back'?'back':'normal',1500);await showMapSequence(true);await playStageBgm();await nextQuestion();};
+  els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
   els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
 
