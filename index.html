@@ -21,7 +21,7 @@
 
     <div class="title-topbar">
       <div class="title-mode-plate"><span class="mode-orb"></span><b id="titleModeName">光の世界</b></div>
-      <div class="title-track"><span>タイトル音楽</span><strong id="titleTrackName">OFF</strong></div>
+      <div class="title-track"><span>COLLECTION</span><strong id="titleTrackName">0 / 100</strong></div>
       <div class="title-wallet"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
     </div>
 
@@ -93,7 +93,7 @@
     <div class="hud-unit timer"><small>のこり</small><strong id="timerText">60</strong><span>びょう</span></div>
     <button id="soundBtn" class="sound-btn">♪ ON</button>
   </header>
-  <section class="battlefield">
+  <section class="battlefield"><div class="battle-corner battle-corner-tl" aria-hidden="true"></div><div class="battle-corner battle-corner-tr" aria-hidden="true"></div><div class="battle-corner battle-corner-bl" aria-hidden="true"></div><div class="battle-corner battle-corner-br" aria-hidden="true"></div>
     <div id="battleBg" class="battle-bg"></div><div class="battle-shade"></div>
     <div id="heroActor" class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"><div id="attackEffect" class="attack-effect" aria-hidden="true"></div></div>
     <section class="question-panel">
@@ -108,7 +108,7 @@
   </section>
 </main>
 
-<div id="mapOverlay" class="overlay" hidden><section class="map-card panel-gold"><small id="mapModeLabel">WORLD MAP</small><h2 id="mapTitle">ぼうけんの ちず</h2><div class="map-visual"><img id="mapImage" src="./assets/world_map_v3_clean.png" alt="ワールドマップ"></div><p id="mapMessage">目的地へ移動しています…</p></section></div>
+<div id="mapOverlay" class="overlay" hidden><section class="map-card panel-gold"><header class="map-head"><small id="mapModeLabel">WORLD MAP</small><h2 id="mapTitle">ぼうけんの ちず</h2></header><div class="map-visual"><img id="mapImage" src="./assets/world_map_v3_clean.png" alt="ワールドマップ"></div><p id="mapMessage" class="map-message">目的地へ移動しています…</p></section></div>
 <div id="stageOverlay" class="overlay" hidden><div id="stagePreview" class="stage-preview"></div><div class="stage-overlay-copy"><small id="stageOverlayLabel">STAGE 1</small><strong id="stageOverlayName">はじまりの もり</strong></div></div>
 <div id="stageClearOverlay" class="overlay clear-stage" hidden><div class="clear-flash"></div><div><small>STAGE CLEAR</small><strong id="stageClearName">はじまりの もり</strong><span>＋5 G</span></div></div>
 

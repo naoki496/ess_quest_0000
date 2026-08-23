@@ -115,7 +115,7 @@
   const ITEMS=buildItems();
   const rarityLabel={common:'コモン',uncommon:'アンコモン',rare:'レア'};
 
-  function titleTrackLabel(){return mode==='front'?'TITLE : OFF':'TITLE : OFF';}
+  function titleTrackLabel(){return `${save.owned.length} / 100`;}
   function stopTitleBgm(){}
   async function fadeTitleBgm(){return;}
   async function playTitleBgm(){return;}
@@ -136,16 +136,17 @@
   }
 
   function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.gameScreen].forEach(x=>x.hidden=x!==el);}
+  function setMenuButton(btn,glyph,label){btn.innerHTML=`<span class="menu-glyph" aria-hidden="true">${glyph}</span><span class="menu-label">${label}</span>`;}
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${save.gold} G`;
     els.titleModeName.textContent=mode==='front'?'光の世界':'夜の東京';
     els.titleTrackName.textContent=titleTrackLabel();
     if(mode==='front'){
-      els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';els.playBtn.textContent='ぼうけんを はじめる';
+      els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.backWorldBtn,'∞','ウラステージへ');
       els.backWorldBtn.hidden=!save.backUnlocked;els.frontWorldBtn.hidden=true;
     }else{
-      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='NIGHT TOKYO / ANOTHER QUEST';els.titleSubtitle.innerHTML='夜の東京を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';els.playBtn.textContent='ウラ面を はじめる';
+      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='NIGHT TOKYO / ANOTHER QUEST';els.titleSubtitle.innerHTML='夜の東京を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.frontWorldBtn,'↩','表のタイトルへ');
       els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=false;
     }
   }
@@ -172,17 +173,17 @@
     els.shopFilters.innerHTML='';filters.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=k===filter?'active':'';b.onclick=()=>renderShop(k);els.shopFilters.appendChild(b);});
     els.shopList.innerHTML='';
     ITEMS.filter(it=>it.id!==100).filter(it=>filter==='all'||it.rarity===filter||(filter==='missing'&&!save.owned.includes(it.id))).forEach(it=>{
-      const owned=save.owned.includes(it.id),row=document.createElement('div');row.className='shop-row';row.innerHTML=`<div class="item-icon">${it.icon}</div><div class="item-name"><b>${it.name}</b><small class="rarity-${it.rarity}">${rarityLabel[it.rarity]}</small></div><div>${it.price} G</div><button class="buy-btn" ${owned||save.gold<it.price?'disabled':''}>${owned?'もっている':'購入'}</button>`;
+      const owned=save.owned.includes(it.id),row=document.createElement('div');row.className=`shop-row shop-${it.rarity}`;row.innerHTML=`<div class="item-icon"><span>${it.icon}</span><em>No.${String(it.id).padStart(3,'0')}</em></div><div class="item-name"><b>${it.name}</b><small class="rarity-${it.rarity}">${rarityLabel[it.rarity]}</small></div><div class="item-price">${it.price} <small>G</small></div><button class="buy-btn" ${owned||save.gold<it.price?'disabled':''}>${owned?'もっている':'購入'}</button>`;
       row.querySelector('button').onclick=()=>{if(!owned&&save.gold>=it.price){save.gold-=it.price;save.owned.push(it.id);persist();renderShop(filter);}};els.shopList.appendChild(row);
     });
   }
 
   function renderCollection(){
     els.collectionCount.textContent=`${save.owned.length} / 100`;els.collectionGrid.innerHTML='';
-    ITEMS.forEach(it=>{const owned=save.owned.includes(it.id);const c=document.createElement('button');c.className=`collection-cell ${owned?'':'locked'}`;c.textContent=owned?it.icon:'?';c.title=owned?it.name:'？？？？？？';c.onclick=()=>showItemDetail(it,owned);els.collectionGrid.appendChild(c);});
+    ITEMS.forEach(it=>{const owned=save.owned.includes(it.id);const c=document.createElement('button');c.className=`collection-cell ${owned?`rarity-${it.rarity}`:'locked'}`;c.innerHTML=`<span class="cell-icon">${owned?it.icon:'?'}</span><small>${owned?String(it.id).padStart(3,'0'):'???'}</small>`;c.title=owned?it.name:'？？？？？？';c.onclick=()=>showItemDetail(it,owned);els.collectionGrid.appendChild(c);});
   }
   function showItemDetail(it,owned){
-    els.collectionDetail.innerHTML=owned?`<div class="detail-icon">${it.icon}</div><h3>${it.name}</h3><p class="rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><p>${it.flavor}</p>`:`<div class="detail-icon">?</div><h3>？？？？？？</h3><p>まだ手に入れていないアイテムです。</p>`;
+    els.collectionDetail.innerHTML=owned?`<div class="detail-no">No.${String(it.id).padStart(3,'0')}</div><div class="detail-icon rarity-frame-${it.rarity}">${it.icon}</div><h3>${it.name}</h3><p class="detail-rarity rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><div class="detail-divider"></div><p>${it.flavor}</p>`:`<div class="detail-no">UNKNOWN</div><div class="detail-icon">?</div><h3>？？？？？？</h3><div class="detail-divider"></div><p>まだ手に入れていないアイテムです。</p>`;
   }
 
   function getStages(){return mode==='front'?FRONT_STAGES:BACK_STAGES;}
