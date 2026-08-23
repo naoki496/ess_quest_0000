@@ -1,202 +1,92 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#12213c">
-  <meta name="description" content="3つのライフで45もんクリアをめざす、さんすうRPGゲーム。">
-  <title>さんすうクエスト</title>
-  <link rel="stylesheet" href="./styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101b35">
+<title>さんすうクエスト</title>
+<link rel="stylesheet" href="./styles.css">
 </head>
-<body data-zone="forest">
-  <section id="startScreen" class="start-screen start-screen-v8" aria-label="タイトルがめん">
-    <div class="start-backdrop"></div>
-    <div class="start-v8-shell ornate-frame">
-      <div class="start-v8-main">
-        <div class="start-v8-copy">
-          <p class="kicker">MATH FANTASY ADVENTURE</p>
-          <h1 class="game-logo game-logo-v8"><span>さんすう</span><strong>クエスト</strong></h1>
-          <p class="start-lead">計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。</p>
-          <div class="start-actions start-actions-v8">
-            <button id="startBtn" class="big-command action-primary" type="button"><span>▶</span> ぼうけんを はじめる</button>
-            <button id="startSoundBtn" class="sound-command sound-command-v8" type="button">♪ おんがく：ON</button>
-          </div>
-        </div>
+<body data-mode="front" data-stage="0">
+<div id="transitionFx" class="transition-fx" hidden><div class="transition-core"></div></div>
 
-        <div class="start-v8-art" aria-hidden="true">
-          <div class="start-hero-aura"></div>
-          <img class="start-hero-img" src="./assets/hero.png" alt="">
-          <div class="start-vs-emblem"><small>QUEST</small><strong>VS</strong></div>
-          <img class="start-enemy-img" src="./assets/slime.png" alt="">
-        </div>
+<section id="titleScreen" class="screen title-screen">
+  <div class="title-bg"></div><div class="title-shade"></div>
+  <div class="title-shell panel-gold">
+    <div class="title-copy">
+      <p id="titleEyebrow" class="eyebrow">MATH FANTASY ADVENTURE</p>
+      <h1>さんすう<span>クエスト</span></h1>
+      <p id="titleSubtitle" class="title-sub">計算で道をひらき、魔王を倒せ。</p>
+      <div class="title-menu">
+        <button id="playBtn" class="menu-btn primary">ぼうけんを はじめる</button>
+        <button id="shopBtn" class="menu-btn">ショップ</button>
+        <button id="collectionBtn" class="menu-btn">コレクション</button>
+        <button id="backWorldBtn" class="menu-btn secret" hidden>ウラステージへ</button>
+        <button id="frontWorldBtn" class="menu-btn secret-back" hidden>表のタイトルへ</button>
       </div>
-
-      <div class="start-rule-grid" aria-label="ゲームのルール">
-        <div class="start-rule-card"><b>60</b><span>びょう</span><small>1もんの じかん</small></div>
-        <div class="start-rule-card"><b>3</b><span>たく</span><small>こたえを えらぶ</small></div>
-        <div class="start-rule-card"><b>3</b><span>ライフ</span><small>3かいミスで ステージやりなおし</small></div>
-        <div class="start-rule-card accent"><b>45</b><span>もん</span><small>さいごまで クリア</small></div>
-      </div>
+      <div class="title-footer"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
     </div>
+    <div class="title-art"><img id="titleHero" src="./assets/hero.png" alt="主人公"></div>
+    <div class="rule-grid">
+      <div><strong>60</strong><span>びょう</span><small>1もん</small></div>
+      <div><strong>3</strong><span>たく</span><small>こたえ</small></div>
+      <div><strong>3</strong><span>ライフ</span><small>ミス</small></div>
+      <div><strong>45</strong><span>もん</span><small>クリア</small></div>
+    </div>
+  </div>
+</section>
+
+<section id="shopScreen" class="screen sub-screen" hidden>
+  <div class="sub-bg"></div>
+  <div class="sub-shell panel-gold">
+    <header class="sub-header"><div><small>ITEM SHOP</small><h2>ショップ</h2></div><div class="wallet">所持 <strong id="shopGold">0 G</strong></div></header>
+    <div id="shopFilters" class="filters"></div>
+    <div id="shopList" class="shop-list"></div>
+    <button id="shopBackBtn" class="back-btn">タイトルにもどる</button>
+  </div>
+</section>
+
+<section id="collectionScreen" class="screen sub-screen" hidden>
+  <div class="sub-bg"></div>
+  <div class="sub-shell panel-gold collection-shell">
+    <header class="sub-header"><div><small>COLLECTION</small><h2>コレクション</h2></div><div class="wallet"><strong id="collectionCount">0 / 100</strong></div></header>
+    <div class="collection-layout">
+      <div id="collectionGrid" class="collection-grid"></div>
+      <aside id="collectionDetail" class="collection-detail"><div class="detail-icon">?</div><h3>アイテムを えらぼう</h3><p>手に入れたアイテムの詳細を鑑賞できます。</p></aside>
+    </div>
+    <button id="collectionBackBtn" class="back-btn">タイトルにもどる</button>
+  </div>
+</section>
+
+<main id="gameScreen" class="screen game-shell" hidden>
+  <header class="hud panel-gold">
+    <div class="hud-unit"><small>すすみ</small><strong id="progressText">0 / 45</strong></div>
+    <div class="progress-wrap"><div class="progress-meta"><span id="stageLabel">STAGE 1</span><b id="stageName">はじまりの もり</b></div><div class="progress-bar"><i id="progressFill"></i></div></div>
+    <div class="hud-unit"><small>ライフ</small><div id="lifeDisplay" class="hearts">♥ ♥ ♥</div></div>
+    <div class="hud-unit timer"><small>のこり</small><strong id="timerText">60</strong><span>びょう</span></div>
+    <button id="soundBtn" class="sound-btn">♪ ON</button>
+  </header>
+  <section class="battlefield">
+    <div id="battleBg" class="battle-bg"></div><div class="battle-shade"></div>
+    <div class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"></div>
+    <section class="question-panel">
+      <div class="question-cap">もんだい</div>
+      <div class="equation-box"><div id="mathProblem" class="math-problem">7+5=?</div></div>
+      <div id="feedbackText" class="feedback"></div>
+      <div class="choice-caption">こたえを えらぼう</div>
+      <div id="choices" class="choices"><button>11</button><button>12</button><button>13</button></div>
+    </section>
+    <div class="actor enemy"><div class="actor-name" id="enemyName">スライム</div><img id="enemyImage" src="./assets/slime.png" alt="敵"></div>
   </section>
+</main>
 
-  <main id="game" class="game-shell" hidden>
-    <header class="hud ornate-frame">
-      <div class="hud-block streak-block">
-        <span class="hud-label">すすみ</span>
-        <strong id="streakText">0 / 45</strong>
-      </div>
+<div id="mapOverlay" class="overlay" hidden><section class="map-card panel-gold"><small id="mapModeLabel">WORLD MAP</small><h2 id="mapTitle">ぼうけんの ちず</h2><div class="map-visual"><img id="mapImage" src="./assets/world_map_v3_clean.png" alt="ワールドマップ"><div id="mapMarker" class="map-marker">◆</div></div><p id="mapMessage">目的地へ移動しています…</p></section></div>
+<div id="stageOverlay" class="overlay" hidden><div id="stagePreview" class="stage-preview"></div><div class="stage-overlay-copy"><small id="stageOverlayLabel">STAGE 1</small><strong id="stageOverlayName">はじまりの もり</strong></div></div>
+<div id="stageClearOverlay" class="overlay clear-stage" hidden><div class="clear-flash"></div><div><small>STAGE CLEAR</small><strong id="stageClearName">はじまりの もり</strong><span>＋5 G</span></div></div>
 
-      <div class="journey-wrap">
-        <div class="journey-topline">
-          <span class="journey-label">ぼうけんの すすみぐあい</span>
-          <span id="stageNameInline">はじまりの もり</span>
-        </div>
-        <div class="journey-track" aria-label="ぼうけんの すすみぐあい">
-          <div id="journeyFill" class="journey-fill"></div>
-          <div class="journey-marks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        </div>
-      </div>
+<div id="resultOverlay" class="overlay" hidden><section class="result-card panel-gold"><header><small>ADVENTURE RESULT</small><h2>リザルト</h2></header><div class="result-stats"><div><span>ミス</span><b id="resultMistakes">0</b></div><div><span>時間切れ</span><b id="resultTimeouts">0</b></div><div><span>やりなおし</span><b id="resultRestarts">0</b></div><div><span>獲得ゴルド</span><b id="resultGold">25 G</b></div></div><h3>まちがえた問題</h3><div id="resultErrors" class="result-errors"></div><div class="result-actions"><button id="replayBtn" class="menu-btn primary">最初から遊ぶ</button><button id="toTitleBtn" class="menu-btn">タイトルにもどる</button></div></section></div>
 
-      <div class="hud-block life-block" aria-label="のこりライフ">
-        <span class="hud-label">ライフ</span>
-        <div id="lifePips" class="life-pips" aria-live="polite">
-          <span class="life-gem active">◆</span><span class="life-gem active">◆</span><span class="life-gem active">◆</span>
-        </div>
-      </div>
-
-      <div class="hud-block timer-block">
-        <span class="hud-label">のこり</span>
-        <div class="timer-main"><strong id="timerText">60</strong><span class="sec">びょう</span></div>
-      </div>
-
-      <button id="bgmToggle" class="hud-sound" type="button">♪ ON</button>
-    </header>
-
-    <section id="battlefield" class="battlefield">
-      <div class="scene-background" aria-hidden="true"></div>
-      <div class="scene-vignette" aria-hidden="true"></div>
-      <div class="battle-mist" aria-hidden="true"></div>
-
-      <div class="stage-banner ornate-frame">
-        <span id="stageName">はじまりの もり</span>
-        <small id="stageStep">1 / 45</small>
-      </div>
-
-      <div class="battle-row">
-        <div class="actor hero-side">
-          <div class="nameplate ornate-frame">ゆうしゃ</div>
-          <div id="heroSprite" class="sprite-wrap hero-wrap">
-            <img src="./assets/hero.png" alt="ゆうしゃ">
-            <span id="attackFx" class="attack-fx" aria-hidden="true">✦</span>
-          </div>
-        </div>
-
-        <section class="problem-card quest-panel" aria-live="polite">
-          <div class="problem-head">
-            <span class="problem-title">もんだい</span>
-            <span id="problemMeta">こたえを えらぼう</span>
-          </div>
-          <div class="equation-frame">
-            <i class="corner c1" aria-hidden="true"></i><i class="corner c2" aria-hidden="true"></i>
-            <i class="corner c3" aria-hidden="true"></i><i class="corner c4" aria-hidden="true"></i>
-            <div id="equationFitBox" class="equation-fit-box">
-              <div id="mathProblem" class="math-problem">3 + 5 = ?</div>
-            </div>
-          </div>
-          <div id="feedbackText" class="feedback-text" aria-live="assertive"></div>
-          <div class="choice-caption"><span>✦</span> こたえを えらぼう <span>✦</span></div>
-          <div id="choices" class="choices answer-deck">
-            <button class="answer action-blue" type="button" data-choice="0"><span>7</span></button>
-            <button class="answer action-green" type="button" data-choice="1"><span>8</span></button>
-            <button class="answer action-red" type="button" data-choice="2"><span>9</span></button>
-          </div>
-        </section>
-
-        <div class="actor enemy-side">
-          <div id="enemyName" class="nameplate ornate-frame">ぷるるスライム</div>
-          <div id="enemySprite" class="sprite-wrap enemy-wrap">
-            <img id="enemyImage" src="./assets/slime.png" alt="モンスター">
-          </div>
-        </div>
-      </div>
-
-      <div class="bottom-message ornate-frame">
-        <span id="bottomMessage">もんだいに こたえて すすもう！</span>
-      </div>
-    </section>
-  </main>
-
-  <div id="countdownOverlay" class="overlay countdown-overlay" hidden>
-    <div id="countdownText" class="countdown-text">3</div>
-  </div>
-
-  <div id="mapOverlay" class="overlay map-overlay" hidden>
-    <section class="world-map-panel ornate-frame" aria-label="ぼうけんの ちず">
-      <div class="map-title">
-        <small>WORLD MAP</small>
-        <strong>ぼうけんの ちず</strong>
-      </div>
-      <div id="worldMap" class="world-map">
-        <img src="./assets/world_map_v3_clean.png" alt="森、洞窟、魔法の塔、魔王の城へ続く幻想世界の地図。魔王の部屋は城内部の拡大表示として描かれている">
-        <div id="mapMarker" class="map-marker" aria-hidden="true">◆</div>
-      </div>
-      <p id="mapMessage" class="map-message">つぎの エリアへ むかっています…</p>
-    </section>
-  </div>
-
-  <div id="stageRevealOverlay" class="overlay stage-reveal-overlay" hidden>
-    <div id="stageRevealBg" class="stage-reveal-bg"></div>
-    <div class="stage-reveal-shade"></div>
-    <div class="stage-reveal-title">
-      <small>NEXT AREA</small>
-      <strong id="stageRevealTitle">ふしぎな どうくつ</strong>
-    </div>
-  </div>
-
-  <div id="stageClearOverlay" class="overlay stage-clear-overlay" hidden>
-    <div class="stage-clear-flare" aria-hidden="true"></div>
-    <div class="stage-clear-content">
-      <small>STAGE CLEAR</small>
-      <strong id="stageClearTitle">はじまりの もり</strong>
-      <span>つぎの エリアへ</span>
-    </div>
-  </div>
-
-  <div id="clearOverlay" class="overlay clear-overlay" hidden>
-    <div id="confetti" class="confetti" aria-hidden="true"></div>
-    <section class="clear-card ornate-frame" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
-      <img src="./assets/hero.png" class="clear-hero" alt="ゆうしゃ">
-      <p class="clear-kicker">★ 45もん とうは！ ★</p>
-      <h2 id="clearTitle">ぼうけん<br><span>クリア！</span></h2>
-      <p>まおうを たおした！<br>リザルトを まとめています…</p>
-    </section>
-  </div>
-
-  <div id="resultOverlay" class="overlay result-overlay" hidden>
-    <section class="result-card ornate-frame" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
-      <header class="result-header">
-        <small>ADVENTURE RESULT</small>
-        <h2 id="resultTitle">リザルト</h2>
-        <p>ぼうけんの きろく</p>
-      </header>
-      <div class="result-summary">
-        <div><span>クリア</span><strong>45 / 45</strong><small>もん</small></div>
-        <div><span>ミス</span><strong id="resultMistakes">0</strong><small>かい</small></div>
-        <div><span>じかんぎれ</span><strong id="resultTimeouts">0</strong><small>かい</small></div>
-        <div><span>やりなおし</span><strong id="resultRestarts">0</strong><small>かい</small></div>
-      </div>
-      <section class="result-errors">
-        <h3>まちがえた もんだい</h3>
-        <div id="resultErrorList" class="result-error-list"></div>
-      </section>
-      <div class="result-actions">
-        <button id="resultRestartBtn" class="big-command action-primary" type="button">最初から遊ぶ</button>
-        <button id="resultTitleBtn" class="big-command result-secondary" type="button">タイトルにもどる</button>
-      </div>
-    </section>
-  </div>
-
-  <script src="./app.js"></script>
+<div id="rewardOverlay" class="overlay" hidden><section class="reward-card panel-gold"><small>NEW ITEM</small><div id="rewardIcon" class="reward-icon">✦</div><h2 id="rewardName">時空の鍵</h2><p id="rewardText">新しいアイテムを手に入れた！</p><button id="rewardOkBtn" class="menu-btn primary">OK</button></section></div>
+<script src="./app.js"></script>
 </body>
 </html>
