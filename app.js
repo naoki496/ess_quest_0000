@@ -42,7 +42,7 @@
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
     resultOverlay:$('resultOverlay'),resultMistakes:$('resultMistakes'),resultTimeouts:$('resultTimeouts'),resultRestarts:$('resultRestarts'),resultGold:$('resultGold'),resultErrors:$('resultErrors'),replayBtn:$('replayBtn'),toTitleBtn:$('toTitleBtn'),
-    rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx')
+    rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),screenFade:$('screenFade'),battleBlur:$('battleBlur'),battleState:$('battleState'),battleStateText:$('battleStateText'),defeatMenu:$('defeatMenu'),retryStageBtn:$('retryStageBtn'),defeatTitleBtn:$('defeatTitleBtn')
   };
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true;
@@ -151,21 +151,40 @@
     }
   }
 
-  async function transitionTo(swap,kind='normal',ms=1500){
-    const duration=Math.max(ms,1400),coverAt=Math.round(duration*0.46);
+  async function fadeToBlack(ms=380){
+    els.screenFade.style.setProperty('--fade-ms',`${ms}ms`);
+    els.screenFade.hidden=false;
+    void els.screenFade.offsetWidth;
+    els.screenFade.classList.add('visible');
+    await sleep(ms+30);
+  }
+  async function fadeFromBlack(ms=430){
+    els.screenFade.style.setProperty('--fade-ms',`${ms}ms`);
+    els.screenFade.classList.remove('visible');
+    await sleep(ms+30);
+    els.screenFade.hidden=true;
+  }
+  async function runTransitionFx(kind='normal',ms=1500){
+    const duration=Math.max(ms,1200);
     els.transitionFx.style.setProperty('--transition-ms',`${duration}ms`);
     els.transitionFx.classList.remove('active','back');
     if(kind==='back')els.transitionFx.classList.add('back');
     els.transitionFx.hidden=false;
     void els.transitionFx.offsetWidth;
     els.transitionFx.classList.add('active');
-    await sleep(coverAt);
-    if(typeof swap==='function') await swap();
-    await sleep(duration-coverAt+90);
+    await sleep(duration+80);
     els.transitionFx.classList.remove('active');
     els.transitionFx.hidden=true;
   }
-  async function transition(kind='normal',ms=1500){return transitionTo(null,kind,ms);}
+  async function transitionTo(swap,kind='normal',ms=1500,options={}){
+    const {effect=true,fadeOut=380,fadeIn=430}=options;
+    await fadeToBlack(fadeOut);
+    if(typeof swap==='function')await swap();
+    await new Promise(requestAnimationFrame);
+    if(effect)await runTransitionFx(kind,ms);
+    await fadeFromBlack(fadeIn);
+  }
+  async function transition(kind='normal',ms=1500,options={}){return transitionTo(null,kind,ms,options);}
 
   function renderShop(filter='all'){
     els.shopGold.textContent=`${save.gold} G`;
@@ -309,7 +328,7 @@
     els.stageOverlay.hidden=false;
   }
 
-  function prepareQuestion(){
+  function prepareQuestion(unlock=true){
     locked=true;
     clearBattleFx();
     renderGame();
@@ -323,70 +342,232 @@
       b.onclick=()=>resolveAnswer(v,false);
       els.choices.appendChild(b);
     });
+    locked=!unlock;
+  }
+
+  function clearBattleState(){
+    els.battleBlur.hidden=true;
+    els.battleState.hidden=true;
+    els.battleStateText.hidden=false;
+    els.battleStateText.textContent='';
+    els.battleStateText.className='battle-state-text';
+    els.defeatMenu.hidden=true;
+  }
+  function setBattleBlur(on){els.battleBlur.hidden=!on;}
+  function animateBattleState(text,kind){
+    els.battleState.hidden=false;
+    els.defeatMenu.hidden=true;
+    els.battleStateText.hidden=false;
+    els.battleStateText.textContent=text;
+    els.battleStateText.className=`battle-state-text ${kind}`;
+    void els.battleStateText.offsetWidth;
+    els.battleStateText.classList.add('pop');
+  }
+  async function runBattleCountdown(){
+    locked=true;
+    stopTimer();
+    setBattleBlur(true);
+    els.battleState.hidden=false;
+    els.defeatMenu.hidden=true;
+    for(const n of ['3','2','1']){
+      animateBattleState(n,'countdown');
+      await sleep(700);
+    }
+    animateBattleState('スタート！','start');
+    await sleep(820);
+    els.battleState.hidden=true;
+    els.battleStateText.textContent='';
+    setBattleBlur(false);
     locked=false;
+    startTimer();
+  }
+  async function enterBattleFromStageIntro(){
+    prepareQuestion(false);
+    setBattleBlur(true);
+    await transitionTo(()=>{
+      els.stageOverlay.hidden=true;
+      showOnly(els.gameScreen);
+    },mode==='back'?'back':'normal',0,{effect:false,fadeOut:360,fadeIn:430});
+    const bgmPromise=playStageBgm();
+    await runBattleCountdown();
+    await bgmPromise;
   }
 
   async function showMapSequence(initial=false,mapAlreadyVisible=false){
-    if(!mapAlreadyVisible)prepareMapOverlay(initial);
-    await sleep(initial?3000:3300);
+    const kind=mode==='back'?'back':'normal';
+    if(!mapAlreadyVisible){
+      await transitionTo(()=>{
+        showOnly(null);
+        prepareMapOverlay(initial);
+      },kind,1500);
+    }
+    await sleep(initial?2600:2800);
 
-    // 次のステージ紹介を先に最前面へ出してから、マップを消す。
-    prepareStageOverlay();
-    await new Promise(requestAnimationFrame);
-    els.mapOverlay.hidden=true;
-
+    await transitionTo(()=>{
+      els.mapOverlay.hidden=true;
+      prepareStageOverlay();
+    },kind,1500);
     await sleep(1600);
 
-    // ステージ紹介が画面を覆っている間に、次の戦闘画面を完全に準備する。
-    prepareQuestion();
-    const bgmStart=playStageBgm();
-    await new Promise(requestAnimationFrame);
-    els.stageOverlay.hidden=true;
-    startTimer();
-    await bgmStart;
+    // ステージ紹介 → 戦闘だけはトランジションエフェクトを使わない。
+    await enterBattleFromStageIntro();
   }
 
-  async function startAdventure(){resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);}
-  async function nextQuestion(){prepareQuestion();startTimer();}
+  async function startAdventure(){
+    resetRun();
+    primeStageBgm();
+    clearBattleState();
+    await transitionTo(()=>{
+      showOnly(null);
+      els.resultOverlay.hidden=true;
+      els.rewardOverlay.hidden=true;
+      els.stageClearOverlay.hidden=true;
+      prepareMapOverlay(true);
+    },mode==='back'?'back':'normal',1500);
+    await showMapSequence(true,true);
+  }
+  async function nextQuestion(){prepareQuestion(true);startTimer();}
 
-  async function resolveAnswer(value,timeout=false){if(locked)return;locked=true;stopTimer();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
+  async function resolveAnswer(value,timeout=false){
+    if(locked)return;
+    locked=true;
+    stopTimer();
+    [...els.choices.children].forEach(b=>{
+      b.disabled=true;
+      if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');
+      if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');
+    });
     if(!timeout&&value===currentQuestion.answer){
-      els.feedbackText.textContent='せいかい！';showAnswerMark(true);runAttackMotion();await sleep(180);playSE(correctSE);await sleep(720);stageQuestion++;totalProgress++;if(stageQuestion>=currentStage().count){await clearStage();}else await nextQuestion();return;
+      els.feedbackText.textContent='せいかい！';
+      showAnswerMark(true);
+      runAttackMotion();
+      await sleep(180);
+      playSE(correctSE);
+      await sleep(720);
+      stageQuestion++;
+      totalProgress++;
+      if(stageQuestion>=currentStage().count)await clearStage();
+      else await nextQuestion();
+      return;
     }
-    playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1550);if(lives<=0){stats.restarts++;lives=3;totalProgress=stageStartTotal(stageIndex);stageQuestion=0;}await nextQuestion();
+
+    playSE(wrongSE);
+    showAnswerMark(false);
+    stats.mistakes++;
+    if(timeout)stats.timeouts++;
+    stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});
+    lives--;
+    els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;
+    renderGame();
+    await sleep(lives<=0?1050:1450);
+    if(lives<=0){
+      await showDefeatChoice();
+      return;
+    }
+    await nextQuestion();
+  }
+
+  async function showDefeatChoice(){
+    locked=true;
+    stopTimer();
+    setBattleBlur(true);
+    animateBattleState('ざんねん！','defeat');
+    const fadeBgm=stopBgmFade(700);
+    await sleep(1350);
+    els.battleStateText.hidden=true;
+    els.defeatMenu.hidden=false;
+    await fadeBgm;
+  }
+
+  async function retryCurrentStage(){
+    stats.restarts++;
+    lives=3;
+    stageQuestion=0;
+    totalProgress=stageStartTotal(stageIndex);
+    primeStageBgm();
+    const kind=mode==='back'?'back':'normal';
+    await transitionTo(()=>{
+      clearBattleState();
+      showOnly(null);
+      prepareStageOverlay();
+    },kind,1500);
+    await sleep(1600);
+    await enterBattleFromStageIntro();
+  }
+
+  async function defeatToTitle(){
+    const kind=mode==='back'?'back':'normal';
+    await transitionTo(()=>{
+      clearBattleState();
+      stopTimer();
+      els.stageOverlay.hidden=true;
+      els.mapOverlay.hidden=true;
+      els.stageClearOverlay.hidden=true;
+      showOnly(els.titleScreen);
+      renderTitle();
+    },kind,1500);
   }
 
   async function clearStage(){
-    if(!runStageRewards.has(stageIndex)){runStageRewards.add(stageIndex);save.gold+=5;stats.gold+=5;persist();}
+    if(!runStageRewards.has(stageIndex)){
+      runStageRewards.add(stageIndex);
+      save.gold+=5;
+      stats.gold+=5;
+      persist();
+    }
+    stopTimer();
     els.stageClearName.textContent=currentStage().name;
     els.stageClearOverlay.hidden=false;
-    const fade=stopBgmFade(1200);
-    await sleep(1150);
+    const fade=stopBgmFade(950);
+    await sleep(1100);
 
     if(stageIndex>=getStages().length-1){
-      els.stageClearOverlay.hidden=true;
       await fade;
       await finishRun();
       return;
     }
 
-    // クリア画面の裏で次のマップを準備し、前の戦闘画面を一瞬も露出させない。
     stageIndex++;
     stageQuestion=0;
     lives=3;
-    prepareMapOverlay(false);
-    await new Promise(requestAnimationFrame);
-    els.stageClearOverlay.hidden=true;
     await fade;
+    await transitionTo(()=>{
+      els.stageClearOverlay.hidden=true;
+      showOnly(null);
+      prepareMapOverlay(false);
+    },mode==='back'?'back':'normal',1500);
     await showMapSequence(false,true);
   }
 
   async function finishRun(){
-    stopTimer();await stopBgmFade(500);let reward=null;
-    if(mode==='front'){save.frontClears++;if(!save.backUnlocked){save.backUnlocked=true;if(!save.owned.includes(100))save.owned.push(100);reward=ITEMS.find(i=>i.id===100);}else reward=randomReward();}
-    else{save.backClears++;reward=randomReward();}
-    persist();renderResult();els.resultOverlay.hidden=false;
-    if(reward){await sleep(600);els.rewardIcon.textContent=reward.icon;els.rewardName.textContent=reward.name;els.rewardText.textContent=reward.id===100?'時空の扉が開いた……。表のタイトルに「ウラステージへ」が追加されました。':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！';els.rewardOverlay.hidden=false;}
+    stopTimer();
+    await stopBgmFade(350);
+    let reward=null;
+    if(mode==='front'){
+      save.frontClears++;
+      if(!save.backUnlocked){
+        save.backUnlocked=true;
+        if(!save.owned.includes(100))save.owned.push(100);
+        reward=ITEMS.find(i=>i.id===100);
+      }else reward=randomReward();
+    }else{
+      save.backClears++;
+      reward=randomReward();
+    }
+    persist();
+    renderResult();
+    await transitionTo(()=>{
+      els.stageClearOverlay.hidden=true;
+      showOnly(null);
+      els.resultOverlay.hidden=false;
+    },mode==='back'?'back':'normal',1500);
+    if(reward){
+      await sleep(650);
+      els.rewardIcon.textContent=reward.icon;
+      els.rewardName.textContent=reward.name;
+      els.rewardText.textContent=reward.id===100?'時空の扉が開いた……。表のタイトルに「ウラステージへ」が追加されました。':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！';
+      els.rewardOverlay.hidden=false;
+    }
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
   function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${e.q}=?</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
@@ -399,8 +580,21 @@
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
   els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn&&currentBgm)currentBgm.pause();else if(soundOn&&currentBgm)currentBgm.play().catch(()=>{});};
-  els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
+  els.replayBtn.onclick=async()=>{
+    resetRun();
+    primeStageBgm();
+    clearBattleState();
+    await transitionTo(()=>{
+      els.resultOverlay.hidden=true;
+      els.rewardOverlay.hidden=true;
+      showOnly(null);
+      prepareMapOverlay(true);
+    },mode==='back'?'back':'normal',1500);
+    await showMapSequence(true,true);
+  };
   els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
+  els.retryStageBtn.onclick=retryCurrentStage;
+  els.defeatTitleBtn.onclick=defeatToTitle;
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
 
   document.addEventListener('pointerdown',e=>{
