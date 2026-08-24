@@ -53,11 +53,12 @@
 
 
   const els={
-    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),gameScreen:$('gameScreen'),
+    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),
-    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),
+    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
+    monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),
     battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),enemyActor:$('enemyActor'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapImage:$('mapImage'),mapMessage:$('mapMessage'),
@@ -164,7 +165,7 @@
     }catch{}
   }
 
-  function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.gameScreen].forEach(x=>x.hidden=x!==el);}
+  function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.monsterBookScreen,els.gameScreen].forEach(x=>x.hidden=x!==el);}
   function setMenuButton(btn,glyph,label){btn.innerHTML=`<span class="menu-glyph" aria-hidden="true">${glyph}</span><span class="menu-label">${label}</span>`;}
   function renderTitle(){
     document.body.dataset.mode=mode;
@@ -172,10 +173,10 @@
     els.titleModeName.textContent=mode==='front'?'光の世界':'夜の東京';
     els.titleTrackName.textContent=titleTrackLabel();
     if(mode==='front'){
-      els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.backWorldBtn,'∞','ウラステージへ');
+      els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');setMenuButton(els.backWorldBtn,'∞','ウラステージへ');
       els.backWorldBtn.hidden=!save.backUnlocked;els.frontWorldBtn.hidden=true;
     }else{
-      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='NIGHT TOKYO / ANOTHER QUEST';els.titleSubtitle.innerHTML='夜の東京を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.frontWorldBtn,'↩','表のタイトルへ');
+      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='NIGHT TOKYO / ANOTHER QUEST';els.titleSubtitle.innerHTML='夜の東京を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');setMenuButton(els.frontWorldBtn,'↩','表のタイトルへ');
       els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=false;
     }
   }
@@ -214,6 +215,47 @@
   function showItemDetail(it,owned){
     els.collectionDetail.innerHTML=owned?`<div class="detail-no">No.${String(it.id).padStart(3,'0')}</div><div class="detail-icon rarity-frame-${it.rarity}">${it.icon}</div><h3>${it.name}</h3><p class="detail-rarity rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><div class="detail-divider"></div><p>${it.flavor}</p>`:`<div class="detail-no">UNKNOWN</div><div class="detail-icon">?</div><h3>？？？？？？</h3><div class="detail-divider"></div><p>まだ手に入れていないアイテムです。</p>`;
   }
+  function monsterBookEntries(){
+    const normals=getMonsterCatalog();
+    const bosses=getStages().map((_,i)=>{const [name,img]=getStages()[i].boss;return{id:`boss-${mode}-${i+1}`,world:mode,stage:i,rarity:5,name,img,boss:true};});
+    return [...normals,...bosses];
+  }
+  function monsterFlavor(m){
+    if(m.boss)return `${getStages()[m.stage].name}に立ちはだかるボスモンスター。5問の勝負を乗り越えよう。`;
+    const labels=['','身近な姿をしたモンスター。','少し珍しい力を持つモンスター。','めったに姿を見せないレアモンスター。','強い魔力を宿したスーパーレア。','遭遇そのものが特別なSSRモンスター。'];
+    return labels[m.rarity]||'未知のモンスター。';
+  }
+  function renderMonsterBook(filter='all'){
+    const entries=monsterBookEntries();
+    const seen=new Set(save.monsterBook[mode]);
+    els.monsterBookCount.textContent=`${entries.filter(m=>seen.has(m.id)).length} / ${entries.length}`;
+    const filters=[['all','すべて'],['1','★1'],['2','★2'],['3','★3 RARE'],['4','★4 SR'],['5','★5 SSR'],['boss','BOSS']];
+    els.monsterBookFilters.innerHTML='';
+    filters.forEach(([key,label])=>{const b=document.createElement('button');b.textContent=label;b.className=key===filter?'active':'';b.onclick=()=>renderMonsterBook(key);els.monsterBookFilters.appendChild(b);});
+    els.monsterBookGrid.innerHTML='';
+    entries.filter(m=>filter==='all'||(filter==='boss'&&m.boss)||(!m.boss&&String(m.rarity)===filter)).forEach(m=>{
+      const owned=seen.has(m.id),card=document.createElement('button');
+      card.className=`monster-book-cell rarity-monster-${m.rarity}${m.boss?' boss-entry':''}${owned?'':' locked'}`;
+      card.innerHTML=owned?`<span class="monster-book-thumb"><img src="./assets/${m.img}" alt=""></span><b>${m.name}</b><small>${m.boss?'BOSS':rarityLabelMonster(m.rarity)}</small>`:`<span class="monster-book-thumb unknown">?</span><b>？？？？？？</b><small>${m.boss?'BOSS':rarityLabelMonster(m.rarity)}</small>`;
+      if(owned){const im=card.querySelector('img');im.onerror=()=>{im.onerror=null;im.src=monsterPlaceholder(m,!!m.boss);};card.onclick=()=>showMonsterCard(m);}else card.disabled=true;
+      els.monsterBookGrid.appendChild(card);
+    });
+  }
+  function showMonsterCard(m){
+    const counts=save.monsterEncounters[mode]||{};
+    els.monsterCardRarity.textContent=m.boss?'BOSS':`${'★'.repeat(m.rarity)} ${rarityLabelMonster(m.rarity)}`;
+    els.monsterCardName.textContent=m.name;
+    els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};
+    els.monsterCardImage.src=`./assets/${m.img}`;
+    els.monsterCardWorld.textContent=mode==='front'?'表の世界':'裏の世界';
+    els.monsterCardStage.textContent=`STAGE ${m.stage+1}`;
+    els.monsterCardEncounter.textContent=`遭遇 ${counts[m.id]||1}`;
+    els.monsterCardText.textContent=monsterFlavor(m);
+    els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}`;
+    els.monsterCardOverlay.hidden=false;
+  }
+  function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
+
 
   function getStages(){return mode==='front'?FRONT_STAGES:BACK_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
@@ -294,7 +336,11 @@
     els.progressText.textContent=`${totalProgress} / 75`;els.progressFill.style.width=`${totalProgress/75*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
     els.battleBg.style.backgroundImage=`url('./assets/${s.bg}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':'./assets/back_hero.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':'魔法少女';
     const en=bossPhase?currentBoss():currentMonster;
-    if(en){els.enemyName.textContent=bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;els.enemyImage.src=en.boss&&en.img==='demon.png'?`./assets/${en.img}`:monsterPlaceholder(en,!!en.boss);}
+    if(en){
+      els.enemyName.textContent=bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;
+      els.enemyImage.onerror=()=>{els.enemyImage.onerror=null;els.enemyImage.src=monsterPlaceholder(en,!!en.boss);};
+      els.enemyImage.src=`./assets/${en.img}`;
+    }
   }
 
   function stopTimer(){clearInterval(timerId);timerId=null;}function startTimer(seconds=60){stopTimer();timeLeft=seconds;els.timerText.textContent=timeLeft;timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);}
@@ -387,7 +433,15 @@
     els.stageOverlay.hidden=false;
   }
 
+  function clearMonsterAnnouncement(){
+    const w=$('rarityWarning');
+    if(w){w.hidden=true;w.textContent='';w.className='rarity-warning';}
+    const c=$('bossCutin');
+    if(c){c.hidden=true;c.textContent='';c.className='boss-cutin';}
+  }
+
   function prepareQuestion(){
+    clearMonsterAnnouncement();
     locked=true;clearBattleFx();renderGame();
     currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex));
     els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';
@@ -403,21 +457,30 @@
     document.querySelector('.battlefield').appendChild(layer);return layer;
   }
   async function showMonsterEntrance(monster){
-    ensureMonsterFx();els.enemyActor.style.opacity='0';els.enemyActor.style.transform='translateY(12px) scale(.92)';
-    const w=$('rarityWarning');w.className=`rarity-warning rarity-${monster.rarity}`;w.textContent=monster.rarity===5?'SSR':monster.rarity===4?'SUPER RARE':monster.rarity===3?'RARE':'';
-    if(monster.rarity===5){w.hidden=false;await sleep(720);w.hidden=true;}
-    els.enemyActor.classList.add(`spawn-r${monster.rarity}`);els.enemyActor.style.opacity='1';els.enemyActor.style.transform='';await sleep([0,380,520,760,1050,1450][monster.rarity]);els.enemyActor.classList.remove(`spawn-r${monster.rarity}`);
+    ensureMonsterFx();clearMonsterAnnouncement();els.enemyActor.style.opacity='0';els.enemyActor.style.transform='translateY(12px) scale(.92)';
+    const w=$('rarityWarning');
+    w.className=`rarity-warning rarity-${monster.rarity}`;
+    w.textContent=monster.rarity===5?'SSR':monster.rarity===4?'SUPER RARE':monster.rarity===3?'RARE':'';
+    if(monster.rarity>=3){
+      w.hidden=false;
+      await sleep(monster.rarity===5?760:monster.rarity===4?560:420);
+      w.hidden=true;w.textContent='';
+    }else{w.hidden=true;w.textContent='';}
+    els.enemyActor.classList.add(`spawn-r${monster.rarity}`);els.enemyActor.style.opacity='1';els.enemyActor.style.transform='';
+    await sleep([0,380,520,760,1050,1450][monster.rarity]);
+    els.enemyActor.classList.remove(`spawn-r${monster.rarity}`);
+    clearMonsterAnnouncement();
   }
   async function showBossEntrance(retry=false){
-    ensureMonsterFx();locked=true;const w=$('rarityWarning');w.className='rarity-warning boss-warning';w.textContent=retry?'BOSS RETRY':'WARNING  BOSS';w.hidden=false;await sleep(900);w.textContent='BOSS';await sleep(520);w.hidden=true;
-    bossPhase=true;bossQuestion=0;currentMonster=null;registerMonster(currentBoss());renderGame();els.enemyActor.style.opacity='0';els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';await sleep(1400);els.enemyActor.classList.remove('spawn-boss');await playStageBgm();prepareQuestion();startTimer(60);
+    ensureMonsterFx();clearMonsterAnnouncement();locked=true;const w=$('rarityWarning');w.className='rarity-warning boss-warning';w.textContent=retry?'BOSS RETRY':'WARNING  BOSS';w.hidden=false;await sleep(900);w.textContent='BOSS';await sleep(520);w.hidden=true;
+    bossPhase=true;bossQuestion=0;currentMonster=null;registerMonster(currentBoss());renderGame();els.enemyActor.style.opacity='0';els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();await playStageBgm();prepareQuestion();startTimer(60);
   }
   async function runBossFifthAction(){
     ensureMonsterFx();clearBossAction();locked=true;stopTimer();clearQuestionUi();const c=$('bossCutin');c.className='boss-cutin active';c.textContent=`${currentBoss().name} の こうげき！`;c.hidden=false;await sleep(800);c.hidden=true;c.className='boss-cutin';
     bossActionActive=true;
     if(stageIndex<=1||stageIndex===4){document.body.classList.add('boss-obscure-active');}
-    if(stageIndex>=2){const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent='TIME LIMIT 30';w.hidden=false;await sleep(650);w.hidden=true;}
-    prepareQuestion();startTimer(stageIndex>=2?30:60);
+    if(stageIndex>=2){const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent='TIME LIMIT 30';w.hidden=false;await sleep(650);w.hidden=true;w.textContent='';}
+    clearMonsterAnnouncement();prepareQuestion();startTimer(stageIndex>=2?30:60);
   }
   function clearBossAction(){bossActionActive=false;document.body.classList.remove('boss-obscure-active');}
   async function beginNormalEncounter(){
@@ -509,8 +572,12 @@
   els.playBtn.onclick=startAdventure;
   els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode==='back'?'back':'normal',1450);};
   els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode==='back'?'back':'normal',1450);};
+  els.monsterBookBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.monsterBookScreen);renderMonsterBook();},mode==='back'?'back':'normal',1450);};
   els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1450);};
   els.collectionBackBtn.onclick=els.shopBackBtn.onclick;
+  els.monsterBookBackBtn.onclick=els.shopBackBtn.onclick;
+  els.monsterCardClose.onclick=closeMonsterCard;
+  els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay)closeMonsterCard();};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
   els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn&&currentBgm)currentBgm.pause();else if(soundOn&&currentBgm)currentBgm.play().catch(()=>{});};

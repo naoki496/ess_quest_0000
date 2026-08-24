@@ -40,6 +40,7 @@
           <button id="playBtn" class="menu-btn primary"><span class="menu-glyph">⚔</span><span>ぼうけんを はじめる</span></button>
           <button id="shopBtn" class="menu-btn"><span class="menu-glyph">◆</span><span>ショップ</span></button>
           <button id="collectionBtn" class="menu-btn"><span class="menu-glyph">✦</span><span>コレクション</span></button>
+          <button id="monsterBookBtn" class="menu-btn monster-book-btn"><span class="menu-glyph">◆</span><span>モンスター図鑑</span></button>
           <button id="backWorldBtn" class="menu-btn secret" hidden><span class="menu-glyph">∞</span><span>ウラステージへ</span></button>
           <button id="frontWorldBtn" class="menu-btn secret-back" hidden><span class="menu-glyph">↩</span><span>表のタイトルへ</span></button>
         </nav>
@@ -85,6 +86,30 @@
   </div>
 </section>
 
+<section id="monsterBookScreen" class="screen sub-screen monster-book-screen" hidden>
+  <div class="sub-bg"></div>
+  <div class="sub-shell panel-gold monster-book-shell">
+    <header class="sub-header monster-book-header"><div><small>MONSTER ENCYCLOPEDIA</small><h2>モンスター図鑑</h2></div><div class="wallet"><strong id="monsterBookCount">0 / 40</strong></div></header>
+    <div id="monsterBookFilters" class="filters monster-book-filters"></div>
+    <div class="monster-book-viewport"><div id="monsterBookGrid" class="monster-book-grid"></div></div>
+    <footer class="sub-footer"><button id="monsterBookBackBtn" class="back-btn">タイトルにもどる</button></footer>
+  </div>
+  <div id="monsterCardOverlay" class="monster-card-overlay" hidden>
+    <article id="monsterCard" class="monster-card" role="dialog" aria-modal="true">
+      <button id="monsterCardClose" class="monster-card-close" aria-label="閉じる">×</button>
+      <div id="monsterCardRarity" class="monster-card-rarity">★</div>
+      <h3 id="monsterCardName">MONSTER</h3>
+      <div class="monster-card-art"><img id="monsterCardImage" alt="モンスター"></div>
+      <div class="monster-card-meta">
+        <span id="monsterCardWorld">表の世界</span>
+        <span id="monsterCardStage">STAGE 1</span>
+        <span id="monsterCardEncounter">遭遇 1</span>
+      </div>
+      <p id="monsterCardText">モンスターの記録。</p>
+    </article>
+  </div>
+</section>
+
 <main id="gameScreen" class="screen game-shell" hidden>
   <header class="hud panel-gold">
     <div class="hud-unit"><small>すすみ</small><strong id="progressText">0 / 75</strong></div>
@@ -103,7 +128,7 @@
       <div class="choice-caption">こたえを えらぼう</div>
       <div id="choices" class="choices"><button>11</button><button>12</button><button>13</button></div>
     </section>
-    <div id="enemyActor" class="actor enemy"><div class="actor-name" id="enemyName">スライム</div><img id="enemyImage" src="./assets/slime.png" alt="敵"></div>
+    <div id="enemyActor" class="actor enemy"><div class="actor-name" id="enemyName">スライム</div><img id="enemyImage" src="./assets/monster_front_1_1_1.png" alt="敵"></div>
     <div id="answerMark" class="answer-mark" hidden aria-hidden="true"></div>
   </section>
 </main>
