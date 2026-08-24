@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body data-mode="front" data-stage="0">
-<div id="screenFade" class="screen-fade" hidden aria-hidden="true"></div>
 <div id="transitionFx" class="transition-fx" hidden><div class="transition-cover"></div><div class="transition-tiles"></div><div class="transition-grid"></div><div class="transition-core"></div><div class="transition-sigil">✦</div></div>
 
 <section id="titleScreen" class="screen title-screen">
@@ -59,7 +58,7 @@
       <div><span class="rule-icon">◷</span><div><strong>60</strong><span>びょう</span><small>1もんの制限時間</small></div></div>
       <div><span class="rule-icon">◇</span><div><strong>3</strong><span>たく</span><small>こたえを選択</small></div></div>
       <div><span class="rule-icon">♥</span><div><strong>3</strong><span>ライフ</span><small>3ミスでステージ再挑戦</small></div></div>
-      <div><span class="rule-icon">★</span><div><strong>45</strong><span>もん</span><small>全5ステージ</small></div></div>
+      <div><span class="rule-icon">★</span><div><strong>75</strong><span>もん</span><small>全5ステージ</small></div></div>
     </div>
   </div>
 </section>
@@ -88,7 +87,7 @@
 
 <main id="gameScreen" class="screen game-shell" hidden>
   <header class="hud panel-gold">
-    <div class="hud-unit"><small>すすみ</small><strong id="progressText">0 / 45</strong></div>
+    <div class="hud-unit"><small>すすみ</small><strong id="progressText">0 / 75</strong></div>
     <div class="progress-wrap"><div class="progress-meta"><span id="stageLabel">STAGE 1</span><b id="stageName">はじまりの もり</b></div><div class="progress-bar"><i id="progressFill"></i></div></div>
     <div class="hud-unit"><small>ライフ</small><div id="lifeDisplay" class="hearts">♥ ♥ ♥</div></div>
     <div class="hud-unit timer"><small>のこり</small><strong id="timerText">60</strong><span>びょう</span></div>
@@ -106,15 +105,6 @@
     </section>
     <div id="enemyActor" class="actor enemy"><div class="actor-name" id="enemyName">スライム</div><img id="enemyImage" src="./assets/slime.png" alt="敵"></div>
     <div id="answerMark" class="answer-mark" hidden aria-hidden="true"></div>
-    <div id="battleBlur" class="battle-blur" hidden aria-hidden="true"></div>
-    <div id="battleState" class="battle-state" hidden>
-      <div id="battleStateText" class="battle-state-text"></div>
-      <div id="defeatMenu" class="defeat-menu" hidden>
-        <h2>どうする？</h2>
-        <button id="retryStageBtn" class="menu-btn primary"><span class="menu-glyph">↻</span><span>ステージ最初から</span></button>
-        <button id="defeatTitleBtn" class="menu-btn"><span class="menu-glyph">⌂</span><span>タイトルにもどる</span></button>
-      </div>
-    </div>
   </section>
 </main>
 
