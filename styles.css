@@ -96,7 +96,7 @@ body[data-mode="back"] .title-copy{grid-column:1;grid-row:1}body[data-mode="back
 
 /* ---------- portrait ---------- */
 @media (orientation:portrait){
-  html,body{overflow:auto}.title-screen,.sub-screen,.overlay{position:fixed;overflow:auto;align-items:start}.title-shell{height:auto;min-height:calc(100dvh - 16px);grid-template-rows:auto auto auto}.title-topbar{grid-template-columns:1fr auto}.title-track{display:none}.title-main{display:grid;grid-template-columns:1fr;padding:0 10px}.title-main::before{display:none}.title-copy,.title-art,body[data-mode="front"] .title-copy,body[data-mode="front"] .title-art,body[data-mode="back"] .title-copy,body[data-mode="back"] .title-art{grid-column:1;grid-row:auto}.title-copy{text-align:center;align-items:center;padding:20px 18px 8px}.title-art{height:min(42dvh,390px);order:-1}.title-logo-wrap{justify-content:center}.title-menu,.title-sub,.title-caption,.title-divider{margin-left:auto;margin-right:auto}.rule-grid{grid-template-columns:repeat(2,1fr)}.sub-shell{height:calc(100dvh - 16px)}.shop-row{grid-template-columns:48px minmax(0,1fr) 70px 76px}.collection-layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.collection-detail{max-height:210px}.collection-grid{grid-template-columns:repeat(5,1fr)}.hud{grid-template-columns:1fr 1.4fr 1fr}.hud .timer,.sound-btn{display:none}.battlefield{min-height:0}.actor{width:31%;height:28%;top:5%;bottom:auto}.actor.hero{left:2%}.actor.enemy{right:2%}.question-panel{left:5%;right:5%;top:34%}.map-card,.result-card{height:calc(100dvh - 16px)}
+  html,body{overflow:auto}.title-screen,.sub-screen,.overlay{position:fixed;overflow:auto;align-items:start}.title-shell{height:auto;min-height:calc(100dvh - 16px);grid-template-rows:auto auto auto}.title-topbar{grid-template-columns:1fr auto}.title-track{display:none}.title-main{display:grid;grid-template-columns:1fr;padding:0 10px}.title-main::before{display:none}.title-copy,.title-art,body[data-mode="front"] .title-copy,body[data-mode="front"] .title-art,body[data-mode="back"] .title-copy,body[data-mode="back"] .title-art{grid-column:1;grid-row:auto}.title-copy{text-align:center;align-items:center;padding:20px 18px 8px}.title-art{height:min(42dvh,390px);order:-1}.title-logo-wrap{justify-content:center}.title-menu,.title-sub,.title-caption,.title-divider{margin-left:auto;margin-right:auto}.rule-grid{grid-template-columns:repeat(2,1fr)}.sub-shell{height:calc(100dvh - 16px)}.shop-row{grid-template-columns:48px minmax(0,1fr) 70px 76px}.collection-layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.collection-detail{max-height:210px}.collection-grid{grid-template-columns:repeat(5,1fr)}.hud{grid-template-columns:1fr 1.4fr 1fr}.hud .timer,.sound-btn{display:none}.battlefield{min-height:0}.actor{width:31%;height:28%;top:5%;bottom:auto}.actor.hero{left:2%}.actor.enemy{right:2%}.question-panel{left:5%;right:5%;top:34%}.battlefield>.attack-effect.front-hit,.battlefield>.attack-effect.back-hit{right:0.5%;top:3.5%;bottom:auto;width:34%;height:31%}.map-card,.result-card{height:calc(100dvh - 16px)}
 }
 
 @keyframes bgDrift{from{transform:scale(1.025) translate3d(-.2%,0,0)}to{transform:scale(1.055) translate3d(.3%,-.2%,0)}}
@@ -170,7 +170,7 @@ body[data-mode="back"] .title-copy{grid-column:1;grid-row:1}body[data-mode="back
 @keyframes cutinSlashB{0%,20%{opacity:0;transform:translateX(80%) rotate(5deg)}33%,72%{opacity:1;transform:translateX(0) rotate(5deg)}88%,100%{opacity:0;transform:translateX(-70%) rotate(5deg)}}
 @keyframes cutinWhite{0%,76%{opacity:0}82%{opacity:.98}88%{opacity:.16}100%{opacity:0}}
 
-/* boss STAGE1/2/5 obstruction: three solid black stars */
+/* boss STAGE1/2/5 obstruction: black-core moving stars; final count is set per world/stage in JS */
 .boss-obscurer{position:absolute;z-index:64;color:#000;font-family:Arial Black,Impact,sans-serif;font-weight:900;font-size:clamp(7rem,17vw,14rem);line-height:1;opacity:0;text-shadow:none;filter:none;will-change:transform}
 .boss-obscurer.one{left:-18%;top:12%}.boss-obscurer.two{right:-17%;top:44%}.boss-obscurer.three{left:38%;bottom:-34%}
 .boss-obscure-active .boss-obscurer{opacity:1}
@@ -318,16 +318,44 @@ body[data-mode="back"] .scene-curtain::before{background:radial-gradient(circle 
 @keyframes sceneCurtainIn{from{opacity:0;backdrop-filter:blur(0) brightness(1)}to{opacity:1;backdrop-filter:blur(10px) brightness(.25)}}
 @keyframes sceneCurtainOut{from{opacity:1;backdrop-filter:blur(10px) brightness(.25)}to{opacity:0;backdrop-filter:blur(0) brightness(1)}}
 
-/* Fifth-question obstruction: about twice the former size. Front uses 4 stars, back uses 5. */
-.boss-obscurer{font-size:clamp(12rem,30vw,26rem);z-index:64}
-.boss-obscurer.one{left:-24%;top:-3%}.boss-obscurer.two{right:-24%;top:31%}.boss-obscurer.three{left:27%;bottom:-47%}.boss-obscurer.four{left:12%;top:39%}.boss-obscurer.five{right:11%;top:-25%}
-.boss-obscure-active .boss-obscurer{opacity:1}
-body[data-mode="front"].boss-obscure-active .boss-obscurer.five{display:none}
-body[data-mode="back"].boss-obscure-active .boss-obscurer.five{display:block;opacity:1}
+/* Fifth-question obstruction. Counts are selected in JS per world/stage:
+   FRONT = STAGE1 3 / STAGE2 4 / STAGE5 5
+   BACK  = STAGE1 5 / STAGE2 6 / STAGE5 6.
+   The core remains solid black; a sparkling outline and luminous trailing wake make each star harder to ignore. */
+.boss-obscurer{
+  font-size:clamp(12rem,30vw,26rem);z-index:64;color:#020202;isolation:isolate;
+  -webkit-text-stroke:3px rgba(255,247,190,.96);
+  text-shadow:0 0 5px #fff,0 0 13px rgba(255,238,135,.95),0 0 28px rgba(255,178,45,.76),0 0 52px rgba(255,130,22,.48);
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.95)) drop-shadow(0 0 16px rgba(255,221,90,.72))
+}
+body[data-mode="back"] .boss-obscurer{
+  -webkit-text-stroke-color:rgba(170,250,255,.98);
+  text-shadow:0 0 5px #fff,0 0 14px rgba(82,239,255,.98),0 0 30px rgba(117,75,255,.78),0 0 54px rgba(255,55,223,.52);
+  filter:drop-shadow(0 0 5px rgba(255,255,255,.98)) drop-shadow(0 0 17px rgba(66,238,255,.78))
+}
+.boss-obscurer::before,.boss-obscurer::after{content:"";position:absolute;pointer-events:none;z-index:-1}
+.boss-obscurer::before{
+  width:.16em;height:.16em;left:12%;top:8%;border-radius:50%;background:#fff;
+  box-shadow:.42em .10em 0 -.025em rgba(255,255,255,.98),.78em .31em 0 -.04em rgba(255,237,130,.95),.24em .63em 0 -.05em rgba(255,255,255,.96),.91em .74em 0 -.035em rgba(255,194,70,.90),.56em .92em 0 -.055em rgba(255,255,255,.88);
+  filter:drop-shadow(0 0 8px #fff);animation:starSparkleRing .68s steps(2,end) infinite alternate
+}
+body[data-mode="back"] .boss-obscurer::before{box-shadow:.42em .10em 0 -.025em rgba(255,255,255,.98),.78em .31em 0 -.04em rgba(93,244,255,.96),.24em .63em 0 -.05em rgba(255,255,255,.96),.91em .74em 0 -.035em rgba(210,75,255,.92),.56em .92em 0 -.055em rgba(93,244,255,.90)}
+.boss-obscurer::after{
+  right:72%;top:47%;width:1.55em;height:.22em;border-radius:999px;transform:rotate(-11deg);
+  background:linear-gradient(90deg,transparent 0%,rgba(255,170,36,.08) 18%,rgba(255,217,90,.32) 47%,rgba(255,249,210,.84) 82%,rgba(255,255,255,.98) 100%);
+  filter:blur(3px) drop-shadow(0 0 12px rgba(255,206,64,.85));opacity:.88;animation:starTrailPulse .72s ease-in-out infinite alternate
+}
+body[data-mode="back"] .boss-obscurer::after{background:linear-gradient(90deg,transparent 0%,rgba(190,45,255,.08) 15%,rgba(127,66,255,.32) 42%,rgba(76,239,255,.83) 80%,#fff 100%);filter:blur(3px) drop-shadow(0 0 13px rgba(69,235,255,.9))}
+.boss-obscurer.one{left:-24%;top:-3%}.boss-obscurer.two{right:-24%;top:31%}.boss-obscurer.three{left:27%;bottom:-47%}.boss-obscurer.four{left:12%;top:39%}.boss-obscurer.five{right:11%;top:-25%}.boss-obscurer.six{left:52%;top:8%}
+.boss-obscure-active .boss-obscurer:not([hidden]){opacity:1}
 .boss-obscure-active .boss-obscurer.four{animation:starObscureD 3.45s cubic-bezier(.41,.03,.59,.97) infinite alternate-reverse}
 .boss-obscure-active .boss-obscurer.five{animation:starObscureE 3.9s cubic-bezier(.34,.01,.64,.99) infinite alternate}
+.boss-obscure-active .boss-obscurer.six{animation:starObscureF 3.28s cubic-bezier(.39,.02,.61,.98) infinite alternate-reverse}
 @keyframes starObscureD{0%{transform:translate(-18vw,28vh) rotate(-35deg) scale(.68)}27%{transform:translate(23vw,-22vh) rotate(58deg) scale(1.04)}62%{transform:translate(49vw,9vh) rotate(161deg) scale(.82)}100%{transform:translate(78vw,-32vh) rotate(278deg) scale(1.13)}}
 @keyframes starObscureE{0%{transform:translate(15vw,-18vh) rotate(18deg) scale(.75)}30%{transform:translate(-24vw,31vh) rotate(-74deg) scale(1.1)}64%{transform:translate(-51vw,4vh) rotate(-168deg) scale(.86)}100%{transform:translate(-76vw,37vh) rotate(-286deg) scale(1.16)}}
+@keyframes starObscureF{0%{transform:translate(8vw,3vh) rotate(-14deg) scale(.71)}22%{transform:translate(-19vw,35vh) rotate(81deg) scale(1.06)}58%{transform:translate(21vw,51vh) rotate(194deg) scale(.83)}100%{transform:translate(-42vw,18vh) rotate(322deg) scale(1.14)}}
+@keyframes starSparkleRing{0%{opacity:.45;transform:rotate(-10deg) scale(.84)}100%{opacity:1;transform:rotate(13deg) scale(1.2)}}
+@keyframes starTrailPulse{0%{opacity:.46;transform:rotate(-11deg) scaleX(.72)}100%{opacity:.94;transform:rotate(-7deg) scaleX(1.13)}}
 
 /* The 30-second rule is shown on the timer itself, not only as a transient center message. */
 .hud .timer{position:relative;border-radius:10px;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}

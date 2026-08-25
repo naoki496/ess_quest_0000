@@ -370,7 +370,7 @@
   // Battle-facing correction. PNG files stay untouched; mirroring is presentation-only.
   // These source images already face toward the hero (left), so they remain unmirrored.
   const BATTLE_KEEP_ORIGINAL_FACING=new Set([
-    'monster_front_1_4_6.png','monster_front_1_5_7.png',
+    'monster_front_1_4_6.png','monster_front_1_5_7.png','boss_front_1.png',
     'monster_front_2_5_14.png','boss_front_2.png',
     'monster_front_3_4_20.png','monster_back_2_5_14.png'
   ]);
@@ -586,7 +586,7 @@
         <div class="cutin-dim"></div><div class="cutin-slash slash-a"></div><div class="cutin-slash slash-b"></div>
         <div class="cutin-band"><img class="cutin-art" alt=""><div class="cutin-speedlines"></div></div><div class="cutin-white"></div>
       </div>
-      <div class="boss-obscurer one">★</div><div class="boss-obscurer two">★</div><div class="boss-obscurer three">★</div><div class="boss-obscurer four">★</div><div class="boss-obscurer five">★</div>`;
+      <div class="boss-obscurer one">★</div><div class="boss-obscurer two">★</div><div class="boss-obscurer three">★</div><div class="boss-obscurer four">★</div><div class="boss-obscurer five">★</div><div class="boss-obscurer six">★</div>`;
     document.querySelector('.battlefield').appendChild(layer);return layer;
   }
   async function showMonsterEntrance(monster){
@@ -666,11 +666,20 @@
     await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();prepareQuestion();startTimer(60);
   }
 
+  function bossObscurerCount(){
+    const counts=mode==='front'?[3,4,0,0,5]:[5,6,0,0,6];
+    return counts[stageIndex]||0;
+  }
+  function configureBossObscurers(count){
+    ensureMonsterFx();
+    document.querySelectorAll('.boss-obscurer').forEach((star,i)=>{star.hidden=i>=count;});
+  }
   async function runBossFifthAction(){
     ensureMonsterFx();clearBossAction();locked=true;stopTimer();clearQuestionUi();
     await showActionCutin('enemy',currentBoss().img);
     bossActionActive=true;
-    if(stageIndex<=1||stageIndex===4)document.body.classList.add('boss-obscure-active');
+    const obscureCount=bossObscurerCount();
+    if(obscureCount){configureBossObscurers(obscureCount);document.body.classList.add('boss-obscure-active');}
     if(stageIndex>=2){
       document.body.classList.add('boss-time-pressure');
       const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent='30びょう！';w.hidden=false;await sleep(720);w.hidden=true;w.textContent='';
@@ -680,6 +689,7 @@
   function clearBossAction(){
     bossActionActive=false;
     document.body.classList.remove('boss-obscure-active','boss-time-pressure');
+    document.querySelectorAll('.boss-obscurer').forEach(star=>{star.hidden=true;});
     const timer=els.timerText?.closest('.timer');if(timer)timer.classList.remove('time-pressure','time-critical');
   }
   async function beginNormalEncounter(){
@@ -687,17 +697,24 @@
   }
   async function showMapSequence(initial=false,mapAlreadyVisible=false){
     if(!mapAlreadyVisible)prepareMapOverlay(initial);
-    await sleep(initial?2100:2400);
+    // Give the map enough time to be read, especially after a stage clear.
+    // Existing transitionFx is intentionally untouched; these timings only slow the
+    // map -> stage intro -> battle presentation with a gentler blackout/fade rhythm.
+    await sleep(initial?2800:3200);
     await sceneBlackout(async()=>{
       prepareStageOverlay();
       els.mapOverlay.hidden=true;
-    },{fadeIn:260,hold:80,fadeOut:330});
-    await sleep(1050);
+    },{fadeIn:650,hold:150,fadeOut:780});
+    // Let the stage card breathe before entering the battlefield.
+    await sleep(1500);
     await sceneBlackout(async()=>{
       prepareEmptyBattle();
       els.stageOverlay.hidden=true;
-    },{fadeIn:290,hold:120,fadeOut:420});
+    },{fadeIn:700,hold:180,fadeOut:900});
     document.querySelector('.battlefield')?.classList.remove('battle-base-enter');
+    // A short visual beat prevents the monster entrance from starting on the same
+    // frame as the fade finishes.
+    await sleep(320);
     await playStageBgm();
     await beginNormalEncounter();
   }
@@ -791,8 +808,9 @@
     if(!runStageRewards.has(stageIndex)){runStageRewards.add(stageIndex);save.gold+=5;stats.gold+=5;persist();}
     els.stageClearName.textContent=currentStage().name;
     els.stageClearOverlay.hidden=false;
-    const fade=stopBgmFade(1200);
-    await sleep(1150);
+    const fade=stopBgmFade(1500);
+    // Keep STAGE CLEAR on screen long enough to register as a reward/achievement beat.
+    await sleep(1750);
 
     if(stageIndex>=getStages().length-1){
       els.stageClearOverlay.hidden=true;
@@ -801,13 +819,17 @@
       return;
     }
 
-    // クリア画面の裏で次のマップを準備し、前の戦闘画面を一瞬も露出させない。
+    // Prepare the next map behind the clear screen, then reveal it through the same
+    // blackout/fade language used elsewhere. This avoids exposing the previous battle
+    // while keeping the existing transitionFx system intact.
     stageIndex++;
     stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;clearBossAction();
     lives=3;
     prepareMapOverlay(false);
     await new Promise(requestAnimationFrame);
-    els.stageClearOverlay.hidden=true;
+    await sceneBlackout(async()=>{
+      els.stageClearOverlay.hidden=true;
+    },{fadeIn:650,hold:160,fadeOut:850});
     await fade;
     await showMapSequence(false,true);
   }
