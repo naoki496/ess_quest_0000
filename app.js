@@ -65,10 +65,10 @@
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
     resultOverlay:$('resultOverlay'),resultMistakes:$('resultMistakes'),resultTimeouts:$('resultTimeouts'),resultRestarts:$('resultRestarts'),resultGold:$('resultGold'),resultErrors:$('resultErrors'),replayBtn:$('replayBtn'),toTitleBtn:$('toTitleBtn'),
-    rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn')
+    rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
   };
 
-  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false;
+  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -78,8 +78,8 @@
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
-  const countSE=new Audio('./assets/count.mp3');
-  sirenSE.preload='auto';cutinSE.preload='auto';frontFinisherSE.preload='auto';backFinisherSE.preload='auto';countSE.preload='auto';
+  const countSE=new Audio('./assets/count.mp3'),buttonSE=new Audio('./assets/button.mp3');
+  sirenSE.preload='auto';cutinSE.preload='auto';frontFinisherSE.preload='auto';backFinisherSE.preload='auto';countSE.preload='auto';buttonSE.preload='auto';
 
   // The hit effect belongs to the battlefield, not to the hero actor.  Keeping it
   // outside the hero's coordinate system lets sword/magic impacts land on the enemy.
@@ -260,7 +260,8 @@
     els.monsterCardStage.textContent=`STAGE ${m.stage+1}`;
     els.monsterCardEncounter.textContent=`遭遇 ${counts[m.id]||1}`;
     els.monsterCardText.textContent=monsterFlavor(m);
-    els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}`;
+    const slimeLike=!m.boss && m.name.includes('スライム');
+    els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}${slimeLike?' slime-card':''}`;
     els.monsterCardOverlay.hidden=false;
   }
   function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
@@ -268,7 +269,7 @@
 
   function getStages(){return mode==='front'?FRONT_STAGES:BACK_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
-  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;currentMonster=null;bossActionActive=false;currentQuestion=null;paused=false;document.body.classList.remove('game-paused');if(els.pauseOverlay)els.pauseOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;syncPauseButton();}
+  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;currentMonster=null;bossActionActive=false;currentQuestion=null;paused=false;gameOverActive=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;syncPauseButton();}
 
   function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:BACK_MONSTERS;}
   function rarityRoll(r=Math.random()){
@@ -387,22 +388,66 @@
     els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));
   }
 
+  // Enemy image lifecycle: never replace a visible enemy's src in place.  The old
+  // sprite is first hidden and detached, the next PNG is decoded off-screen, and only
+  // then is the prepared image committed while the actor is still invisible.  This
+  // prevents a previous normal enemy/boss flashing for a frame after stage changes.
+  let enemyVisualToken=0;
+  function concealEnemyVisual(clearSource=true){
+    els.enemyActor.style.opacity='0';
+    els.enemyActor.style.transform='';
+    els.enemyActor.classList.remove('hit','finisher-hit','spawn-boss','boss-defeat','spawn-r1','spawn-r2','spawn-r3','spawn-r4','spawn-r5');
+    if(els.enemySprite){els.enemySprite.classList.remove('flip-facing');els.enemySprite.style.setProperty('--enemy-scale','1');}
+    if(clearSource){
+      els.enemyImage.onerror=null;
+      els.enemyImage.removeAttribute('src');
+      els.enemyImage.removeAttribute('data-monster-img');
+    }
+    els.enemyName.textContent='';
+  }
+  async function decodeImageSource(src){
+    const probe=new Image();
+    probe.src=src;
+    try{
+      if(probe.decode)await probe.decode();
+      else await new Promise((resolve,reject)=>{probe.onload=resolve;probe.onerror=reject;});
+      return src;
+    }catch{return null;}
+  }
+  async function stageEnemyVisual(en){
+    const token=++enemyVisualToken;
+    concealEnemyVisual(true);
+    if(!en)return false;
+    const desired=`./assets/${en.img}`;
+    let resolved=await decodeImageSource(desired);
+    if(token!==enemyVisualToken)return false;
+    if(!resolved)resolved=monsterPlaceholder(en,!!en.boss);
+    applyEnemyFacing(en);
+    els.enemyName.textContent=en.boss||bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;
+    els.enemyImage.onerror=()=>{els.enemyImage.onerror=null;els.enemyImage.src=monsterPlaceholder(en,!!en.boss);};
+    els.enemyImage.src=resolved;
+    els.enemyImage.dataset.monsterImg=en.img;
+    try{if(els.enemyImage.decode)await els.enemyImage.decode();}catch{}
+    if(token!==enemyVisualToken){concealEnemyVisual(true);return false;}
+    return true;
+  }
+
   function renderGame(){
     const s=currentStage();document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
     els.progressText.textContent=`${totalProgress} / 75`;els.progressFill.style.width=`${totalProgress/75*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
     els.battleBg.style.backgroundImage=`url('./assets/${s.bg}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':'./assets/back_hero.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':'魔法少女';
     const en=bossPhase?currentBoss():currentMonster;
-    applyEnemyFacing(en);
     if(en){
+      applyEnemyFacing(en);
       els.enemyName.textContent=bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;
-      els.enemyImage.onerror=()=>{els.enemyImage.onerror=null;els.enemyImage.src=monsterPlaceholder(en,!!en.boss);};
-      els.enemyImage.src=`./assets/${en.img}`;
+      // src is deliberately not changed here. New sprites are committed only by
+      // stageEnemyVisual() after decode, while enemyActor remains hidden.
     }
   }
 
   function syncPauseButton(){
     if(!els.pauseBtn)return;
-    const playable=!els.gameScreen.hidden&&!paused&&!locked&&!!timerId&&!!currentQuestion;
+    const playable=!els.gameScreen.hidden&&!paused&&!gameOverActive&&!locked&&!!timerId&&!!currentQuestion;
     els.pauseBtn.disabled=!playable;
     els.pauseBtn.setAttribute('aria-disabled',playable?'false':'true');
   }
@@ -583,7 +628,7 @@
   }
 
   function clearQuestionUi(){els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';}
-  function prepareEmptyBattle(){currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();els.enemyName.textContent='';els.enemyActor.style.opacity='0';document.querySelector('.battlefield').classList.add('battle-base-enter');}
+  function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
     layer=document.createElement('div');layer.id='monsterFxLayer';
@@ -673,8 +718,15 @@
 
   async function showBossEntrance(retry=false){
     ensureMonsterFx();clearMonsterAnnouncement();locked=true;
+    enemyVisualToken++;concealEnemyVisual(true);
+    bossPhase=true;bossQuestion=0;currentMonster=null;
+    const boss=currentBoss();registerMonster(boss);renderGame();
+    // Decode during WARNING so the boss is ready before its reveal, but keep the enemy
+    // region empty until the dedicated spawn animation begins.
+    const visualReady=stageEnemyVisual(boss);
     await showBossWarning();
-    bossPhase=true;bossQuestion=0;currentMonster=null;registerMonster(currentBoss());renderGame();els.enemyActor.style.opacity='0';
+    if(!(await visualReady))return;
+    els.enemyActor.style.opacity='0';
     await playStageBgm();
     await showBossName();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
@@ -708,7 +760,11 @@
     const timer=els.timerText?.closest('.timer');if(timer)timer.classList.remove('time-pressure','time-critical');
   }
   async function beginNormalEncounter(){
-    bossPhase=false;bossQuestion=0;clearBossAction();currentMonster=selectMonster();registerMonster(currentMonster);renderGame();clearQuestionUi();await showMonsterEntrance(currentMonster);prepareQuestion();startTimer(60);
+    bossPhase=false;bossQuestion=0;clearBossAction();
+    enemyVisualToken++;concealEnemyVisual(true);
+    currentMonster=selectMonster();registerMonster(currentMonster);renderGame();clearQuestionUi();
+    if(!(await stageEnemyVisual(currentMonster)))return;
+    await showMonsterEntrance(currentMonster);prepareQuestion();startTimer(60);
   }
   async function showMapSequence(initial=false,mapAlreadyVisible=false){
     if(!mapAlreadyVisible)prepareMapOverlay(initial);
@@ -730,8 +786,59 @@
     // A short visual beat prevents the monster entrance from starting on the same
     // frame as the fade finishes.
     await sleep(320);
+    await runBattleCountdown();
     await playStageBgm();
     await beginNormalEncounter();
+  }
+
+  async function runBattleCountdown(){
+    if(!els.battleCountdownOverlay||!els.battleCountdownText)return;
+    locked=true;stopTimer();clearBattleFx();syncPauseButton();
+    document.body.classList.add('battle-countdown-active');
+    els.battleCountdownOverlay.hidden=false;
+    const steps=[['3',650],['2',650],['1',650],['START!',850]];
+    for(const [label,ms] of steps){
+      els.battleCountdownText.textContent=label;
+      els.battleCountdownText.className=`battle-countdown-text ${label==='START!'?'is-start':''}`;
+      void els.battleCountdownText.offsetWidth;
+      els.battleCountdownText.classList.add('pulse');
+      await sleep(ms);
+    }
+    els.battleCountdownOverlay.classList.add('leaving');
+    await sleep(300);
+    els.battleCountdownOverlay.hidden=true;
+    els.battleCountdownOverlay.classList.remove('leaving');
+    els.battleCountdownText.className='battle-countdown-text';
+    document.body.classList.remove('battle-countdown-active');
+  }
+
+  async function showGameOver(){
+    gameOverActive=true;locked=true;stopTimer();syncPauseButton();
+    if(currentBgm)try{currentBgm.pause();}catch{}
+    document.body.classList.add('game-over-active');
+    const fromBoss=!!bossPhase;
+    els.gameOverRetryBtn.textContent=fromBoss?'ボスから':'ステージ最初から';
+    els.gameOverMessage.textContent=fromBoss?'ボス戦の最初からやりなおしますか？':'このステージの最初からやりなおしますか？';
+    els.gameOverOverlay.hidden=false;
+    const card=els.gameOverOverlay.querySelector('.game-over-card');
+    if(card){card.classList.remove('show');void card.offsetWidth;card.classList.add('show');}
+  }
+  async function retryFromGameOver(){
+    if(!gameOverActive)return;
+    const retryBoss=!!bossPhase;
+    gameOverActive=false;els.gameOverOverlay.hidden=true;document.body.classList.remove('game-over-active');
+    lives=3;locked=true;clearBattleFx();clearMonsterAnnouncement();
+    if(retryBoss){await restartBossCheckpoint();return;}
+    totalProgress=stageIndex*15;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;
+    await showMapSequence(false,false);
+  }
+  async function returnTitleFromGameOver(){
+    if(!gameOverActive)return;
+    gameOverActive=false;els.gameOverOverlay.hidden=true;document.body.classList.remove('game-over-active');locked=true;stopTimer();
+    clearBossAction();clearMonsterAnnouncement();clearBattleFx();enemyVisualToken++;concealEnemyVisual(true);
+    try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
+    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);resetRun();
+    await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);
   }
 
   function showPauseMenu(){els.pauseMenu.hidden=false;els.pauseConfirm.hidden=true;}
@@ -782,9 +889,9 @@
     }
     playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1200);
     if(lives<=0){
-      stats.restarts++;lives=3;
-      if(bossPhase){await restartBossCheckpoint();return;}
-      totalProgress=stageIndex*15;stageQuestion=0;currentMonster=null;await showMapSequence(false,false);return;
+      stats.restarts++;
+      await showGameOver();
+      return;
     }
     if(bossPhase){
       if(bossQuestion===4){await runBossFifthAction();return;}
@@ -793,7 +900,7 @@
   }
 
   async function enterBossPhase(){
-    locked=true;stopTimer();clearQuestionUi();els.enemyActor.style.opacity='0';await stopBgmFade(900);bossPhase=true;bossQuestion=0;currentMonster=null;clearBossAction();await showBossEntrance(false);
+    locked=true;stopTimer();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);await stopBgmFade(900);bossPhase=true;bossQuestion=0;currentMonster=null;clearBossAction();await showBossEntrance(false);
   }
   async function restartBossCheckpoint(){
     stopTimer();await stopBgmFade(600);clearBossAction();lives=3;bossPhase=true;bossQuestion=0;totalProgress=stageIndex*15+10;
@@ -801,6 +908,7 @@
     await sceneBlackout(async()=>{prepareStageOverlay();els.mapOverlay.hidden=true;},{fadeIn:250,hold:70,fadeOut:310});
     await sleep(760);
     await sceneBlackout(async()=>{bossPhase=true;currentMonster=null;renderGame();clearQuestionUi();els.enemyActor.style.opacity='0';els.stageOverlay.hidden=true;},{fadeIn:270,hold:100,fadeOut:360});
+    await runBattleCountdown();
     await showBossEntrance(true);
   }
   async function defeatBoss(){
@@ -823,6 +931,7 @@
     if(!runStageRewards.has(stageIndex)){runStageRewards.add(stageIndex);save.gold+=5;stats.gold+=5;persist();}
     els.stageClearName.textContent=currentStage().name;
     els.stageClearOverlay.hidden=false;
+    enemyVisualToken++;concealEnemyVisual(true);
     const fade=stopBgmFade(1500);
     // Keep STAGE CLEAR on screen long enough to register as a reward/achievement beat.
     await sleep(1750);
@@ -870,24 +979,30 @@
   els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay)closeMonsterCard();};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);}else if(currentBgm)currentBgm.play().catch(()=>{});};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
   els.pauseBtn.onclick=pauseGame;
   els.pauseResumeBtn.onclick=resumeGame;
   els.pauseTitleBtn.onclick=showPauseConfirm;
   els.pauseCancelTitleBtn.onclick=showPauseMenu;
   els.pauseConfirmTitleBtn.onclick=returnTitleFromPause;
+  els.gameOverRetryBtn.onclick=retryFromGameOver;
+  els.gameOverTitleBtn.onclick=returnTitleFromGameOver;
   els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
   els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
 
   document.addEventListener('pointerdown',e=>{
-    const b=e.target.closest('button');if(!b||b.disabled)return;b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),180);
+    const b=e.target.closest('button');if(!b||b.disabled)return;
+    // Battle answer choices keep their existing correct/wrong/attack sound design.
+    // Every other UI button, including pause and pause-menu choices, gets button.mp3.
+    if(!b.closest('#choices'))playSE(buttonSE);
+    b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),180);
   });
 
   window.__SANSU_TEST__={
-    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,paused};},
+    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,paused,gameOverActive};},
     rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,
-    showActionCutin,runAttackMotion,runFinisherMotion,sceneBlackout,pauseGame,resumeGame,BATTLE_KEEP_ORIGINAL_FACING,
+    showActionCutin,runAttackMotion,runFinisherMotion,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_KEEP_ORIGINAL_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},

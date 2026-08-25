@@ -135,6 +135,22 @@
     <div id="answerMark" class="answer-mark" hidden aria-hidden="true"></div>
   </section>
 </main>
+<div id="battleCountdownOverlay" class="battle-countdown-overlay" hidden aria-hidden="true">
+  <div id="battleCountdownText" class="battle-countdown-text">3</div>
+</div>
+
+<div id="gameOverOverlay" class="game-over-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+  <section class="game-over-card pause-card panel-gold">
+    <small>GAME OVER</small>
+    <h2 id="gameOverTitle">ざんねん！</h2>
+    <p id="gameOverMessage">このステージの最初からやりなおしますか？</p>
+    <p class="game-over-note">タイトルにもどると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / 75 からになります。</p>
+    <div class="pause-actions">
+      <button id="gameOverRetryBtn" class="menu-btn primary" type="button">ステージ最初から</button>
+      <button id="gameOverTitleBtn" class="menu-btn pause-danger" type="button">タイトルにもどる</button>
+    </div>
+  </section>
+</div>
 
 <div id="pauseOverlay" class="pause-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
   <section id="pauseMenu" class="pause-card panel-gold">
