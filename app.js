@@ -68,7 +68,7 @@
     rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn')
   };
 
-  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false;
+  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -78,7 +78,8 @@
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
-  sirenSE.preload='auto';cutinSE.preload='auto';frontFinisherSE.preload='auto';backFinisherSE.preload='auto';
+  const countSE=new Audio('./assets/count.mp3');
+  sirenSE.preload='auto';cutinSE.preload='auto';frontFinisherSE.preload='auto';backFinisherSE.preload='auto';countSE.preload='auto';
 
   // The hit effect belongs to the battlefield, not to the hero actor.  Keeping it
   // outside the hero's coordinate system lets sword/magic impacts land on the enemy.
@@ -251,7 +252,7 @@
   }
   function showMonsterCard(m){
     const counts=save.monsterEncounters[mode]||{};
-    els.monsterCardRarity.textContent=m.boss?'BOSS':`${'★'.repeat(m.rarity)} ${rarityLabelMonster(m.rarity)}`;
+    els.monsterCardRarity.textContent=m.boss?'BOSS':rarityLabelMonster(m.rarity);
     els.monsterCardName.textContent=m.name;
     els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};
     els.monsterCardImage.src=`./assets/${m.img}`;
@@ -370,14 +371,20 @@
   // Battle-facing correction. PNG files stay untouched; mirroring is presentation-only.
   // These source images already face toward the hero (left), so they remain unmirrored.
   const BATTLE_KEEP_ORIGINAL_FACING=new Set([
-    'monster_front_1_4_6.png','monster_front_1_5_7.png','boss_front_1.png',
+    'monster_front_1_1_2.png','monster_front_1_4_6.png','monster_front_1_5_7.png','boss_front_1.png',
     'monster_front_2_5_14.png','boss_front_2.png',
     'monster_front_3_4_20.png','monster_back_2_5_14.png'
   ]);
+  const BATTLE_SPRITE_SCALE={
+    // This source includes a large castle silhouette behind the knight, so the character
+    // reads smaller than other bosses at identical CSS dimensions. Presentation-only zoom.
+    'boss_front_4.png':1.16
+  };
   function applyEnemyFacing(en){
     if(!els.enemySprite)return;
     const keepOriginal=!!en&&BATTLE_KEEP_ORIGINAL_FACING.has(en.img);
     els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);
+    els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));
   }
 
   function renderGame(){
@@ -403,12 +410,20 @@
   function updateTimerUrgency(){
     const timer=els.timerText?.closest('.timer');
     if(!timer)return;
-    timer.classList.toggle('time-pressure',bossActionActive&&timeLeft<=30);
-    timer.classList.toggle('time-critical',bossActionActive&&timeLeft<=10);
+    // The last 30 seconds are visually urgent for every question, not only boss actions.
+    timer.classList.toggle('time-pressure',timeLeft<=30);
+    timer.classList.toggle('time-critical',timeLeft<=10);
+  }
+  function playCountCueOnce(){
+    if(countCuePlayed)return;
+    countCuePlayed=true;
+    playSE(countSE);
   }
   function startTimer(seconds=60){
-    stopTimer();timeLeft=seconds;els.timerText.textContent=timeLeft;updateTimerUrgency();
-    timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;updateTimerUrgency();if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);syncPauseButton();
+    stopTimer();countCuePlayed=false;timeLeft=seconds;els.timerText.textContent=timeLeft;updateTimerUrgency();
+    // Boss STAGE3+ fifth actions start directly at 30 seconds, so cue immediately there.
+    if(timeLeft<=30)playCountCueOnce();
+    timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;updateTimerUrgency();if(timeLeft===30)playCountCueOnce();if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);syncPauseButton();
   }
   function playSE(a){if(!soundOn)return;try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
   function stopSE(a){try{a.pause();a.currentTime=0;}catch{}}
@@ -741,7 +756,7 @@
     els.pauseOverlay.hidden=true;document.body.classList.remove('game-paused');paused=false;locked=true;stopTimer();
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
-    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);resetRun();
+    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);resetRun();
     await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);
   }
 
@@ -855,7 +870,7 @@
   els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay)closeMonsterCard();};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);}else if(currentBgm)currentBgm.play().catch(()=>{});};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);}else if(currentBgm)currentBgm.play().catch(()=>{});};
   els.pauseBtn.onclick=pauseGame;
   els.pauseResumeBtn.onclick=resumeGame;
   els.pauseTitleBtn.onclick=showPauseConfirm;
