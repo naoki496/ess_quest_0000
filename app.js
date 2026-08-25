@@ -20,14 +20,14 @@
     {name:'ふしぎな どうくつ',key:'cave',count:15,normalCount:10,bossCount:5,bgm:'Cold Amber.mp3',bossBgm:'boss.mp3',bg:'bg_cave.png',boss:['晶竜グランクリスタ','boss_front_2.png']},
     {name:'まほうの とう',key:'tower',count:15,normalCount:10,bossCount:5,bgm:'Crate Lockup Tango.mp3',bossBgm:'boss.mp3',bg:'bg_tower.png',boss:['大魔導師アストラル','boss_front_3.png']},
     {name:'まおうの しろ',key:'castle',count:15,normalCount:10,bossCount:5,bgm:'Quantized Panic.mp3',bossBgm:'boss.mp3',bg:'bg_castle.png',boss:['黒騎将ヴァルガス','boss_front_4.png']},
-    {name:'まおうの へや',key:'boss',count:15,normalCount:10,bossCount:5,bgm:'Geology.mp3',bossBgm:'maoh.mp3',bg:'bg_boss.png',boss:['魔王キング','demon.png']}
+    {name:'まおうの へや',key:'boss',count:15,normalCount:10,bossCount:5,bgm:'Geology.mp3',bossBgm:'maoh.mp3',bg:'bg_boss.png',boss:['魔王キング','boss_front_5.png']}
   ];
   const BACK_STAGES=[
     {name:'渋谷スクランブル交差点',key:'shibuya',count:15,normalCount:10,bossCount:5,bgm:'C Breaker.mp3',bossBgm:'boss.mp3',bg:'back_shibuya.png',boss:['ネオンラットキング','boss_back_1.png']},
     {name:'浅草寺 仲見世通り',key:'asakusa',count:15,normalCount:10,bossCount:5,bgm:'my war.mp3',bossBgm:'boss.mp3',bg:'back_asakusa.png',boss:['百灯鬼カグラ・極','boss_back_2.png']},
     {name:'東京スカイツリー',key:'skytree',count:15,normalCount:10,bossCount:5,bgm:'inside out.mp3',bossBgm:'boss.mp3',bg:'back_skytree.png',boss:['電波竜スカイノイズ','boss_back_3.png']},
     {name:'新宿 東京都庁',key:'tocho',count:15,normalCount:10,bossCount:5,bgm:'COKE.mp3',bossBgm:'boss.mp3',bg:'back_tocho.png',boss:['機甲騎将クロム・ゼロ','boss_back_4.png']},
-    {name:'魔王の部屋',key:'backboss',count:15,normalCount:10,bossCount:5,bgm:'FUSE.mp3',bossBgm:'duel.mp3',bg:'back_boss.png',boss:['魔王キング','demon.png']}
+    {name:'魔王の部屋',key:'backboss',count:15,normalCount:10,bossCount:5,bgm:'FUSE.mp3',bossBgm:'duel.mp3',bg:'back_boss.png',boss:['時空の魔王キング','boss_back_5.png']}
   ];
 
   const FRONT_MONSTER_NAMES=[
@@ -76,6 +76,8 @@
   stageBgmPlayer.preload='auto';
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
+  const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
+  sirenSE.preload='auto';cutinSE.preload='auto';
 
   function loadSave(){
     try{
@@ -345,6 +347,7 @@
 
   function stopTimer(){clearInterval(timerId);timerId=null;}function startTimer(seconds=60){stopTimer();timeLeft=seconds;els.timerText.textContent=timeLeft;timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);}
   function playSE(a){if(!soundOn)return;try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
+  function stopSE(a){try{a.pause();a.currentTime=0;}catch{}}
   function playAttackSE(){
     if(!soundOn)return;
     const a=mode==='front'?swordSE:magicSE;
@@ -436,8 +439,13 @@
   function clearMonsterAnnouncement(){
     const w=$('rarityWarning');
     if(w){w.hidden=true;w.textContent='';w.className='rarity-warning';}
+    const warning=$('bossWarningFx');
+    if(warning){warning.hidden=true;warning.className='boss-warning-fx';}
+    const nameFx=$('bossNameFx');
+    if(nameFx){nameFx.hidden=true;nameFx.className='boss-name-fx';}
     const c=$('bossCutin');
-    if(c){c.hidden=true;c.textContent='';c.className='boss-cutin';}
+    if(c){c.hidden=true;c.className='boss-cutin';const img=c.querySelector('.cutin-art');if(img)img.removeAttribute('src');}
+    document.querySelector('.battlefield')?.classList.remove('cutin-scene');
   }
 
   function prepareQuestion(){
@@ -453,7 +461,22 @@
   function prepareEmptyBattle(){currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();els.enemyName.textContent='';els.enemyActor.style.opacity='0';document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
-    layer=document.createElement('div');layer.id='monsterFxLayer';layer.innerHTML='<div id="rarityWarning"></div><div id="bossCutin"></div><div class="boss-obscurer one"></div><div class="boss-obscurer two"></div>';
+    layer=document.createElement('div');layer.id='monsterFxLayer';
+    layer.innerHTML=`
+      <div id="rarityWarning"></div>
+      <div id="bossWarningFx" class="boss-warning-fx" hidden aria-hidden="true">
+        <div class="warning-grid"></div><div class="warning-band band-a"></div><div class="warning-band band-b"></div>
+        <div class="warning-scan"></div><strong>WARNING!</strong><span>HOSTILE SIGNATURE DETECTED</span>
+      </div>
+      <div id="bossNameFx" class="boss-name-fx" hidden aria-hidden="true">
+        <div class="boss-name-rail rail-a"></div><div class="boss-name-rail rail-b"></div><div class="boss-name-glitch"></div>
+        <small>BOSS ENCOUNTER</small><strong id="bossNameText"></strong>
+      </div>
+      <div id="bossCutin" class="boss-cutin" hidden aria-hidden="true">
+        <div class="cutin-dim"></div><div class="cutin-slash slash-a"></div><div class="cutin-slash slash-b"></div>
+        <div class="cutin-band"><img class="cutin-art" alt=""><div class="cutin-speedlines"></div></div><div class="cutin-white"></div>
+      </div>
+      <div class="boss-obscurer one">★</div><div class="boss-obscurer two">★</div><div class="boss-obscurer three">★</div>`;
     document.querySelector('.battlefield').appendChild(layer);return layer;
   }
   async function showMonsterEntrance(monster){
@@ -471,12 +494,51 @@
     els.enemyActor.classList.remove(`spawn-r${monster.rarity}`);
     clearMonsterAnnouncement();
   }
-  async function showBossEntrance(retry=false){
-    ensureMonsterFx();clearMonsterAnnouncement();locked=true;const w=$('rarityWarning');w.className='rarity-warning boss-warning';w.textContent=retry?'BOSS RETRY':'WARNING  BOSS';w.hidden=false;await sleep(900);w.textContent='BOSS';await sleep(520);w.hidden=true;
-    bossPhase=true;bossQuestion=0;currentMonster=null;registerMonster(currentBoss());renderGame();els.enemyActor.style.opacity='0';els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();await playStageBgm();prepareQuestion();startTimer(60);
+
+  async function showBossWarning(){
+    ensureMonsterFx();clearMonsterAnnouncement();
+    const fx=$('bossWarningFx');
+    fx.hidden=false;fx.className='boss-warning-fx active';
+    playSE(sirenSE);
+    await sleep(3000);
+    stopSE(sirenSE);
+    fx.hidden=true;fx.className='boss-warning-fx';
   }
+
+  async function showBossName(){
+    const fx=$('bossNameFx');const text=$('bossNameText');
+    text.textContent=currentBoss().name;
+    fx.hidden=false;fx.className='boss-name-fx active';
+    await sleep(3000);
+    fx.hidden=true;fx.className='boss-name-fx';
+  }
+
+  async function showActionCutin(side,imgFile){
+    ensureMonsterFx();
+    const c=$('bossCutin');const art=c.querySelector('.cutin-art');
+    art.src=`./assets/${imgFile}`;
+    c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'}`;
+    c.hidden=false;
+    document.querySelector('.battlefield')?.classList.add('cutin-scene');
+    playSE(cutinSE);
+    await sleep(1680);
+    c.hidden=true;c.className='boss-cutin';
+    document.querySelector('.battlefield')?.classList.remove('cutin-scene');
+  }
+
+  async function showBossEntrance(retry=false){
+    ensureMonsterFx();clearMonsterAnnouncement();locked=true;
+    await showBossWarning();
+    bossPhase=true;bossQuestion=0;currentMonster=null;registerMonster(currentBoss());renderGame();els.enemyActor.style.opacity='0';
+    await playStageBgm();
+    await showBossName();
+    els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
+    await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();prepareQuestion();startTimer(60);
+  }
+
   async function runBossFifthAction(){
-    ensureMonsterFx();clearBossAction();locked=true;stopTimer();clearQuestionUi();const c=$('bossCutin');c.className='boss-cutin active';c.textContent=`${currentBoss().name} の こうげき！`;c.hidden=false;await sleep(800);c.hidden=true;c.className='boss-cutin';
+    ensureMonsterFx();clearBossAction();locked=true;stopTimer();clearQuestionUi();
+    await showActionCutin('enemy',currentBoss().img);
     bossActionActive=true;
     if(stageIndex<=1||stageIndex===4){document.body.classList.add('boss-obscure-active');}
     if(stageIndex>=2){const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent='TIME LIMIT 30';w.hidden=false;await sleep(650);w.hidden=true;w.textContent='';}
@@ -531,7 +593,7 @@
     prepareMapOverlay(false);await sleep(1100);prepareStageOverlay();await new Promise(requestAnimationFrame);els.mapOverlay.hidden=true;await sleep(800);bossPhase=true;currentMonster=null;renderGame();clearQuestionUi();els.enemyActor.style.opacity='0';els.stageOverlay.hidden=true;await sleep(350);await showBossEntrance(true);
   }
   async function defeatBoss(){
-    stopTimer();clearBossAction();const c=$('bossCutin');c.className='boss-cutin hero-finish active';c.textContent=mode==='front'?'ゆうしゃの ひっさつげき！':'魔法少女の ひっさつまほう！';c.hidden=false;await sleep(650);c.hidden=true;c.className='boss-cutin';runAttackMotion();showAnswerMark(true);await sleep(550);els.enemyActor.classList.add('boss-defeat');await sleep(2100);els.enemyActor.classList.remove('boss-defeat');await clearStage();
+    stopTimer();clearBossAction();await showActionCutin('hero',mode==='front'?'hero.png':'back_hero.png');runAttackMotion();showAnswerMark(true);await sleep(550);els.enemyActor.classList.add('boss-defeat');await sleep(2100);els.enemyActor.classList.remove('boss-defeat');await clearStage();
   }
 
   async function clearStage(){
@@ -580,7 +642,7 @@
   els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay)closeMonsterCard();};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn&&currentBgm)currentBgm.pause();else if(soundOn&&currentBgm)currentBgm.play().catch(()=>{});};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();stopSE(sirenSE);stopSE(cutinSE);}else if(currentBgm)currentBgm.play().catch(()=>{});};
   els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
   els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
