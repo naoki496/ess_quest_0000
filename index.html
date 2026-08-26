@@ -124,6 +124,10 @@
   <section class="battlefield"><div class="battle-corner battle-corner-tl" aria-hidden="true"></div><div class="battle-corner battle-corner-tr" aria-hidden="true"></div><div class="battle-corner battle-corner-bl" aria-hidden="true"></div><div class="battle-corner battle-corner-br" aria-hidden="true"></div>
     <div id="battleBg" class="battle-bg"></div><div class="battle-shade"></div>
     <div id="heroActor" class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"><div id="attackEffect" class="attack-effect" aria-hidden="true"></div></div>
+    <div id="specialHud" class="special-hud" aria-label="必殺技ゲージ">
+      <button id="specialBtn" class="special-btn" type="button" hidden>必殺技！</button>
+      <div class="special-meter" aria-hidden="true"><i id="specialFill"></i><span class="special-meter-shine"></span></div>
+    </div>
     <section class="question-panel">
       <div class="question-cap">もんだい</div>
       <div class="equation-box"><div id="mathProblem" class="math-problem">7+5=?</div></div>

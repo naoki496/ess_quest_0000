@@ -60,7 +60,7 @@
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),
-    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
+    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapImage:$('mapImage'),mapMessage:$('mapMessage'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
@@ -68,7 +68,7 @@
     rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
   };
 
-  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false;
+  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -79,7 +79,8 @@
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
   const countSE=new Audio('./assets/count.mp3'),buttonSE=new Audio('./assets/button.mp3');
-  sirenSE.preload='auto';cutinSE.preload='auto';frontFinisherSE.preload='auto';backFinisherSE.preload='auto';countSE.preload='auto';buttonSE.preload='auto';
+  const cancelSE=new Audio('./assets/cancel.mp3'),start321SE=new Audio('./assets/start_321.mp3'),start0SE=new Audio('./assets/start_0.mp3'),clearSE=new Audio('./assets/clear.mp3');
+  [sirenSE,cutinSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(a=>a.preload='auto');
 
   // The hit effect belongs to the battlefield, not to the hero actor.  Keeping it
   // outside the hero's coordinate system lets sword/magic impacts land on the enemy.
@@ -269,7 +270,7 @@
 
   function getStages(){return mode==='front'?FRONT_STAGES:BACK_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
-  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;currentMonster=null;bossActionActive=false;currentQuestion=null;paused=false;gameOverActive=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;syncPauseButton();}
+  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;currentMonster=null;bossActionActive=false;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;updateSpecialHud();syncPauseButton();}
 
   function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:BACK_MONSTERS;}
   function rarityRoll(r=Math.random()){
@@ -374,18 +375,25 @@
   const BATTLE_KEEP_ORIGINAL_FACING=new Set([
     'monster_front_1_1_2.png','monster_front_1_4_6.png','monster_front_1_5_7.png','boss_front_1.png',
     'monster_front_2_5_14.png','boss_front_2.png',
-    'monster_front_3_4_20.png','monster_back_2_5_14.png'
+    'monster_front_3_4_20.png','monster_front_5_1_30.png',
+    'monster_back_1_2_4.png','monster_back_2_5_14.png'
   ]);
   const BATTLE_SPRITE_SCALE={
     // This source includes a large castle silhouette behind the knight, so the character
     // reads smaller than other bosses at identical CSS dimensions. Presentation-only zoom.
     'boss_front_4.png':1.16
   };
+  const BATTLE_SPRITE_OFFSET_Y={
+    // The source art extends lower with particles, which makes the knight itself appear
+    // unusually high when bottom-aligned. Shift only the battle presentation downward.
+    'monster_front_4_2_25.png':'7%'
+  };
   function applyEnemyFacing(en){
     if(!els.enemySprite)return;
     const keepOriginal=!!en&&BATTLE_KEEP_ORIGINAL_FACING.has(en.img);
     els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);
     els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));
+    els.enemySprite.style.setProperty('--enemy-y',en?(BATTLE_SPRITE_OFFSET_Y[en.img]||'0%'):'0%');
   }
 
   // Enemy image lifecycle: never replace a visible enemy's src in place.  The old
@@ -397,7 +405,7 @@
     els.enemyActor.style.opacity='0';
     els.enemyActor.style.transform='';
     els.enemyActor.classList.remove('hit','finisher-hit','spawn-boss','boss-defeat','spawn-r1','spawn-r2','spawn-r3','spawn-r4','spawn-r5');
-    if(els.enemySprite){els.enemySprite.classList.remove('flip-facing');els.enemySprite.style.setProperty('--enemy-scale','1');}
+    if(els.enemySprite){els.enemySprite.classList.remove('flip-facing');els.enemySprite.style.setProperty('--enemy-scale','1');els.enemySprite.style.setProperty('--enemy-y','0%');}
     if(clearSource){
       els.enemyImage.onerror=null;
       els.enemyImage.removeAttribute('src');
@@ -406,13 +414,31 @@
     els.enemyName.textContent='';
   }
   async function decodeImageSource(src){
+    // Attach handlers before assigning src so cached images cannot finish between the two.
+    // decode() is then used as an additional readiness check, not as the only load signal.
     const probe=new Image();
+    const loaded=new Promise((resolve,reject)=>{probe.onload=()=>resolve(true);probe.onerror=reject;});
     probe.src=src;
     try{
-      if(probe.decode)await probe.decode();
-      else await new Promise((resolve,reject)=>{probe.onload=resolve;probe.onerror=reject;});
-      return src;
+      if(!probe.complete||!probe.naturalWidth)await loaded;
+      if(probe.decode)await probe.decode().catch(()=>{});
+      return probe.naturalWidth?src:null;
     }catch{return null;}
+  }
+  async function commitEnemyImage(src,token){
+    if(token!==enemyVisualToken)return false;
+    return await new Promise(resolve=>{
+      let settled=false;
+      const done=(ok)=>{if(settled)return;settled=true;els.enemyImage.onload=null;els.enemyImage.onerror=null;resolve(ok&&token===enemyVisualToken);};
+      els.enemyImage.onload=async()=>{
+        try{if(els.enemyImage.decode)await els.enemyImage.decode().catch(()=>{});}catch{}
+        done(!!els.enemyImage.naturalWidth);
+      };
+      els.enemyImage.onerror=()=>done(false);
+      els.enemyImage.src=src;
+      // Cached images can already be complete before onload dispatch reaches this task.
+      if(els.enemyImage.complete&&els.enemyImage.naturalWidth)queueMicrotask(()=>done(true));
+    });
   }
   async function stageEnemyVisual(en){
     const token=++enemyVisualToken;
@@ -421,16 +447,32 @@
     const desired=`./assets/${en.img}`;
     let resolved=await decodeImageSource(desired);
     if(token!==enemyVisualToken)return false;
+    // One cache-busting retry handles rare mobile cache/decode failures without changing
+    // the canonical filename kept in data-monster-img.
+    if(!resolved){
+      const retry=`${desired}?retry=${Date.now()}`;
+      resolved=await decodeImageSource(retry);
+    }
+    if(token!==enemyVisualToken)return false;
     if(!resolved)resolved=monsterPlaceholder(en,!!en.boss);
     applyEnemyFacing(en);
     els.enemyName.textContent=en.boss||bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;
-    els.enemyImage.onerror=()=>{els.enemyImage.onerror=null;els.enemyImage.src=monsterPlaceholder(en,!!en.boss);};
-    els.enemyImage.src=resolved;
-    els.enemyImage.dataset.monsterImg=en.img;
-    try{if(els.enemyImage.decode)await els.enemyImage.decode();}catch{}
+    let committed=await commitEnemyImage(resolved,token);
+    if(!committed&&token===enemyVisualToken){
+      // A decoded probe can still fail when the visible <img> commits on memory-constrained
+      // mobile browsers. Retry the canonical PNG once with a fresh cache key before fallback.
+      const retry=`${desired}?commitRetry=${Date.now()}`;
+      if(await decodeImageSource(retry))committed=await commitEnemyImage(retry,token);
+    }
+    if(!committed&&token===enemyVisualToken){
+      committed=await commitEnemyImage(monsterPlaceholder(en,!!en.boss),token);
+    }
     if(token!==enemyVisualToken){concealEnemyVisual(true);return false;}
+    if(!committed)return false;
+    els.enemyImage.dataset.monsterImg=en.img;
     return true;
   }
+
 
   function renderGame(){
     const s=currentStage();document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
@@ -464,11 +506,11 @@
     countCuePlayed=true;
     playSE(countSE);
   }
-  function startTimer(seconds=60){
-    stopTimer();countCuePlayed=false;timeLeft=seconds;els.timerText.textContent=timeLeft;updateTimerUrgency();
+  function startTimer(seconds=60,{preserveCountCue=false}={}){
+    stopTimer();if(!preserveCountCue)countCuePlayed=false;timeLeft=seconds;els.timerText.textContent=timeLeft;updateTimerUrgency();
     // Boss STAGE3+ fifth actions start directly at 30 seconds, so cue immediately there.
     if(timeLeft<=30)playCountCueOnce();
-    timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;updateTimerUrgency();if(timeLeft===30)playCountCueOnce();if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);syncPauseButton();
+    timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;updateTimerUrgency();if(timeLeft===30)playCountCueOnce();if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);syncPauseButton();updateSpecialHud();
   }
   function playSE(a){if(!soundOn)return;try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
   function stopSE(a){try{a.pause();a.currentTime=0;}catch{}}
@@ -618,16 +660,65 @@
     document.querySelector('.battlefield')?.classList.remove('cutin-scene');
   }
 
+  // Combo-inspired assist gauge. The streak itself stays internal; the player only sees
+  // the gauge. Correct answers add 20%, wrong answers subtract 20% without wiping all
+  // progress. The gauge carries from normal encounters into the boss, then resets per stage.
+  function updateSpecialHud(){
+    if(!els.specialHud||!els.specialFill||!els.specialBtn)return;
+    const value=Math.max(0,Math.min(100,specialGauge));
+    els.specialFill.style.width=`${value}%`;
+    els.specialHud.classList.toggle('ready',value>=100);
+    const canUse=value>=100&&!specialActive&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
+    els.specialBtn.hidden=value<100||!currentQuestion||!timerId||paused||gameOverActive||specialActive;
+    els.specialBtn.disabled=!canUse;
+    els.specialBtn.setAttribute('aria-disabled',canUse?'false':'true');
+  }
+  function adjustSpecialGauge(delta){
+    specialGauge=Math.max(0,Math.min(100,specialGauge+delta));
+    updateSpecialHud();
+  }
+  function resetSpecialGauge(){specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('special-assist-active');updateSpecialHud();}
+  async function activateSpecialMove(){
+    if(specialActive||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
+    const wrongButtons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&Number(b.textContent)!==currentQuestion.answer);
+    if(!wrongButtons.length)return;
+    specialActive=true;locked=true;
+    const resumeTime=timeLeft;
+    stopTimer();updateSpecialHud();syncPauseButton();
+    [...els.choices.children].forEach(b=>b.disabled=true);
+    document.body.classList.add('special-assist-active');
+    specialGauge=0;updateSpecialHud();
+    const heroFile=mode==='front'?'hero.png':'back_hero.png';
+    await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
+    const target=pick(wrongButtons);
+    playFinisherSE();
+    target.classList.add('special-breaking');
+    target.setAttribute('aria-label','必殺技で消去された選択肢');
+    await sleep(420);
+    target.textContent='✦';
+    target.dataset.eliminated='true';
+    target.onclick=null;
+    target.disabled=true;
+    target.classList.remove('special-breaking');
+    target.classList.add('special-shattered');
+    await sleep(260);
+    document.body.classList.remove('special-assist-active');
+    specialActive=false;locked=false;
+    [...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});
+    updateSpecialHud();syncPauseButton();
+    if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true});
+  }
+
   function prepareQuestion(){
     clearMonsterAnnouncement();
     locked=true;clearBattleFx();renderGame();
     currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex));
     els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';
     makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});
-    locked=false;syncPauseButton();
+    locked=false;syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';}
+  function clearQuestionUi(){els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -697,7 +788,7 @@
     'boss_back_4.png':{y:.29,height:320,side:3},
     'boss_back_5.png':{y:.34,height:320,side:2}
   };
-  async function showActionCutin(side,imgFile){
+  async function showActionCutin(side,imgFile,{variant='finisher',duration=1680}={}){
     ensureMonsterFx();
     const c=$('bossCutin');const art=c.querySelector('.cutin-art');
     const focus=CUTIN_FOCUS[imgFile]||{y:.30,height:315,side:4};
@@ -706,13 +797,14 @@
     art.style.setProperty('--cutin-top',`${top.toFixed(1)}%`);
     art.style.setProperty('--cutin-height',`${focus.height}%`);
     art.style.setProperty('--cutin-side',`${focus.side}%`);
+    c.style.setProperty('--cutin-duration',`${duration}ms`);
     const originalFacing=side==='enemy'&&BATTLE_KEEP_ORIGINAL_FACING.has(imgFile);
-    c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'}${originalFacing?' cutin-original-facing':''}`;
+    c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'} ${variant==='assist'?'assist-cutin':'finisher-cutin'}${originalFacing?' cutin-original-facing':''}`;
     c.hidden=false;
     document.querySelector('.battlefield')?.classList.add('cutin-scene');
     playSE(cutinSE);
-    await sleep(1680);
-    c.hidden=true;c.className='boss-cutin';
+    await sleep(duration);
+    c.hidden=true;c.className='boss-cutin';c.style.removeProperty('--cutin-duration');
     document.querySelector('.battlefield')?.classList.remove('cutin-scene');
   }
 
@@ -727,7 +819,7 @@
     await showBossWarning();
     if(!(await visualReady))return;
     els.enemyActor.style.opacity='0';
-    await playStageBgm();
+    if(!retry)await playStageBgm();
     await showBossName();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
     await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();prepareQuestion();startTimer(60);
@@ -786,8 +878,10 @@
     // A short visual beat prevents the monster entrance from starting on the same
     // frame as the fade finishes.
     await sleep(320);
-    await runBattleCountdown();
+    // Start the stage track before the visible 3-2-1 sequence so the countdown lands
+    // on music instead of beginning in silence.
     await playStageBgm();
+    await runBattleCountdown();
     await beginNormalEncounter();
   }
 
@@ -802,6 +896,7 @@
       els.battleCountdownText.className=`battle-countdown-text ${label==='START!'?'is-start':''}`;
       void els.battleCountdownText.offsetWidth;
       els.battleCountdownText.classList.add('pulse');
+      playSE(label==='START!'?start0SE:start321SE);
       await sleep(ms);
     }
     els.battleCountdownOverlay.classList.add('leaving');
@@ -813,7 +908,7 @@
   }
 
   async function showGameOver(){
-    gameOverActive=true;locked=true;stopTimer();syncPauseButton();
+    gameOverActive=true;locked=true;stopTimer();resetSpecialGauge();syncPauseButton();
     if(currentBgm)try{currentBgm.pause();}catch{}
     document.body.classList.add('game-over-active');
     const fromBoss=!!bossPhase;
@@ -837,7 +932,7 @@
     gameOverActive=false;els.gameOverOverlay.hidden=true;document.body.classList.remove('game-over-active');locked=true;stopTimer();
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();enemyVisualToken++;concealEnemyVisual(true);
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
-    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);resetRun();
+    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
     await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);
   }
 
@@ -854,16 +949,17 @@
   function resumeGame(){
     if(!paused)return;
     els.pauseOverlay.hidden=true;document.body.classList.remove('game-paused');paused=false;locked=pauseRestoreLocked;
-    [...els.choices.children].forEach(b=>b.disabled=false);
+    [...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});
     if(pauseBgmShouldResume&&soundOn&&currentBgm)currentBgm.play().catch(()=>{});
-    if(!locked&&currentQuestion&&timeLeft>0)startTimer(timeLeft);else syncPauseButton();
+    if(!locked&&currentQuestion&&timeLeft>0)startTimer(timeLeft,{preserveCountCue:true});else syncPauseButton();
+    updateSpecialHud();
   }
   async function returnTitleFromPause(){
     if(!paused)return;
     els.pauseOverlay.hidden=true;document.body.classList.remove('game-paused');paused=false;locked=true;stopTimer();
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
-    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);resetRun();
+    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
     await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);
   }
 
@@ -871,9 +967,10 @@
   async function nextQuestion(){if(bossPhase){prepareQuestion();startTimer((bossQuestion===4&&stageIndex>=2)?30:60);}else{await beginNormalEncounter();}}
 
   async function resolveAnswer(value,timeout=false){
-    if(locked)return;locked=true;stopTimer();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
+    if(locked)return;locked=true;stopTimer();updateSpecialHud();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
     const ok=!timeout&&value===currentQuestion.answer;
     if(ok){
+      comboStreak++;adjustSpecialGauge(20);
       els.feedbackText.textContent='せいかい！';showAnswerMark(true);
       if(bossPhase&&bossQuestion===4){playSE(correctSE);await sleep(520);totalProgress++;bossQuestion++;renderGame();await defeatBoss();return;}
       runAttackMotion();await sleep(180);playSE(correctSE);await sleep(720);totalProgress++;
@@ -887,7 +984,7 @@
       if(stageQuestion>=10){await enterBossPhase();return;}
       await beginNormalEncounter();return;
     }
-    playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1200);
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1200);
     if(lives<=0){
       stats.restarts++;
       await showGameOver();
@@ -908,6 +1005,7 @@
     await sceneBlackout(async()=>{prepareStageOverlay();els.mapOverlay.hidden=true;},{fadeIn:250,hold:70,fadeOut:310});
     await sleep(760);
     await sceneBlackout(async()=>{bossPhase=true;currentMonster=null;renderGame();clearQuestionUi();els.enemyActor.style.opacity='0';els.stageOverlay.hidden=true;},{fadeIn:270,hold:100,fadeOut:360});
+    await playStageBgm();
     await runBattleCountdown();
     await showBossEntrance(true);
   }
@@ -928,13 +1026,15 @@
   }
 
   async function clearStage(){
+    resetSpecialGauge();
     if(!runStageRewards.has(stageIndex)){runStageRewards.add(stageIndex);save.gold+=5;stats.gold+=5;persist();}
     els.stageClearName.textContent=currentStage().name;
     els.stageClearOverlay.hidden=false;
+    playSE(clearSE);
     enemyVisualToken++;concealEnemyVisual(true);
     const fade=stopBgmFade(1500);
-    // Keep STAGE CLEAR on screen long enough to register as a reward/achievement beat.
-    await sleep(1750);
+    // Give the victory card a fuller reward beat before the existing fade-to-map transition.
+    await sleep(2750);
 
     if(stageIndex>=getStages().length-1){
       els.stageClearOverlay.hidden=true;
@@ -976,11 +1076,12 @@
   els.collectionBackBtn.onclick=els.shopBackBtn.onclick;
   els.monsterBookBackBtn.onclick=els.shopBackBtn.onclick;
   els.monsterCardClose.onclick=closeMonsterCard;
-  els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay)closeMonsterCard();};
+  els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay){playSE(cancelSE);closeMonsterCard();}};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[sirenSE,cutinSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
   els.pauseBtn.onclick=pauseGame;
+  if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
   els.pauseResumeBtn.onclick=resumeGame;
   els.pauseTitleBtn.onclick=showPauseConfirm;
   els.pauseCancelTitleBtn.onclick=showPauseMenu;
@@ -991,18 +1092,22 @@
   els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
 
+  const CANCEL_BUTTON_IDS=new Set([
+    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','monsterCardClose','frontWorldBtn',
+    'pauseTitleBtn','pauseCancelTitleBtn','pauseConfirmTitleBtn','gameOverTitleBtn','toTitleBtn'
+  ]);
   document.addEventListener('pointerdown',e=>{
     const b=e.target.closest('button');if(!b||b.disabled)return;
     // Battle answer choices keep their existing correct/wrong/attack sound design.
-    // Every other UI button, including pause and pause-menu choices, gets button.mp3.
-    if(!b.closest('#choices'))playSE(buttonSE);
+    // Back/close/title-navigation controls use cancel.mp3; other UI controls use button.mp3.
+    if(!b.closest('#choices'))playSE(CANCEL_BUTTON_IDS.has(b.id)?cancelSE:buttonSE);
     b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),180);
   });
 
   window.__SANSU_TEST__={
-    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,paused,gameOverActive};},
+    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,paused,gameOverActive,specialGauge,comboStreak,specialActive};},
     rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,
-    showActionCutin,runAttackMotion,runFinisherMotion,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_KEEP_ORIGINAL_FACING,
+    showActionCutin,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_KEEP_ORIGINAL_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
