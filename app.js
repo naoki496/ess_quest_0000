@@ -33,6 +33,9 @@
   }
 
   const STORAGE_KEY='sansuQuestSave_v10';
+  const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
+  let debugFullUnlock=false;
+  try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
   const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,backUnlocked:false,monsterBook:{front:[],back:[]},monsterEncounters:{front:{},back:{}},musicUnlocked:{front:[],back:[]}};
   let save=loadSave();
 
@@ -76,8 +79,9 @@
   const els={
     titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),
-    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),
+    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),debugBadge:$('debugBadge'),
     musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicFrontTab:$('musicFrontTab'),musicBackTab:$('musicBackTab'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
+    debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
@@ -143,8 +147,9 @@
       target.musicUnlocked[world]=[...set];
     }
   }
-  function isMusicUnlocked(world,id){return !!save.musicUnlocked?.[world]?.includes(id);}
+  function isMusicUnlocked(world,id){return debugFullUnlock||!!save.musicUnlocked?.[world]?.includes(id);}
   function unlockMusic(world,id){
+    if(debugFullUnlock)return false;
     if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[]};
     if(!Array.isArray(save.musicUnlocked[world]))save.musicUnlocked[world]=[];
     if(save.musicUnlocked[world].includes(id))return false;
@@ -172,7 +177,16 @@
       return merged;
     }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[]},monsterEncounters:{front:{},back:{}},musicUnlocked:{front:[],back:[]}};inferMusicUnlocksFromSave(fallback);return fallback;}
   }
-  function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}renderTitle();}
+  function persist(){
+    if(!debugFullUnlock)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
+    renderTitle();
+  }
+  function isItemOwned(id){return debugFullUnlock||save.owned.includes(id);}
+  function effectiveGold(){return debugFullUnlock?99999:save.gold;}
+  function effectiveOwnedCount(){return debugFullUnlock?100:save.owned.length;}
+  function isBackWorldUnlocked(){return debugFullUnlock||save.backUnlocked;}
+  function isMonsterSeen(world,id){return debugFullUnlock||!!save.monsterBook?.[world]?.includes(id);}
+  function effectiveEncounterCount(world,id){const n=save.monsterEncounters?.[world]?.[id]||0;return debugFullUnlock?Math.max(1,n):n;}
 
   function itemIcon(name){
     const rules=[
@@ -230,7 +244,7 @@
   const ITEMS=buildItems();
   const rarityLabel={common:'コモン',uncommon:'アンコモン',rare:'レア'};
 
-  function titleTrackLabel(){return `${save.owned.length} / 100`;}
+  function titleTrackLabel(){return `${effectiveOwnedCount()} / 100`;}
   function stopTitleBgm(){}
   async function fadeTitleBgm(){return;}
   async function playTitleBgm(){return;}
@@ -254,12 +268,13 @@
   function setMenuButton(btn,glyph,label){btn.innerHTML=`<span class="menu-glyph" aria-hidden="true">${glyph}</span><span class="menu-label">${label}</span>`;}
   function renderTitle(){
     document.body.dataset.mode=mode;
-    els.titleGold.textContent=`${save.gold} G`;
+    els.titleGold.textContent=`${effectiveGold()} G`;
     els.titleModeName.textContent=mode==='front'?'光の世界':'夜の東京';
     els.titleTrackName.textContent=titleTrackLabel();
+    if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;
     if(mode==='front'){
       els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');setMenuButton(els.backWorldBtn,'∞','ウラステージへ');
-      els.backWorldBtn.hidden=!save.backUnlocked;els.frontWorldBtn.hidden=true;
+      els.backWorldBtn.hidden=!isBackWorldUnlocked();els.frontWorldBtn.hidden=true;
     }else{
       els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='NIGHT TOKYO / ANOTHER QUEST';els.titleSubtitle.innerHTML='夜の東京を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');setMenuButton(els.frontWorldBtn,'↩','表のタイトルへ');
       els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=false;
@@ -321,12 +336,79 @@
     pos=(pos+direction+allowed.length)%allowed.length;
     playMusicTrack(allowed[pos],true);
   }
-  function openMusicPlayer(){
-    musicWorld=mode;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;
+  async function transitionMusicOverlay(opening){
+    const curtain=ensureSceneCurtain();
+    curtain.style.setProperty('--scene-in','260ms');curtain.style.setProperty('--scene-out','420ms');
+    curtain.hidden=false;curtain.className='scene-curtain entering';void curtain.offsetWidth;
+    await sleep(260);curtain.className='scene-curtain covered';
+    await transitionTo(()=>{
+      if(opening){musicWorld=mode;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;}
+      else{stopMusicPlayer();musicTrackIndex=-1;els.musicOverlay.hidden=true;renderTitle();}
+    },mode==='back'?'back':'normal',1450);
+    await sleep(70);curtain.className='scene-curtain leaving';await sleep(420);curtain.hidden=true;curtain.className='scene-curtain';
   }
-  function closeMusicPlayer(){stopMusicPlayer();musicTrackIndex=-1;els.musicOverlay.hidden=true;}
+  async function openMusicPlayer(){if(!els.musicOverlay.hidden)return;await transitionMusicOverlay(true);}
+  async function closeMusicPlayer(){if(els.musicOverlay.hidden)return;await transitionMusicOverlay(false);}
   function switchMusicWorld(world){
     if(musicWorld===world)return;stopMusicPlayer();musicTrackIndex=-1;musicWorld=world;renderMusicPlayer();
+  }
+
+  function renderDebugPanel(){
+    if(!els.debugOverlay)return;
+    els.debugStatus.textContent=debugFullUnlock?'ON':'OFF';
+    els.debugStatus.classList.toggle('on',debugFullUnlock);
+    els.debugToggleBtn.textContent=debugFullUnlock?'全解放を解除':'仮想全解放をON';
+    els.debugToggleBtn.classList.toggle('danger',debugFullUnlock);
+    els.debugStagePanel.hidden=!debugFullUnlock;
+    if(els.debugStageGrid){
+      els.debugStageGrid.innerHTML='';
+      for(const world of ['front','back']){
+        const stages=world==='front'?FRONT_STAGES:BACK_STAGES;
+        stages.forEach((st,i)=>{
+          const b=document.createElement('button');b.type='button';b.className='debug-stage-btn';
+          b.textContent=`${world==='front'?'表':'裏'} STAGE ${i+1}`;b.title=st.name;
+          b.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(b);
+        });
+      }
+    }
+  }
+  function openDebugPanel(){if(!els.debugOverlay)return;renderDebugPanel();els.debugOverlay.hidden=false;}
+  function closeDebugPanel(){if(els.debugOverlay)els.debugOverlay.hidden=true;}
+  function setDebugFullUnlock(enabled){
+    debugFullUnlock=!!enabled;
+    try{if(debugFullUnlock)sessionStorage.setItem(DEBUG_SESSION_KEY,'1');else sessionStorage.removeItem(DEBUG_SESSION_KEY);}catch{}
+    if(!debugFullUnlock){
+      save=loadSave();
+      if(mode==='back'&&!save.backUnlocked)mode='front';
+    }
+    renderTitle();renderDebugPanel();
+    if(els.collectionScreen&&!els.collectionScreen.hidden)renderCollection();
+    if(els.monsterBookScreen&&!els.monsterBookScreen.hidden)renderMonsterBook();
+    if(els.shopScreen&&!els.shopScreen.hidden)renderShop();
+    if(els.musicOverlay&&!els.musicOverlay.hidden)renderMusicPlayer();
+  }
+  async function debugJumpToStage(world,index){
+    if(!debugFullUnlock)return;
+    closeDebugPanel();resetRun();mode=world;stageIndex=Math.max(0,Math.min(4,index));totalProgress=stageIndex*15;
+    primeStageBgm();
+    await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);
+    await showMapSequence(true,true);
+  }
+  function installDebugSecretGesture(){
+    const target=document.querySelector('.title-logo-wrap h1');if(!target)return;
+    let taps=[],armedUntil=0,holdTimer=null,downAt=0;
+    const clearHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}};
+    target.addEventListener('pointerdown',()=>{
+      downAt=Date.now();clearHold();
+      if(Date.now()<armedUntil){holdTimer=setTimeout(()=>{holdTimer=null;armedUntil=0;taps=[];openDebugPanel();},2000);}
+    });
+    target.addEventListener('pointerup',()=>{
+      const now=Date.now(),duration=now-downAt;clearHold();
+      if(duration>650||now<armedUntil)return;
+      taps=taps.filter(t=>now-t<4200);taps.push(now);
+      if(taps.length>=7){armedUntil=now+5500;taps=[];}
+    });
+    target.addEventListener('pointercancel',clearHold);target.addEventListener('pointerleave',clearHold);
   }
 
   async function transitionTo(swap,kind='normal',ms=1500){
@@ -346,19 +428,19 @@
   async function transition(kind='normal',ms=1500){return transitionTo(null,kind,ms);}
 
   function renderShop(filter='all'){
-    els.shopGold.textContent=`${save.gold} G`;
+    els.shopGold.textContent=`${effectiveGold()} G`;
     const filters=[['all','すべて'],['common','コモン'],['uncommon','アンコモン'],['rare','レア'],['missing','もっていない']];
     els.shopFilters.innerHTML='';filters.forEach(([k,t])=>{const b=document.createElement('button');b.textContent=t;b.className=k===filter?'active':'';b.onclick=()=>renderShop(k);els.shopFilters.appendChild(b);});
     els.shopList.innerHTML='';
-    ITEMS.filter(it=>it.id!==100).filter(it=>filter==='all'||it.rarity===filter||(filter==='missing'&&!save.owned.includes(it.id))).forEach(it=>{
-      const owned=save.owned.includes(it.id),row=document.createElement('div');row.className=`shop-row shop-${it.rarity}`;row.innerHTML=`<div class="item-icon"><span>${it.icon}</span><em>No.${String(it.id).padStart(3,'0')}</em></div><div class="item-name"><b>${it.name}</b><small class="rarity-${it.rarity}">${rarityLabel[it.rarity]}</small></div><div class="item-price">${it.price} <small>G</small></div><button class="buy-btn" ${owned||save.gold<it.price?'disabled':''}>${owned?'もっている':'購入'}</button>`;
-      row.querySelector('button').onclick=()=>{if(!owned&&save.gold>=it.price){save.gold-=it.price;save.owned.push(it.id);persist();renderShop(filter);}};els.shopList.appendChild(row);
+    ITEMS.filter(it=>it.id!==100).filter(it=>filter==='all'||it.rarity===filter||(filter==='missing'&&!isItemOwned(it.id))).forEach(it=>{
+      const owned=isItemOwned(it.id),row=document.createElement('div');row.className=`shop-row shop-${it.rarity}`;row.innerHTML=`<div class="item-icon"><span>${it.icon}</span><em>No.${String(it.id).padStart(3,'0')}</em></div><div class="item-name"><b>${it.name}</b><small class="rarity-${it.rarity}">${rarityLabel[it.rarity]}</small></div><div class="item-price">${it.price} <small>G</small></div><button class="buy-btn" ${owned||effectiveGold()<it.price?'disabled':''}>${owned?'もっている':'購入'}</button>`;
+      row.querySelector('button').onclick=()=>{if(debugFullUnlock)return;if(!owned&&save.gold>=it.price){save.gold-=it.price;save.owned.push(it.id);persist();renderShop(filter);}};els.shopList.appendChild(row);
     });
   }
 
   function renderCollection(){
-    els.collectionCount.textContent=`${save.owned.length} / 100`;els.collectionGrid.innerHTML='';
-    ITEMS.forEach(it=>{const owned=save.owned.includes(it.id);const c=document.createElement('button');c.className=`collection-cell ${owned?`rarity-${it.rarity}`:'locked'}`;c.innerHTML=`<span class="cell-icon">${owned?it.icon:'?'}</span><small>${owned?String(it.id).padStart(3,'0'):'???'}</small>`;c.title=owned?it.name:'？？？？？？';c.onclick=()=>showItemDetail(it,owned);els.collectionGrid.appendChild(c);});
+    els.collectionCount.textContent=`${effectiveOwnedCount()} / 100`;els.collectionGrid.innerHTML='';
+    ITEMS.forEach(it=>{const owned=isItemOwned(it.id);const c=document.createElement('button');c.className=`collection-cell ${owned?`rarity-${it.rarity}`:'locked'}`;c.innerHTML=`<span class="cell-icon">${owned?it.icon:'?'}</span><small>${owned?String(it.id).padStart(3,'0'):'???'}</small>`;c.title=owned?it.name:'？？？？？？';c.onclick=()=>showItemDetail(it,owned);els.collectionGrid.appendChild(c);});
   }
   function showItemDetail(it,owned){
     els.collectionDetail.innerHTML=owned?`<div class="detail-no">No.${String(it.id).padStart(3,'0')}</div><div class="detail-icon rarity-frame-${it.rarity}">${it.icon}</div><h3>${it.name}</h3><p class="detail-rarity rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><div class="detail-divider"></div><p>${it.flavor}</p>`:`<div class="detail-no">UNKNOWN</div><div class="detail-icon">?</div><h3>？？？？？？</h3><div class="detail-divider"></div><p>まだ手に入れていないアイテムです。</p>`;
@@ -375,7 +457,7 @@
   }
   function renderMonsterBook(filter='all'){
     const entries=monsterBookEntries();
-    const seen=new Set(save.monsterBook[mode]);
+    const seen=new Set(debugFullUnlock?entries.map(m=>m.id):save.monsterBook[mode]);
     els.monsterBookCount.textContent=`${entries.filter(m=>seen.has(m.id)).length} / ${entries.length}`;
     const filters=[['all','すべて'],['1','★1'],['2','★2'],['3','★3 RARE'],['4','★4 SR'],['5','★5 SSR'],['boss','BOSS']];
     els.monsterBookFilters.innerHTML='';
@@ -397,7 +479,7 @@
     els.monsterCardImage.src=`./assets/${m.img}`;
     els.monsterCardWorld.textContent=mode==='front'?'表の世界':'裏の世界';
     els.monsterCardStage.textContent=`STAGE ${m.stage+1}`;
-    els.monsterCardEncounter.textContent=`遭遇 ${counts[m.id]||1}`;
+    els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;
     els.monsterCardText.textContent=monsterFlavor(m);
     const slimeLike=!m.boss && m.name.includes('スライム');
     els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}${slimeLike?' slime-card':''}`;
@@ -417,12 +499,13 @@
   function unlockedMonsters(rarity){return getMonsterCatalog().filter(m=>m.stage<=stageIndex&&m.rarity===rarity);}
   function selectMonster(rng=Math.random){
     const rarity=rarityRoll(rng());let pool=unlockedMonsters(rarity);if(!pool.length)pool=getMonsterCatalog().filter(m=>m.stage<=stageIndex);
-    const unowned=pool.filter(m=>!save.monsterBook[mode].includes(m.id));
+    const unowned=pool.filter(m=>!isMonsterSeen(mode,m.id));
     const source=unowned.length&&rng()<.58?unowned:pool;
     return source[Math.floor(rng()*source.length)]||pool[0];
   }
   function registerMonster(monster){
-    if(!monster)return;const list=save.monsterBook[mode];if(!list.includes(monster.id))list.push(monster.id);
+    if(!monster||debugFullUnlock)return;
+    const list=save.monsterBook[mode];if(!list.includes(monster.id))list.push(monster.id);
     const counts=save.monsterEncounters[mode];counts[monster.id]=(counts[monster.id]||0)+1;persist();
   }
   function rarityLabelMonster(r){return r===5?'SSR':r===4?'SR':r===3?'RARE':`★${r}`;}
@@ -1183,7 +1266,10 @@
 
   async function clearStage(){
     resetSpecialGauge();
-    if(!runStageRewards.has(stageIndex)){runStageRewards.add(stageIndex);save.gold+=5;stats.gold+=5;persist();}
+    if(!runStageRewards.has(stageIndex)){
+      runStageRewards.add(stageIndex);stats.gold+=5;
+      if(!debugFullUnlock){save.gold+=5;persist();}
+    }
     els.stageClearName.textContent=currentStage().name;
     requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));
     els.stageClearOverlay.hidden=false;
@@ -1217,16 +1303,19 @@
 
   async function finishRun(){
     stopTimer();await stopBgmFade(500);let reward=null;
-    if(mode==='front'){save.frontClears++;if(!save.backUnlocked){save.backUnlocked=true;if(!save.owned.includes(100))save.owned.push(100);reward=ITEMS.find(i=>i.id===100);}else reward=randomReward();}
-    else{save.backClears++;reward=randomReward();}
-    persist();renderResult();els.resultOverlay.hidden=false;
+    if(!debugFullUnlock){
+      if(mode==='front'){save.frontClears++;if(!save.backUnlocked){save.backUnlocked=true;if(!save.owned.includes(100))save.owned.push(100);reward=ITEMS.find(i=>i.id===100);}else reward=randomReward();}
+      else{save.backClears++;reward=randomReward();}
+      persist();
+    }else renderTitle();
+    renderResult();els.resultOverlay.hidden=false;
     if(reward){await sleep(600);els.rewardIcon.textContent=reward.icon;els.rewardName.textContent=reward.name;els.rewardText.textContent=reward.id===100?'時空の扉が開いた……。表のタイトルに「ウラステージへ」が追加されました。':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！';els.rewardOverlay.hidden=false;}
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
   function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${e.q}=?</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
 
-  els.musicBtn.onclick=openMusicPlayer;
-  els.musicCloseBtn.onclick=closeMusicPlayer;
+  els.musicBtn.onclick=()=>openMusicPlayer();
+  els.musicCloseBtn.onclick=()=>closeMusicPlayer();
   els.musicOverlay.onclick=e=>{if(e.target===els.musicOverlay){playSE(cancelSE);closeMusicPlayer();}};
   els.musicFrontTab.onclick=()=>switchMusicWorld('front');
   els.musicBackTab.onclick=()=>switchMusicWorld('back');
@@ -1239,6 +1328,9 @@
   };
   musicPlayer.addEventListener('play',renderMusicPlayer);
   musicPlayer.addEventListener('pause',renderMusicPlayer);
+  if(els.debugToggleBtn)els.debugToggleBtn.onclick=()=>setDebugFullUnlock(!debugFullUnlock);
+  if(els.debugCloseBtn)els.debugCloseBtn.onclick=closeDebugPanel;
+  if(els.debugOverlay)els.debugOverlay.onclick=e=>{if(e.target===els.debugOverlay)closeDebugPanel();};
 
   els.playBtn.onclick=startAdventure;
   els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode==='back'?'back':'normal',1450);};
@@ -1265,7 +1357,7 @@
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;};
 
   const CANCEL_BUTTON_IDS=new Set([
-    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','monsterCardClose','musicCloseBtn','frontWorldBtn',
+    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn',
     'pauseTitleBtn','pauseCancelTitleBtn','pauseConfirmTitleBtn','gameOverTitleBtn','toTitleBtn'
   ]);
   document.addEventListener('pointerdown',e=>{
@@ -1283,7 +1375,7 @@
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
-    registerMonster,get save(){return save;},FRONT_MONSTERS,BACK_MONSTERS,FRONT_STAGES,BACK_STAGES,musicTracks,renderMusicPlayer,
+    registerMonster,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,FRONT_MONSTERS,BACK_MONSTERS,FRONT_STAGES,BACK_STAGES,musicTracks,renderMusicPlayer,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
@@ -1291,5 +1383,6 @@
   window.addEventListener('orientationchange',()=>setTimeout(fitVisibleNames,80),{passive:true});
   if(document.fonts?.ready)document.fonts.ready.then(()=>fitVisibleNames()).catch(()=>{});
 
+  installDebugSecretGesture();
   renderTitle();showOnly(els.titleScreen);
 })();
