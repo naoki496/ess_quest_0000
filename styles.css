@@ -489,3 +489,29 @@ body.special-assist-active .boss-obscurer{animation-play-state:paused!important}
   .special-meter{height:10px}
   .special-btn{height:25px;min-width:86px;font-size:.65rem;padding:0 8px;margin:0 0 -1px 0}
 }
+
+/* ===== v17/v19 final layering + stage-intro readability ===== */
+/* The special HUD stays below cut-ins (cut-in layer is z-index:78). */
+.special-hud{z-index:70}
+@media (orientation:portrait){.special-hud{z-index:70}}
+
+/* Stage introduction: always centered in both orientations. Keep the title in a
+   Japanese Mincho face, remove the former radial backing/frame and text outline,
+   and use only a restrained downward shadow behind the actual glyphs. */
+#stageOverlay{place-items:center!important;align-items:center!important;justify-items:center!important}
+.stage-overlay-copy{background:none!important;border:0!important;box-shadow:none!important;filter:none!important}
+.stage-overlay-copy::before{content:none!important;display:none!important;background:none!important;filter:none!important}
+.stage-overlay-copy strong{
+  font-family:"Noto Serif CJK JP","Noto Serif JP","Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro",serif!important;
+  font-weight:700!important;
+  color:#fff!important;
+  -webkit-text-stroke:0!important;
+  text-shadow:0 4px 3px rgba(0,0,0,.76),0 10px 14px rgba(0,0,0,.28)!important;
+  filter:none!important;
+}
+body[data-mode="back"] .stage-overlay-copy strong{
+  text-shadow:0 4px 3px rgba(0,0,0,.78),0 10px 14px rgba(0,0,0,.30)!important;
+}
+@media (orientation:portrait){
+  #stageOverlay{place-items:center!important;align-items:center!important;justify-items:center!important}
+}
