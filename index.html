@@ -23,6 +23,7 @@
       <div class="title-mode-plate"><span class="mode-orb"></span><b id="titleModeName">光の世界</b></div>
       <div class="title-track"><span>COLLECTION</span><strong id="titleTrackName">0 / 100</strong></div>
       <div class="title-wallet"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
+      <button id="musicBtn" class="music-entry-btn" type="button" aria-label="BGM鑑賞" title="BGM鑑賞">♫</button>
     </div>
 
     <div class="title-main">
@@ -111,6 +112,34 @@
     </article>
   </div>
 </section>
+
+<div id="musicOverlay" class="music-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="musicTitle">
+  <section class="music-card panel-gold">
+    <header class="music-header">
+      <div><small>BGM COLLECTION</small><h2 id="musicTitle">BGM鑑賞</h2></div>
+      <button id="musicCloseBtn" class="music-close-btn" type="button" aria-label="閉じる">×</button>
+    </header>
+    <div class="music-world-tabs" role="tablist" aria-label="世界を選択">
+      <button id="musicFrontTab" type="button" role="tab">表の世界</button>
+      <button id="musicBackTab" type="button" role="tab">裏の世界</button>
+    </div>
+    <p class="music-note">一度到達したステージやボス戦のBGMが解禁されます。</p>
+    <div id="musicTrackList" class="music-track-list"></div>
+    <footer class="music-player-bar">
+      <div class="music-now">
+        <small>NOW PLAYING</small>
+        <strong id="musicNowTitle">曲を選んでください</strong>
+        <span id="musicNowWhere">解禁済みの曲をタップすると再生します。</span>
+      </div>
+      <div class="music-controls">
+        <button id="musicPrevBtn" type="button" aria-label="前の曲">◀</button>
+        <button id="musicPlayBtn" type="button" aria-label="再生・一時停止">▶</button>
+        <button id="musicNextBtn" type="button" aria-label="次の曲">▶▶</button>
+        <button id="musicStopBtn" type="button" aria-label="停止">■</button>
+      </div>
+    </footer>
+  </section>
+</div>
 
 <main id="gameScreen" class="screen game-shell" hidden>
   <header class="hud panel-gold">
