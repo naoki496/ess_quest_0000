@@ -365,9 +365,13 @@
       for(const world of ['front','back']){
         const stages=world==='front'?FRONT_STAGES:BACK_STAGES;
         stages.forEach((st,i)=>{
-          const b=document.createElement('button');b.type='button';b.className='debug-stage-btn';
-          b.textContent=`${world==='front'?'表':'裏'} STAGE ${i+1}`;b.title=st.name;
-          b.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(b);
+          const prefix=world==='front'?'表':'裏';
+          const start=document.createElement('button');start.type='button';start.className=`debug-stage-btn debug-stage-start debug-world-${world}`;
+          start.textContent=`${prefix} S${i+1} 最初`;start.title=`${st.name}：ステージ最初から`;
+          start.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(start);
+          const boss5=document.createElement('button');boss5.type='button';boss5.className=`debug-stage-btn debug-boss5-btn debug-world-${world}`;
+          boss5.textContent=`${prefix} S${i+1} ボス5`;boss5.title=`${st.name}：ボス5問目から`;
+          boss5.onclick=()=>debugJumpToBossFifth(world,i);els.debugStageGrid.appendChild(boss5);
         });
       }
     }
@@ -393,6 +397,21 @@
     primeStageBgm();
     await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);
     await showMapSequence(true,true);
+  }
+  async function debugJumpToBossFifth(world,index){
+    if(!debugFullUnlock)return;
+    closeDebugPanel();resetRun();
+    mode=world;stageIndex=Math.max(0,Math.min(4,index));stageQuestion=10;bossPhase=true;bossQuestion=4;
+    totalProgress=stageIndex*15+14;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();
+    primeStageBgm();
+    await transitionTo(()=>{
+      showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
+      bossPhase=true;bossQuestion=4;currentMonster=null;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
+      document.querySelector('.battlefield')?.classList.remove('battle-base-enter');
+    },mode==='back'?'back':'normal',1250);
+    await playStageBgm();
+    await runBattleCountdown();
+    await showBossEntrance(true,4);
   }
   function installDebugSecretGesture(){
     const target=document.querySelector('.title-logo-wrap h1');if(!target)return;
@@ -528,8 +547,21 @@
     name.textContent=en.name;
     els.enemyName.append(badge,name);
   }
+  function ensureBossHpHud(){
+    if(els.bossHpHud&&els.bossHpFill)return true;
+    const battlefield=document.querySelector('.battlefield');if(!battlefield)return false;
+    let hud=$('bossHpHud');
+    if(!hud){
+      hud=document.createElement('div');hud.id='bossHpHud';hud.className='boss-hp-hud';hud.hidden=true;hud.setAttribute('aria-label','ボスHP');
+      hud.innerHTML='<span class="boss-hp-label">BOSS HP</span><div class="boss-hp-meter" aria-hidden="true"><i id="bossHpFill"></i><span class="boss-hp-shine"></span></div>';
+      const question=battlefield.querySelector('.question-panel');
+      if(question)battlefield.insertBefore(hud,question);else battlefield.appendChild(hud);
+    }
+    els.bossHpHud=hud;els.bossHpFill=hud.querySelector('#bossHpFill');
+    return !!els.bossHpFill;
+  }
   function updateBossHpHud(forceHide=false){
-    if(!els.bossHpHud||!els.bossHpFill)return;
+    if(!ensureBossHpHud())return;
     const show=!forceHide&&bossPhase&&!els.gameScreen.hidden;
     els.bossHpHud.hidden=!show;
     if(!show)return;
@@ -722,9 +754,12 @@
   }
 
 
+  function stageDisplayProgress(){
+    return Math.max(0,Math.min(15,totalProgress-stageIndex*15));
+  }
   function renderGame(){
-    const s=currentStage();document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
-    els.progressText.textContent=`${totalProgress} / 75`;els.progressFill.style.width=`${totalProgress/75*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
+    const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
+    els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
     fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
     els.battleBg.style.backgroundImage=`url('./assets/${s.bg}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':'./assets/back_hero.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':'魔法少女';
     const en=bossPhase?currentBoss():currentMonster;
@@ -1083,10 +1118,10 @@
       restoreSpecialHudAfterCutin();
     }
   }
-  async function showBossEntrance(retry=false){
+  async function showBossEntrance(retry=false,startAt=0){
     ensureMonsterFx();clearMonsterAnnouncement();locked=true;
     enemyVisualToken++;concealEnemyVisual(true);
-    bossPhase=true;bossQuestion=0;currentMonster=null;
+    bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(startAt)||0));currentMonster=null;
     const boss=currentBoss();registerMonster(boss);renderGame();updateBossHpHud(true);
     // Decode during WARNING so the boss is ready before its reveal, but keep the enemy
     // region empty until the dedicated spawn animation begins.
@@ -1097,7 +1132,9 @@
     if(!retry)await playStageBgm();
     await showBossName();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
-    await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();updateBossHpHud();prepareQuestion();startTimer(60);
+    await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();updateBossHpHud();
+    if(bossQuestion===4){await runBossFifthAction();return;}
+    prepareQuestion();startTimer(60);
   }
 
   function bossObscurerCount(){
@@ -1656,7 +1693,7 @@
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
-    registerMonster,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,FRONT_MONSTERS,BACK_MONSTERS,FRONT_STAGES,BACK_STAGES,musicTracks,renderMusicPlayer,
+    registerMonster,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,FRONT_MONSTERS,BACK_MONSTERS,FRONT_STAGES,BACK_STAGES,musicTracks,renderMusicPlayer,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 

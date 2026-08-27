@@ -148,7 +148,7 @@
     <p class="debug-copy">通常セーブは変更しません。ON状態はこのタブを閉じると自動解除されます。</p>
     <div class="debug-state-row"><span>仮想全解放</span><strong id="debugStatus">OFF</strong><button id="debugToggleBtn" type="button">仮想全解放をON</button></div>
     <section id="debugStagePanel" class="debug-stage-panel" hidden>
-      <small>STAGE JUMP</small><p>確認したいステージへ直接移動します。</p><div id="debugStageGrid" class="debug-stage-grid"></div>
+      <small>STAGE JUMP</small><p>確認したいステージの最初、またはボス5問目へ直接移動します。</p><div id="debugStageGrid" class="debug-stage-grid"></div>
     </section>
   </section>
 </div>
@@ -168,6 +168,10 @@
     <div id="specialHud" class="special-hud" aria-label="必殺技ゲージ">
       <button id="specialBtn" class="special-btn" type="button" hidden>必殺技！</button>
       <div class="special-meter" aria-hidden="true"><i id="specialFill"></i><span class="special-meter-shine"></span></div>
+    </div>
+    <div id="bossHpHud" class="boss-hp-hud" hidden aria-label="ボスHP">
+      <span class="boss-hp-label">BOSS HP</span>
+      <div class="boss-hp-meter" aria-hidden="true"><i id="bossHpFill"></i><span class="boss-hp-shine"></span></div>
     </div>
     <section class="question-panel">
       <div class="question-cap">もんだい</div>
