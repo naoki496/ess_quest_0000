@@ -1437,7 +1437,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   async function announceTimeLimit(seconds){
     if(seconds>30)return;
-    const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent=`${seconds}びょう！`;w.hidden=false;await sleep(620);w.hidden=true;w.textContent='';
+    const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent=`${seconds}びょう！`;w.hidden=false;await sleep(760);w.hidden=true;w.textContent='';
   }
   async function runBossFifthAction(){
     const spec=currentBossSpecial();
