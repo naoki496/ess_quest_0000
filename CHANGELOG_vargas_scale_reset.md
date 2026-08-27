@@ -1,0 +1,3 @@
+- boss_front_4.png を新しい透過PNG版に差し替え
+- 黒騎将ヴァルガス専用の拡大補正（battle presentation zoom）を撤回
+- 他のモンスターと同様の表示基準に統一

@@ -599,11 +599,7 @@
     'monster_front_3_4_20.png','monster_front_5_1_30.png',
     'monster_back_1_2_4.png','monster_back_2_5_14.png'
   ]);
-  const BATTLE_SPRITE_SCALE={
-    // This source includes a large castle silhouette behind the knight, so the character
-    // reads smaller than other bosses at identical CSS dimensions. Presentation-only zoom.
-    'boss_front_4.png':1.16
-  };
+  const BATTLE_SPRITE_SCALE={};
   const BATTLE_SPRITE_OFFSET_Y={
     // The source art extends lower with particles, which makes the knight itself appear
     // unusually high when bottom-aligned. Shift only the battle presentation downward.
