@@ -86,7 +86,7 @@
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),
-    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
+    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapImage:$('mapImage'),mapMessage:$('mapMessage'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
@@ -509,6 +509,37 @@
     const counts=save.monsterEncounters[mode];counts[monster.id]=(counts[monster.id]||0)+1;persist();
   }
   function rarityLabelMonster(r){return r===5?'SSR':r===4?'SR':r===3?'RARE':`★${r}`;}
+  function rarityBattleLabel(r){return r>=3?`★${r} ${rarityLabelMonster(r)}`:`★${r}`;}
+  function setEnemyNameDisplay(en){
+    if(!els.enemyName)return;
+    els.enemyName.classList.remove('enemy-name-with-rarity');
+    els.enemyName.replaceChildren();
+    if(!en)return;
+    if(en.boss||bossPhase){
+      els.enemyName.textContent=en.name;
+      return;
+    }
+    els.enemyName.classList.add('enemy-name-with-rarity');
+    const badge=document.createElement('span');
+    badge.className=`enemy-rarity-badge battle-rarity-${en.rarity}`;
+    badge.textContent=rarityBattleLabel(en.rarity);
+    const name=document.createElement('span');
+    name.className='enemy-name-text';
+    name.textContent=en.name;
+    els.enemyName.append(badge,name);
+  }
+  function updateBossHpHud(forceHide=false){
+    if(!els.bossHpHud||!els.bossHpFill)return;
+    const show=!forceHide&&bossPhase&&!els.gameScreen.hidden;
+    els.bossHpHud.hidden=!show;
+    if(!show)return;
+    const remaining=Math.max(0,Math.min(5,5-bossQuestion));
+    const pct=remaining/5*100;
+    els.bossHpFill.style.width=`${pct}%`;
+    els.bossHpHud.classList.toggle('critical',remaining===1);
+    els.bossHpHud.classList.toggle('empty',remaining===0);
+    els.bossHpHud.setAttribute('aria-label',`ボスHP ${remaining} / 5`);
+  }
   function monsterPlaceholder(monster,boss=false){
     const palette=boss?['#180008','#7e0923','#ff355f']:monster.rarity===5?['#1a0934','#ffbf27','#f44dff']:monster.rarity===4?['#180d32','#914cff','#6eeaff']:monster.rarity===3?['#10264b','#d9b64b','#fff1a6']:monster.rarity===2?['#09243b','#45bfff','#ddfaff']:['#20252c','#cfd7e0','#ffffff'];
     const label=(boss?'BOSS':rarityLabelMonster(monster.rarity)).replace(/&/g,'');
@@ -628,7 +659,7 @@
       els.enemyImage.removeAttribute('src');
       els.enemyImage.removeAttribute('data-monster-img');
     }
-    els.enemyName.textContent='';
+    els.enemyName.textContent='';els.enemyName.classList.remove('enemy-name-with-rarity');
   }
   async function decodeImageSource(src){
     // Attach handlers before assigning src so cached images cannot finish between the two.
@@ -673,7 +704,7 @@
     if(token!==enemyVisualToken)return false;
     if(!resolved)resolved=monsterPlaceholder(en,!!en.boss);
     applyEnemyFacing(en);
-    els.enemyName.textContent=en.boss||bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;
+    setEnemyNameDisplay(en);
     let committed=await commitEnemyImage(resolved,token);
     if(!committed&&token===enemyVisualToken){
       // A decoded probe can still fail when the visible <img> commits on memory-constrained
@@ -699,11 +730,12 @@
     const en=bossPhase?currentBoss():currentMonster;
     if(en){
       applyEnemyFacing(en);
-      els.enemyName.textContent=bossPhase?`${en.name}  BOSS ${bossQuestion+1}/5`:`${rarityLabelMonster(en.rarity)}  ${en.name}`;
+      setEnemyNameDisplay(en);
       fitSingleLineText(els.enemyName,{maxWidthRatio:.31,minPx:9});
       // src is deliberately not changed here. New sprites are committed only by
       // stageEnemyVisual() after decode, while enemyActor remains hidden.
-    }
+    }else{setEnemyNameDisplay(null);}
+    updateBossHpHud();
   }
 
   function syncPauseButton(){
@@ -878,6 +910,7 @@
     const c=$('bossCutin');
     if(c){c.hidden=true;c.className='boss-cutin';const img=c.querySelector('.cutin-art');if(img)img.removeAttribute('src');}
     document.querySelector('.battlefield')?.classList.remove('cutin-scene');
+    const layer=$('monsterFxLayer');if(layer)layer.classList.remove('rare-arrival-4','rare-arrival-5');
   }
 
   // Combo-inspired assist gauge. The streak itself stays internal; the player only sees
@@ -961,10 +994,12 @@
     document.querySelector('.battlefield').appendChild(layer);return layer;
   }
   async function showMonsterEntrance(monster){
-    ensureMonsterFx();clearMonsterAnnouncement();els.enemyActor.style.opacity='0';els.enemyActor.style.transform='translateY(12px) scale(.92)';
+    const layer=ensureMonsterFx();clearMonsterAnnouncement();els.enemyActor.style.opacity='0';els.enemyActor.style.transform='translateY(12px) scale(.92)';
     const w=$('rarityWarning');
-    w.className=`rarity-warning rarity-${monster.rarity}`;
-    w.textContent=monster.rarity===5?'SSR':monster.rarity===4?'SUPER RARE':monster.rarity===3?'RARE':'';
+    const entranceLabel=monster.rarity===5?'★★★★★ SSR':monster.rarity===4?'★★★★ SR':monster.rarity===3?'★★★ RARE':'';
+    w.className=`rarity-warning rarity-${monster.rarity}${monster.rarity>=4?' rarity-high':''}`;
+    w.textContent=entranceLabel;
+    if(monster.rarity>=4)layer.classList.add(`rare-arrival-${monster.rarity}`);
     if(monster.rarity>=3){
       w.hidden=false;
       await sleep(monster.rarity===5?760:monster.rarity===4?560:420);
@@ -973,6 +1008,7 @@
     els.enemyActor.classList.add(`spawn-r${monster.rarity}`);els.enemyActor.style.opacity='1';els.enemyActor.style.transform='';
     await sleep([0,380,520,760,1050,1450][monster.rarity]);
     els.enemyActor.classList.remove(`spawn-r${monster.rarity}`);
+    layer.classList.remove('rare-arrival-4','rare-arrival-5');
     clearMonsterAnnouncement();
   }
 
@@ -1013,10 +1049,14 @@
   function hideSpecialHudForCutin(){
     specialHudCutinDepth++;
     if(els.specialHud)els.specialHud.classList.add('cutin-hidden');
+    if(els.bossHpHud)els.bossHpHud.classList.add('cutin-hidden');
   }
   function restoreSpecialHudAfterCutin(){
     specialHudCutinDepth=Math.max(0,specialHudCutinDepth-1);
-    if(specialHudCutinDepth===0&&els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
+    if(specialHudCutinDepth===0){
+      if(els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
+      if(els.bossHpHud){els.bossHpHud.classList.remove('cutin-hidden');updateBossHpHud();}
+    }
   }
   async function showActionCutin(side,imgFile,{variant='finisher',duration=1680}={}){
     hideSpecialHudForCutin();
@@ -1047,7 +1087,7 @@
     ensureMonsterFx();clearMonsterAnnouncement();locked=true;
     enemyVisualToken++;concealEnemyVisual(true);
     bossPhase=true;bossQuestion=0;currentMonster=null;
-    const boss=currentBoss();registerMonster(boss);renderGame();
+    const boss=currentBoss();registerMonster(boss);renderGame();updateBossHpHud(true);
     // Decode during WARNING so the boss is ready before its reveal, but keep the enemy
     // region empty until the dedicated spawn animation begins.
     const visualReady=stageEnemyVisual(boss);
@@ -1057,7 +1097,7 @@
     if(!retry)await playStageBgm();
     await showBossName();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
-    await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();prepareQuestion();startTimer(60);
+    await sleep(1400);els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();updateBossHpHud();prepareQuestion();startTimer(60);
   }
 
   function bossObscurerCount(){
