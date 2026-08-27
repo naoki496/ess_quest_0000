@@ -94,7 +94,7 @@
     rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
   };
 
-  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false;
+  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -490,7 +490,7 @@
 
   function getStages(){return mode==='front'?FRONT_STAGES:BACK_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
-  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;currentMonster=null;bossActionActive=false;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;updateSpecialHud();syncPauseButton();}
+  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;updateSpecialHud();syncPauseButton();}
 
   function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:BACK_MONSTERS;}
   function rarityRoll(r=Math.random()){
@@ -1101,28 +1101,239 @@
   }
 
   function bossObscurerCount(){
-    const counts=mode==='front'?[3,4,0,0,5]:[5,6,0,0,6];
-    return counts[stageIndex]||0;
+    // Only the first front-world boss retains the original vision-obstruction attack.
+    return mode==='front'&&stageIndex===0?3:0;
   }
   function configureBossObscurers(count){
     ensureMonsterFx();
     document.querySelectorAll('.boss-obscurer').forEach((star,i)=>{star.hidden=i>=count;});
   }
-  async function runBossFifthAction(){
-    ensureMonsterFx();clearBossAction();locked=true;stopTimer();clearQuestionUi();
-    await showActionCutin('enemy',currentBoss().img);
-    bossActionActive=true;
-    const obscureCount=bossObscurerCount();
-    if(obscureCount){configureBossObscurers(obscureCount);document.body.classList.add('boss-obscure-active');}
-    if(stageIndex>=2){
-      document.body.classList.add('boss-time-pressure');
-      const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent='30びょう！';w.hidden=false;await sleep(720);w.hidden=true;w.textContent='';
+  const BOSS_SPECIALS={
+    front:[
+      {type:'obscure',name:'森羅封界',time:60},
+      {type:'shield',name:'晶壁結界',time:60},
+      {type:'reverse',name:'反転術式',time:60},
+      {type:'double',name:'黒炎双断',time:30},
+      {type:'shield-reverse',name:'魔王終式',time:30}
+    ],
+    back:[
+      {type:'transform',name:'式界改竄',time:60},
+      {type:'reconstruct',name:'百灯連算',time:60},
+      {type:'reverse',name:'欠落信号',time:30},
+      {type:'shield-double',name:'機甲連環',time:60},
+      {type:'reverse-reconstruct',name:'時空再演算',time:30}
+    ]
+  };
+  function currentBossSpecial(){return BOSS_SPECIALS[mode][stageIndex];}
+  function ensureBossSpecialFxLayer(){
+    let layer=$('bossSpecialFxLayer');
+    if(!layer){
+      const battlefield=document.querySelector('.battlefield');
+      if(!battlefield)return null;
+      layer=document.createElement('div');
+      layer.id='bossSpecialFxLayer';
+      layer.className='boss-special-fx-layer';
+      layer.setAttribute('aria-hidden','true');
+      layer.innerHTML=`
+        <div id="bossTechniqueBanner" class="boss-technique-banner" hidden>
+          <small>SPECIAL ATTACK</small><strong id="bossTechniqueName"></strong><i></i>
+        </div>
+        <div id="bossStrikeTransition" class="boss-strike-transition" hidden>
+          <span class="boss-slash slash-one"></span><span class="boss-slash slash-two"></span>
+          <div><small id="bossStrikeKicker">SECOND STRIKE</small><strong id="bossStrikeTitle">第二撃</strong></div>
+        </div>
+        <div id="bossRewriteFx" class="boss-rewrite-fx" hidden>
+          <small>FORMULA REWRITE</small><div><span id="bossRewriteFrom"></span><b>→</b><strong id="bossRewriteTo"></strong></div>
+        </div>
+        <div id="bossReconstructFx" class="boss-reconstruct-fx" hidden>
+          <small>RECONSTRUCT</small><strong id="bossReconstructNumber"></strong><i></i>
+        </div>`;
+      battlefield.appendChild(layer);
     }
-    clearMonsterAnnouncement();prepareQuestion();startTimer(stageIndex>=2?30:60);
+    let shield=$('bossShieldFx');
+    if(!shield&&els.enemyActor){
+      shield=document.createElement('div');shield.id='bossShieldFx';shield.className='boss-shield-fx';shield.hidden=true;
+      shield.innerHTML='<span class="shield-ring ring-a"></span><span class="shield-ring ring-b"></span><span class="shield-core"></span><b>SHIELD</b>';
+      els.enemyActor.appendChild(shield);
+    }
+    return layer;
+  }
+  function clearBossTechniqueFx(){
+    const banner=$('bossTechniqueBanner');if(banner){banner.hidden=true;banner.classList.remove('active');}
+    const strike=$('bossStrikeTransition');if(strike){strike.hidden=true;strike.className='boss-strike-transition';}
+    const rewrite=$('bossRewriteFx');if(rewrite){rewrite.hidden=true;rewrite.classList.remove('active');}
+    const reconstruct=$('bossReconstructFx');if(reconstruct){reconstruct.hidden=true;reconstruct.classList.remove('active');}
+    const shield=$('bossShieldFx');if(shield){shield.hidden=true;shield.classList.remove('active','breaking');}
+    const chip=$('bossStrikeChip');if(chip)chip.remove();
+  }
+  async function showBossTechnique(name,kicker='SPECIAL ATTACK'){
+    ensureBossSpecialFxLayer();
+    const banner=$('bossTechniqueBanner'),label=$('bossTechniqueName');
+    if(!banner||!label)return;
+    hideSpecialHudForCutin();
+    try{
+      document.body.classList.add('boss-technique-active');
+      banner.querySelector('small').textContent=kicker;
+      label.textContent=name;
+      banner.hidden=false;banner.classList.remove('active');void banner.offsetWidth;banner.classList.add('active');
+      await sleep(920);
+      banner.classList.remove('active');await sleep(160);banner.hidden=true;
+    }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
+  }
+  function setBossStepChip(text,step=1){
+    let chip=$('bossStrikeChip');
+    if(!chip){chip=document.createElement('span');chip.id='bossStrikeChip';chip.className='boss-strike-chip';document.querySelector('.question-panel')?.appendChild(chip);}
+    chip.textContent=text;chip.dataset.step=String(step);
+  }
+  function populateSpecialQuestion(q,{chip='',step=1}={}){
+    clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
+    currentQuestion=q;
+    els.mathProblem.textContent=q.displayExpression||`${q.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';
+    makeChoices(q.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});
+    if(chip)setBossStepChip(chip,step);else{$('bossStrikeChip')?.remove();}
+    locked=false;syncPauseButton();updateSpecialHud();
+  }
+  async function showBossPhaseTransition(kicker='SECOND STRIKE',title='第二撃',variant='slash'){
+    ensureBossSpecialFxLayer();const fx=$('bossStrikeTransition');if(!fx)return;
+    clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
+    try{
+      $('bossStrikeKicker').textContent=kicker;$('bossStrikeTitle').textContent=title;
+      fx.hidden=false;fx.className=`boss-strike-transition ${variant}`;void fx.offsetWidth;fx.classList.add('active');
+      await sleep(760);fx.classList.remove('active');await sleep(120);fx.hidden=true;
+    }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
+  }
+  async function showShieldForm(){
+    ensureBossSpecialFxLayer();const shield=$('bossShieldFx');if(!shield)return;
+    shield.hidden=false;shield.classList.remove('breaking');shield.classList.add('active');await sleep(620);
+  }
+  async function showShieldBreak(){
+    const shield=$('bossShieldFx');if(!shield)return;
+    shield.classList.remove('active');shield.classList.add('breaking');await sleep(680);shield.hidden=true;shield.classList.remove('breaking');
+  }
+  async function showEquationRewrite(from,to){
+    ensureBossSpecialFxLayer();const fx=$('bossRewriteFx');if(!fx)return;
+    clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
+    try{
+      $('bossRewriteFrom').textContent=from;$('bossRewriteTo').textContent=to;
+      fx.hidden=false;fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');await sleep(920);fx.classList.remove('active');await sleep(120);fx.hidden=true;
+    }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
+  }
+  async function showReconstructTransition(value,title='再構成'){
+    ensureBossSpecialFxLayer();const fx=$('bossReconstructFx');if(!fx)return;
+    clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
+    try{
+      fx.querySelector('small').textContent=title;$('bossReconstructNumber').textContent=value;
+      fx.hidden=false;fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');await sleep(900);fx.classList.remove('active');await sleep(100);fx.hidden=true;
+    }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
+  }
+  function makeShieldQuestion(){
+    // Shield-breaking questions deliberately use the current stage's normal range.
+    return mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex);
+  }
+  function makeReverseQuestion(){
+    if(mode==='front'&&stageIndex===2){
+      for(let i=0;i<500;i++){
+        const a=rand(20,79),b=rand(10,39),c=rand(1,29),result=a+b-c;
+        if(result>0&&result<100)return{expression:`□+${b}-${c}=${result}`,displayExpression:`□ + ${b} - ${c} = ${result}`,answer:a};
+      }
+      return{expression:'□+24-9=52',displayExpression:'□ + 24 - 9 = 52',answer:37};
+    }
+    if(mode==='front'&&stageIndex===4){
+      for(let i=0;i<1500;i++){
+        if(Math.random()<.5){
+          const a=rand(100,699),b=rand(100,299),sum=a+b;if(sum>999)continue;
+          const carry=((a%10)+(b%10)>=10)||(Math.floor(a/10)%10+Math.floor(b/10)%10>=10);
+          if(carry)return{expression:`${a}+□=${sum}`,displayExpression:`${a} + □ = ${sum}`,answer:b};
+        }else{
+          const a=rand(300,999),b=rand(100,Math.min(699,a-1)),diff=a-b;
+          const borrow=(a%10)<(b%10)||(Math.floor(a/10)%10)<(Math.floor(b/10)%10);
+          if(borrow)return{expression:`${a}-□=${diff}`,displayExpression:`${a} - □ = ${diff}`,answer:b};
+        }
+      }
+      return{expression:'731-□=275',displayExpression:'731 - □ = 275',answer:456};
+    }
+    if(mode==='back'&&stageIndex===2){
+      const a=rand(2,9),b=rand(2,9);return{expression:`□×${b}=${a*b}`,displayExpression:`□ × ${b} = ${a*b}`,answer:a};
+    }
+    if(mode==='back'&&stageIndex===4){
+      const a=rand(2,9),b=rand(2,9);return{expression:`□×${b}=${a*b}`,displayExpression:`□ × ${b} = ${a*b}`,answer:a};
+    }
+    const q=makeBossQuestion(stageIndex);return{...q,displayExpression:`${q.expression} = ?`};
+  }
+  function makeTransformQuestion(){
+    for(let i=0;i<1200;i++){
+      const a=rand(20,89),b=rand(12,69),c=rand(10,59);const ans=a+b-c;
+      if(ans<=0||ans>199)continue;
+      const shift=10;
+      return{expression:`${a}+${b+shift}-${c+shift}`,displayExpression:`${a} + ${b+shift} - ${c+shift} = ?`,answer:ans,from:`${a} + ${b} - ${c} = ?`};
+    }
+    return{expression:'38+57-36',displayExpression:'38 + 57 - 36 = ?',answer:59,from:'38 + 47 - 26 = ?'};
+  }
+  function makeReconstructedQuestion(value,{finalBoss=false}={}){
+    if(finalBoss){
+      const mult=rand(10,49),base=rand(100,699);return{expression:`${base}+${value}×${mult}`,displayExpression:`${base} + ${value} × ${mult} = ?`,answer:base+value*mult};
+    }
+    const n=rand(10,79);
+    if(value>n+8&&Math.random()<.55)return{expression:`${value}-${n}`,displayExpression:`${value} - ${n} = ?`,answer:value-n};
+    const add=Math.min(n,Math.max(1,999-value));
+    if(add>0)return{expression:`${value}+${add}`,displayExpression:`${value} + ${add} = ?`,answer:value+add};
+    return{expression:`${value}-17`,displayExpression:`${value} - 17 = ?`,answer:value-17};
+  }
+  async function announceTimeLimit(seconds){
+    if(seconds>30)return;
+    const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent=`${seconds}びょう！`;w.hidden=false;await sleep(620);w.hidden=true;w.textContent='';
+  }
+  async function runBossFifthAction(){
+    const spec=currentBossSpecial();
+    ensureMonsterFx();ensureBossSpecialFxLayer();clearBossAction();locked=true;stopTimer();clearQuestionUi();
+    // All boss techniques begin only after the existing enemy cut-in has fully finished.
+    await showActionCutin('enemy',currentBoss().img,{variant:'finisher',duration:1480});
+    bossActionActive=true;bossSpecialSequence={type:spec.type,step:'start'};
+    await showBossTechnique(spec.name);
+    switch(spec.type){
+      case'obscure':{
+        bossSpecialSequence={type:'obscure',step:'final'};
+        configureBossObscurers(bossObscurerCount());document.body.classList.add('boss-obscure-active');
+        prepareQuestion();startTimer(60);break;
+      }
+      case'shield':{
+        bossSpecialSequence={type:'shield',step:'shield'};await showShieldForm();
+        populateSpecialQuestion(makeShieldQuestion(),{chip:'結界',step:1});startTimer(60);break;
+      }
+      case'reverse':{
+        bossSpecialSequence={type:'reverse',step:'final'};
+        if(spec.time<=30){document.body.classList.add('boss-time-pressure');await announceTimeLimit(spec.time);}
+        populateSpecialQuestion(makeReverseQuestion(),{chip:'逆算',step:1});startTimer(spec.time);break;
+      }
+      case'double':{
+        bossSpecialSequence={type:'double',step:1};document.body.classList.add('boss-time-pressure');await announceTimeLimit(spec.time);
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'第一撃',step:1});startTimer(spec.time);break;
+      }
+      case'shield-reverse':{
+        bossSpecialSequence={type:'shield-reverse',step:'shield'};await showShieldForm();
+        populateSpecialQuestion(makeShieldQuestion(),{chip:'魔王結界',step:1});startTimer(60);break;
+      }
+      case'transform':{
+        const q=makeTransformQuestion();bossSpecialSequence={type:'transform',step:'final',question:q};
+        await showEquationRewrite(q.from,q.displayExpression);populateSpecialQuestion(q,{chip:'改竄',step:1});startTimer(spec.time);break;
+      }
+      case'reconstruct':{
+        bossSpecialSequence={type:'reconstruct',step:1};
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'第一算',step:1});startTimer(spec.time);break;
+      }
+      case'shield-double':{
+        bossSpecialSequence={type:'shield-double',step:'shield'};await showShieldForm();
+        populateSpecialQuestion(makeShieldQuestion(),{chip:'装甲',step:1});startTimer(60);break;
+      }
+      case'reverse-reconstruct':{
+        bossSpecialSequence={type:'reverse-reconstruct',step:1};
+        populateSpecialQuestion(makeReverseQuestion(),{chip:'逆算',step:1});startTimer(60);break;
+      }
+    }
   }
   function clearBossAction(){
-    bossActionActive=false;
-    document.body.classList.remove('boss-obscure-active','boss-time-pressure');
+    bossActionActive=false;bossSpecialSequence=null;clearBossTechniqueFx();
+    document.body.classList.remove('boss-obscure-active','boss-time-pressure','vargas-double-strike','boss-technique-active','boss-shield-active');
     document.querySelectorAll('.boss-obscurer').forEach(star=>{star.hidden=true;});
     const timer=els.timerText?.closest('.timer');if(timer)timer.classList.remove('time-pressure','time-critical');
   }
@@ -1244,6 +1455,40 @@
   async function resolveAnswer(value,timeout=false){
     if(locked)return;locked=true;stopTimer();updateSpecialHud();[...els.choices.children].forEach(b=>{b.disabled=true;if(Number(b.textContent)===currentQuestion.answer)b.classList.add('correct');if(value!==null&&Number(b.textContent)===value&&value!==currentQuestion.answer)b.classList.add('wrong');});
     const ok=!timeout&&value===currentQuestion.answer;
+    if(ok&&bossPhase&&bossQuestion===4&&bossSpecialSequence){
+      const seq=bossSpecialSequence;
+      const intermediate=async(message)=>{els.feedbackText.textContent=message;showAnswerMark(true);playSE(correctSE);await sleep(520);};
+      if(seq.type==='shield'&&seq.step==='shield'){
+        await intermediate('結界を破壊！');await showShieldBreak();bossSpecialSequence={type:'shield',step:'final'};
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'本撃',step:2});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='shield-reverse'&&seq.step==='shield'){
+        await intermediate('魔王結界を破壊！');await showShieldBreak();await showBossPhaseTransition('FINAL CALCULATION','最終演算','impact');
+        bossSpecialSequence={type:'shield-reverse',step:'final'};document.body.classList.add('boss-time-pressure');await announceTimeLimit(30);
+        populateSpecialQuestion(makeReverseQuestion(),{chip:'最終演算',step:2});startTimer(30);return;
+      }
+      if(seq.type==='double'&&seq.step===1){
+        await intermediate('第一撃を突破！');await showBossPhaseTransition('SECOND STRIKE','第二撃','slash');
+        bossSpecialSequence={type:'double',step:2};populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'第二撃',step:2});startTimer(30,{preserveCountCue:true});return;
+      }
+      if(seq.type==='reconstruct'&&seq.step===1){
+        const first=currentQuestion.answer;await intermediate('第一算を突破！');await showReconstructTransition(first,'ANSWER LINK');
+        bossSpecialSequence={type:'reconstruct',step:2,source:first};populateSpecialQuestion(makeReconstructedQuestion(first),{chip:'再構成',step:2});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='shield-double'&&seq.step==='shield'){
+        await intermediate('装甲を破壊！');await showShieldBreak();await showBossPhaseTransition('CORE EXPOSED','コア露出','impact');
+        bossSpecialSequence={type:'shield-double',step:1};populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'第一撃',step:1});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='shield-double'&&seq.step===1){
+        await intermediate('第一撃を突破！');await showBossPhaseTransition('SECOND STRIKE','第二撃','slash');
+        bossSpecialSequence={type:'shield-double',step:2};populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'第二撃',step:2});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='reverse-reconstruct'&&seq.step===1){
+        const first=currentQuestion.answer;await intermediate('逆算成功！');await showReconstructTransition(first,'TIME RECONSTRUCT');
+        bossSpecialSequence={type:'reverse-reconstruct',step:2,source:first};document.body.classList.add('boss-time-pressure');await announceTimeLimit(30);
+        populateSpecialQuestion(makeReconstructedQuestion(first,{finalBoss:true}),{chip:'時空再構成',step:2});startTimer(30);return;
+      }
+    }
     if(ok){
       comboStreak++;adjustSpecialGauge(20);
       els.feedbackText.textContent='せいかい！';showAnswerMark(true);
@@ -1405,9 +1650,9 @@
   });
 
   window.__SANSU_TEST__={
-    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,paused,gameOverActive,specialGauge,comboStreak,specialActive};},
+    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,bossSpecialSequence:bossSpecialSequence&&{...bossSpecialSequence},currentQuestion:currentQuestion&&{...currentQuestion},paused,gameOverActive,specialGauge,comboStreak,specialActive};},
     rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,
-    showActionCutin,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_KEEP_ORIGINAL_FACING,
+    showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_KEEP_ORIGINAL_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
