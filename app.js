@@ -108,10 +108,11 @@
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
+  const breakSE=new Audio('./assets/break.mp3');
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
   const countSE=new Audio('./assets/count.mp3'),buttonSE=new Audio('./assets/button.mp3');
   const cancelSE=new Audio('./assets/cancel.mp3'),start321SE=new Audio('./assets/start_321.mp3'),start0SE=new Audio('./assets/start_0.mp3'),clearSE=new Audio('./assets/clear.mp3');
-  [sirenSE,cutinSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(a=>a.preload='auto');
+  [sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(a=>a.preload='auto');
 
   // BGM collection: only tracks already used by the current game are listed.
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
@@ -1354,7 +1355,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
     try{
       $('bossStrikeKicker').textContent=kicker;$('bossStrikeTitle').textContent=title;
-      fx.hidden=false;fx.className=`boss-strike-transition ${variant}`;void fx.offsetWidth;fx.classList.add('active');
+      fx.hidden=false;fx.className=`boss-strike-transition ${variant}`;void fx.offsetWidth;
+      if(variant==='slash')playSE(cutinSE);
+      fx.classList.add('active');
       await sleep(760);fx.classList.remove('active');await sleep(120);fx.hidden=true;
     }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
   }
@@ -1364,6 +1367,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   async function showShieldBreak(){
     const shield=$('bossShieldFx');if(!shield)return;
+    playSE(breakSE);
     shield.classList.remove('active');shield.classList.add('breaking');await sleep(680);shield.hidden=true;shield.classList.remove('breaking');
   }
   async function showEquationRewrite(from,to){
@@ -1573,7 +1577,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     gameOverActive=false;els.gameOverOverlay.hidden=true;document.body.classList.remove('game-over-active');locked=true;stopTimer();
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();enemyVisualToken++;concealEnemyVisual(true);
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
-    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
+    stopSE(sirenSE);stopSE(cutinSE);stopSE(breakSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
     await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);enqueuePendingSecretRelicNotices({showNow:true});
   }
 
@@ -1600,7 +1604,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.pauseOverlay.hidden=true;document.body.classList.remove('game-paused');paused=false;locked=true;stopTimer();
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
-    stopSE(sirenSE);stopSE(cutinSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
+    stopSE(sirenSE);stopSE(cutinSE);stopSE(breakSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
     await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);enqueuePendingSecretRelicNotices({showNow:true});
   }
 
@@ -1783,7 +1787,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay){playSE(cancelSE);closeMonsterCard();}};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[sirenSE,cutinSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
   els.pauseBtn.onclick=pauseGame;
   if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
   els.pauseResumeBtn.onclick=resumeGame;
