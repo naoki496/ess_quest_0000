@@ -741,3 +741,39 @@ body[data-mode="back"] .map-next-btn{border-color:rgba(101,232,255,.48);backgrou
 @media (orientation:portrait) and (max-width:430px){.map-content{grid-template-rows:minmax(235px,43dvh) auto}.map-tip-card{padding:11px 12px}.map-tip-card p{font-size:.76rem;line-height:1.52}.map-next-btn{height:42px}}
 
 @media (orientation:landscape) and (max-height:500px){.music-entry-btn{top:1px}}
+
+/* Debug mode: reveal the correct choice without changing normal gameplay. */
+.choices button.debug-answer{
+  position:relative;
+  outline:3px solid #ffd75f;
+  box-shadow:0 0 0 2px rgba(28,18,2,.75),0 0 20px rgba(255,215,95,.72),0 6px 14px rgba(0,0,0,.32);
+}
+.choices button.debug-answer::after{
+  content:"正解";
+  position:absolute;
+  z-index:2;
+  right:4px;
+  top:4px;
+  padding:2px 5px;
+  border-radius:999px;
+  border:1px solid rgba(255,245,188,.92);
+  background:rgba(76,50,3,.92);
+  color:#fff1a9;
+  font:900 clamp(.46rem,1vw,.62rem)/1.15 system-ui,"Yu Gothic",sans-serif;
+  letter-spacing:.04em;
+  box-shadow:0 0 8px rgba(255,214,83,.45);
+  pointer-events:none;
+}
+body[data-mode="back"] .choices button.debug-answer{
+  outline-color:#75f4ff;
+  box-shadow:0 0 0 2px rgba(5,24,42,.85),0 0 22px rgba(80,231,255,.72),0 6px 14px rgba(0,0,0,.36);
+}
+body[data-mode="back"] .choices button.debug-answer::after{
+  border-color:rgba(164,248,255,.92);
+  background:rgba(5,48,67,.94);
+  color:#d8fbff;
+  box-shadow:0 0 9px rgba(82,232,255,.48);
+}
+@media (orientation:landscape) and (max-height:500px){
+  .choices button.debug-answer::after{right:2px;top:2px;padding:1px 4px;font-size:.42rem}
+}

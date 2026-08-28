@@ -697,6 +697,12 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
 
   function currentStage(){return getStages()[stageIndex];}
   function sameDigitLength(a,b){return String(Math.abs(a)).length===String(Math.abs(b)).length;}
+  function applyDebugAnswerHint(button,value,answer){
+    if(!debugFullUnlock||value!==answer)return;
+    button.classList.add('debug-answer');
+    button.dataset.debugAnswer='正解';
+    button.setAttribute('aria-label',`${value}（デバッグ：正解）`);
+  }
   function makeChoices(ans){
     if(ans===0)return shuffle([0,1,2]);
     if(ans<10)return shuffle([Math.max(0,ans-1),ans,ans+1]);
@@ -1122,7 +1128,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     locked=true;clearBattleFx();renderGame();
     currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):makeBackQuestion(stageIndex));
     els.mathProblem.textContent=`${currentQuestion.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';
-    makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});
+    makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;applyDebugAnswerHint(b,v,currentQuestion.answer);b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});
     locked=false;syncPauseButton();updateSpecialHud();
   }
 
@@ -1346,7 +1352,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
     currentQuestion=q;
     els.mathProblem.textContent=q.displayExpression||`${q.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';
-    makeChoices(q.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});
+    makeChoices(q.answer).forEach(v=>{const b=document.createElement('button');b.textContent=v;applyDebugAnswerHint(b,v,q.answer);b.onclick=()=>resolveAnswer(v,false);els.choices.appendChild(b);});
     if(chip)setBossStepChip(chip,step);else{$('bossStrikeChip')?.remove();}
     locked=false;syncPauseButton();updateSpecialHud();
   }
