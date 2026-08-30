@@ -800,3 +800,80 @@ body[data-mode="crimson"] .choices button{border-color:rgba(239,181,111,.48)}
 
 .music-world-tabs{grid-template-columns:repeat(3,1fr)}
 body[data-mode="crimson"] .music-world-tabs button.active{color:#ffe2c9;border-color:rgba(240,139,79,.72);background:linear-gradient(180deg,rgba(112,55,28,.66),rgba(48,22,18,.84))}
+
+/* --- Crimson fraction UI: landscape-safe vertical expansion (fix 2026-08-30) --- */
+/* Fractions keep their readable scale; the containing question/choice boxes grow instead. */
+@media (orientation:landscape){
+  .question-panel.fraction-question{padding-top:12px;padding-bottom:16px}
+  .question-panel.fraction-question .equation-box{height:138px;margin:9px 0;padding:12px 8px}
+  .question-panel.fraction-question .math-problem{line-height:1.05}
+  .question-panel.fraction-question .choices button{height:96px;padding:8px 6px}
+}
+@media (orientation:landscape) and (max-height:700px){
+  .question-panel.fraction-question{padding-top:9px;padding-bottom:12px}
+  .question-panel.fraction-question .equation-box{height:98px;margin:7px 0;padding:9px 7px}
+  .question-panel.fraction-question .choices button{height:78px;padding:6px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .question-panel.fraction-question{padding-top:6px;padding-bottom:9px}
+  .question-panel.fraction-question .equation-box{height:72px;margin:5px 0;padding:6px 5px}
+  .question-panel.fraction-question .choices button{height:56px;padding:5px 4px}
+}
+
+/* --- Crimson boss fifth-question specials (2026-08-30) --- */
+.question-panel.crimson-special-panel{overflow:visible}
+
+/* 田守の大入道：稲穂隠し */
+.crimson-straw-layer{position:absolute;inset:0;z-index:42;pointer-events:none;overflow:visible}
+.crimson-straw-obscurer{position:absolute;opacity:0;transform:translateY(8px) scale(.96);transition:left .42s cubic-bezier(.2,.78,.2,1),top .42s cubic-bezier(.2,.78,.2,1),width .3s ease,height .3s ease,opacity .2s ease,transform .24s ease;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(129,75,20,.98),rgba(80,42,12,.98));box-shadow:0 8px 18px rgba(0,0,0,.42),inset 0 0 0 2px rgba(255,219,117,.42)}
+.crimson-straw-obscurer.is-visible{opacity:1;transform:translateY(0) scale(1)}
+.crimson-straw-obscurer::before,.crimson-straw-obscurer::after{content:"";position:absolute;inset:-20% -8%;background:repeating-linear-gradient(74deg,transparent 0 9%,rgba(242,196,84,.96) 9.5% 12%,rgba(121,69,22,.94) 12.5% 14%,transparent 14.5% 22%);filter:drop-shadow(0 1px 1px rgba(45,24,5,.5));transform:rotate(-4deg)}
+.crimson-straw-obscurer::after{background:repeating-linear-gradient(104deg,transparent 0 13%,rgba(255,215,107,.88) 13.5% 16%,transparent 16.5% 24%);transform:rotate(5deg);opacity:.78}
+.crimson-straw-obscurer i{position:absolute;z-index:2;width:8%;height:72%;top:8%;border-radius:50%;background:linear-gradient(180deg,#ffe49a,#d39128 60%,#70400e);box-shadow:0 0 5px rgba(255,214,111,.6)}
+.crimson-straw-obscurer i:nth-child(1){left:13%;transform:rotate(-15deg)}.crimson-straw-obscurer i:nth-child(2){left:29%;transform:rotate(-6deg)}.crimson-straw-obscurer i:nth-child(3){left:46%;transform:rotate(5deg)}.crimson-straw-obscurer i:nth-child(4){left:63%;transform:rotate(11deg)}.crimson-straw-obscurer i:nth-child(5){left:78%;transform:rotate(17deg)}
+.crimson-straw-obscurer b{position:absolute;z-index:3;left:4%;right:4%;bottom:12%;height:16%;border-radius:999px;background:linear-gradient(180deg,#9d5e21,#5f3212);box-shadow:inset 0 2px rgba(255,217,130,.35)}
+
+/* 深山烏天狗・玄羽：天狗颪 */
+body.crimson-tengu-gust .choices button{will-change:transform;animation:crimsonTenguGustA 2.55s ease-in-out infinite alternate}
+body.crimson-tengu-gust .choices button:nth-child(2){animation-name:crimsonTenguGustB;animation-duration:2.15s;animation-delay:-.7s}
+body.crimson-tengu-gust .choices button:nth-child(3){animation-name:crimsonTenguGustC;animation-duration:2.85s;animation-delay:-1.1s}
+body.crimson-tengu-gust .question-panel::after{content:"";position:absolute;z-index:38;pointer-events:none;inset:0;border-radius:inherit;background:repeating-linear-gradient(171deg,transparent 0 10%,rgba(230,247,255,.12) 10.5% 11.5%,transparent 12% 20%);animation:crimsonWindLines 1.25s linear infinite;mix-blend-mode:screen}
+body.special-assist-active.crimson-tengu-gust .choices button,body.game-paused.crimson-tengu-gust .choices button,body.special-assist-active.crimson-tengu-gust .question-panel::after,body.game-paused.crimson-tengu-gust .question-panel::after{animation-play-state:paused!important}
+@keyframes crimsonTenguGustA{0%{transform:translate(-5%,1px) rotate(-.5deg)}50%{transform:translate(2%,-2px) rotate(.3deg)}100%{transform:translate(6%,2px) rotate(.55deg)}}
+@keyframes crimsonTenguGustB{0%{transform:translate(5%,-2px) rotate(.45deg)}55%{transform:translate(-1%,2px) rotate(-.25deg)}100%{transform:translate(-6%,-1px) rotate(-.6deg)}}
+@keyframes crimsonTenguGustC{0%{transform:translate(-4%,2px) rotate(-.35deg)}48%{transform:translate(3%,0) rotate(.2deg)}100%{transform:translate(5%,-2px) rotate(.5deg)}}
+@keyframes crimsonWindLines{from{background-position:0 0}to{background-position:120px -24px}}
+
+/* 湯宿総支配人・お滝：湯煙隠し */
+.crimson-steam-layer{position:absolute;inset:-3%;z-index:41;overflow:hidden;border-radius:inherit;pointer-events:none}
+.crimson-steam-layer i{position:absolute;width:48%;height:36%;border-radius:50%;opacity:.82;background:radial-gradient(ellipse at center,rgba(255,255,255,.96) 0%,rgba(246,249,246,.83) 26%,rgba(230,240,235,.55) 52%,rgba(225,235,230,0) 76%);filter:blur(8px);will-change:transform}
+.crimson-steam-layer .steam-a{left:-28%;top:3%;animation:crimsonSteamA 5.6s ease-in-out infinite alternate}.crimson-steam-layer .steam-b{right:-24%;top:28%;animation:crimsonSteamB 6.2s ease-in-out infinite alternate-reverse}.crimson-steam-layer .steam-c{left:8%;bottom:-17%;animation:crimsonSteamC 5.1s ease-in-out infinite alternate}.crimson-steam-layer .steam-d{right:4%;top:-16%;animation:crimsonSteamD 6.7s ease-in-out infinite alternate-reverse;opacity:.68}
+body.special-assist-active .crimson-steam-layer i,body.game-paused .crimson-steam-layer i{animation-play-state:paused!important}
+@keyframes crimsonSteamA{0%{transform:translate(0,4%) scale(.9)}45%{transform:translate(95%,38%) scale(1.15)}100%{transform:translate(185%,68%) scale(.98)}}
+@keyframes crimsonSteamB{0%{transform:translate(0,0) scale(1)}52%{transform:translate(-82%,-34%) scale(1.18)}100%{transform:translate(-170%,22%) scale(.94)}}
+@keyframes crimsonSteamC{0%{transform:translate(-12%,0) scale(1.05)}55%{transform:translate(72%,-118%) scale(.88)}100%{transform:translate(138%,-172%) scale(1.12)}}
+@keyframes crimsonSteamD{0%{transform:translate(8%,0) scale(.84)}48%{transform:translate(-66%,116%) scale(1.12)}100%{transform:translate(-138%,185%) scale(.92)}}
+
+/* 天守守・月下丸：月影転位 */
+.crimson-moon-flash{position:absolute;z-index:46;inset:0;pointer-events:none;border-radius:inherit;opacity:0;background:radial-gradient(circle at 50% 55%,rgba(255,255,255,.92),rgba(197,221,255,.48) 22%,rgba(117,135,205,.12) 47%,transparent 72%);mix-blend-mode:screen}
+.crimson-moon-flash::before{content:"";position:absolute;width:31%;aspect-ratio:1;left:50%;top:50%;transform:translate(-50%,-50%) scale(.55);border:3px solid rgba(234,244,255,.95);border-radius:50%;box-shadow:0 0 24px rgba(212,230,255,.85),inset 0 0 18px rgba(255,255,255,.65)}
+.crimson-moon-flash.active{animation:crimsonMoonFlash .46s ease-out both}
+body.crimson-moon-shifting .choices{filter:blur(1.2px) brightness(1.3)}
+body.crimson-moon-shifting .choices button{pointer-events:none!important}
+@keyframes crimsonMoonFlash{0%{opacity:0}30%{opacity:.95}100%{opacity:0}}
+
+/* 秋尽の剣聖・玄真：無明の一閃 */
+body.crimson-genma-dim .math-problem{opacity:.15;filter:blur(.15px);transition:opacity .22s ease,filter .22s ease}
+body.crimson-genma-dim .equation-box{box-shadow:inset 0 0 26px rgba(35,39,52,.2),0 5px 12px rgba(0,0,0,.26)}
+.boss-strike-transition.crimson-genma-slash{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.12),rgba(0,0,0,.94) 63%)}
+.boss-strike-transition.crimson-genma-slash .boss-slash{filter:drop-shadow(0 0 12px rgba(222,238,255,.95))}
+
+@media (orientation:landscape) and (max-height:520px){
+  body.crimson-tengu-gust .choices button{animation-duration:2.85s;transform-origin:center}
+  .crimson-straw-obscurer{border-radius:8px}
+  .crimson-steam-layer i{filter:blur(6px);opacity:.74}
+}
+@media (orientation:portrait){
+  body.crimson-tengu-gust .choices button{animation-duration:3s}
+  .crimson-steam-layer i{opacity:.72}
+}

@@ -115,6 +115,7 @@
   };
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
+  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -767,6 +768,28 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function fractionHtml(f){return `<span class="fraction-stack" role="img" aria-label="${f.d}分の${f.n}"><span class="fraction-num">${f.n}</span><span class="fraction-bar"></span><span class="fraction-den">${f.d}</span></span>`;}
   function fractionExpressionHtml(a,op,b){return `${fractionHtml(a)}<span class="fraction-op">${op}</span>${fractionHtml(b)}<span class="fraction-op">=</span><span class="fraction-q">?</span>`;}
   function round2(v){return Math.round((v+Number.EPSILON)*100)/100;}
+  function normalizeChoiceNumber(v){
+    if(typeof v!=='number'||!Number.isFinite(v))return v;
+    const n=round2(v);
+    return Object.is(n,-0)?0:n;
+  }
+  function makeDecimalChoices(ans){
+    const answer=normalizeChoiceNumber(ans);
+    const text=String(answer);
+    const dot=text.indexOf('.');
+    const places=dot<0?0:Math.min(2,text.length-dot-1);
+    const unit=places>=2?.01:.1;
+    const candidates=[
+      answer-unit,answer+unit,answer-unit*10,answer+unit*10,answer-1,answer+1
+    ].map(normalizeChoiceNumber).filter(v=>v>=0&&v!==answer);
+    const wrong=[];
+    for(const v of candidates){if(!wrong.includes(v))wrong.push(v);if(wrong.length>=2)break;}
+    while(wrong.length<2){
+      const v=normalizeChoiceNumber(answer+(wrong.length+2)*unit);
+      if(v!==answer&&!wrong.includes(v))wrong.push(v);
+    }
+    return shuffle([answer,...wrong.slice(0,2)]);
+  }
   function makeFractionChoices(answerKey){
     const a=parseFractionKey(answerKey);if(!a)return makeChoices(Number(answerKey));
     const candidates=[];
@@ -807,6 +830,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   }
   function makeChoices(ans){
     if(typeof ans==='string'&&ans.includes('/'))return makeFractionChoices(ans);
+    if(typeof ans==='number'&&!Number.isInteger(ans))return makeDecimalChoices(ans);
     if(ans===0)return shuffle([0,1,2]);
     if(ans<10)return shuffle([Math.max(0,ans-1),ans,ans+1]);
 
@@ -842,11 +866,20 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     'monster_front_3_4_20.png','monster_front_5_1_30.png',
     'monster_back_1_2_4.png','monster_back_2_5_14.png'
   ]);
-  const BATTLE_SPRITE_SCALE={};
+  const BATTLE_SPRITE_SCALE={
+    // Genma's formal sprite deliberately carries much larger top/bottom transparent
+    // safety margins than the stage bosses. Compensate only at presentation time so
+    // the original 1152x1536 PNG remains untouched while his visible figure matches
+    // the other bosses in battle.
+    'boss_crimson_last.png':1.24
+  };
   const BATTLE_SPRITE_OFFSET_Y={
     // The source art extends lower with particles, which makes the knight itself appear
     // unusually high when bottom-aligned. Shift only the battle presentation downward.
-    'monster_front_4_2_25.png':'7%'
+    'monster_front_4_2_25.png':'7%',
+    // The same source-safe margin leaves the visible feet high above the actor base
+    // after scaling, so lower Genma slightly without changing the asset itself.
+    'boss_crimson_last.png':'11%'
   };
   function applyEnemyFacing(en){
     if(!els.enemySprite)return;
@@ -1187,7 +1220,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const value=Math.max(0,Math.min(100,specialGauge));
     els.specialFill.style.width=`${value}%`;
     els.specialHud.classList.toggle('ready',value>=100);
-    const canUse=value>=100&&!specialActive&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
+    const canUse=value>=100&&!specialActive&&!crimsonMoonShiftBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
     els.specialBtn.hidden=value<100||!currentQuestion||!timerId||paused||gameOverActive||specialActive;
     els.specialBtn.disabled=!canUse;
     els.specialBtn.setAttribute('aria-disabled',canUse?'false':'true');
@@ -1198,7 +1231,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function resetSpecialGauge(){specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('special-assist-active');updateSpecialHud();}
   async function activateSpecialMove(){
-    if(specialActive||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
+    if(specialActive||crimsonMoonShiftBusy||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
     const wrongButtons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
     if(!wrongButtons.length)return;
     specialActive=true;locked=true;
@@ -1207,7 +1240,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     [...els.choices.children].forEach(b=>b.disabled=true);
     document.body.classList.add('special-assist-active');
     specialGauge=0;updateSpecialHud();
-    const heroFile=mode==='front'?'hero.png':'back_hero.png';
+    const heroFile=mode==='front'?'hero.png':mode==='back'?'back_hero.png':'crimson_hero.png';
     await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
     const target=pick(wrongButtons);
     playFinisherSE();
@@ -1228,7 +1261,12 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true});
   }
 
+  function setFractionQuestionLayout(active){
+    const panel=els.mathProblem.closest('.question-panel');
+    if(panel)panel.classList.toggle('fraction-question',!!active);
+  }
   function renderQuestionContent(q){
+    setFractionQuestionLayout(!!q?.fraction);
     if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=`${q.expression}=?`;
   }
   function renderChoiceButton(b,v,answer){
@@ -1244,7 +1282,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     locked=false;syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
+  function clearQuestionUi(){setFractionQuestionLayout(false);els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -1397,9 +1435,20 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       {type:'reverse',name:'欠落信号',time:30},
       {type:'shield-double',name:'機甲連環',time:60},
       {type:'reverse-reconstruct',name:'時空再演算',time:30}
+    ],
+    crimson:[
+      {type:'crimson-straw',name:'稲穂隠し',time:60},
+      {type:'crimson-gust',name:'天狗颪',time:60},
+      {type:'crimson-steam',name:'湯煙隠し',time:60},
+      {type:'crimson-time',name:'刻限算盤',time:20},
+      {type:'crimson-moon-shift',name:'月影転位',time:60}
     ]
   };
-  function currentBossSpecial(){return BOSS_SPECIALS[mode]?.[stageIndex]||null;}
+  const CRIMSON_LAST_SPECIAL={type:'crimson-genma',name:'無明の一閃',time:15};
+  function currentBossSpecial(){
+    if(mode==='crimson'&&crimsonLastPhase)return CRIMSON_LAST_SPECIAL;
+    return BOSS_SPECIALS[mode]?.[stageIndex]||null;
+  }
   function ensureBossSpecialFxLayer(){
     let layer=$('bossSpecialFxLayer');
     if(!layer){
@@ -1561,6 +1610,102 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(seconds>30)return;
     const w=$('rarityWarning');w.className='rarity-warning time-warning';w.textContent=`${seconds}びょう！`;w.hidden=false;await sleep(760);w.hidden=true;w.textContent='';
   }
+  function trackCrimsonInterval(id){crimsonSpecialIntervals.push(id);return id;}
+  function trackCrimsonTimeout(id){crimsonSpecialTimeouts.push(id);return id;}
+  function clearCrimsonSpecialEffects(){
+    crimsonSpecialIntervals.forEach(id=>clearInterval(id));crimsonSpecialIntervals=[];
+    crimsonSpecialTimeouts.forEach(id=>clearTimeout(id));crimsonSpecialTimeouts=[];
+    crimsonMoonShiftBusy=false;
+    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim');
+    const panel=document.querySelector('.question-panel');if(panel)panel.classList.remove('crimson-special-panel');
+    ['crimsonStrawLayer','crimsonSteamLayer','crimsonMoonFlash'].forEach(id=>$(id)?.remove());
+    if(els.mathProblem){els.mathProblem.style.removeProperty('opacity');els.mathProblem.style.removeProperty('filter');}
+  }
+  function activeWrongChoiceButtons(){
+    if(!currentQuestion)return[];
+    return[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
+  }
+  function ensureCrimsonStrawLayer(){
+    const panel=document.querySelector('.question-panel');if(!panel)return null;
+    let layer=$('crimsonStrawLayer');if(layer)return layer;
+    layer=document.createElement('div');layer.id='crimsonStrawLayer';layer.className='crimson-straw-layer';layer.setAttribute('aria-hidden','true');
+    layer.innerHTML='<div class="crimson-straw-obscurer"><i></i><i></i><i></i><i></i><i></i><b></b></div>';
+    panel.appendChild(layer);return layer;
+  }
+  function positionCrimsonStraw(target,visible=true){
+    const layer=ensureCrimsonStrawLayer(),panel=document.querySelector('.question-panel'),cover=layer?.querySelector('.crimson-straw-obscurer');
+    if(!layer||!panel||!cover)return;
+    if(!target||!visible){cover.classList.remove('is-visible');return;}
+    const pr=panel.getBoundingClientRect(),tr=target.getBoundingClientRect();
+    const pad=Math.max(4,Math.min(10,tr.height*.08));
+    cover.style.left=`${tr.left-pr.left-pad}px`;cover.style.top=`${tr.top-pr.top-pad}px`;
+    cover.style.width=`${tr.width+pad*2}px`;cover.style.height=`${tr.height+pad*2}px`;
+    cover.classList.add('is-visible');
+  }
+  function startCrimsonStrawCycle(){
+    document.body.classList.add('crimson-straw-active');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
+    let idx=0,soloCovered=true;
+    const update=()=>{
+      if(paused||specialActive||locked)return;
+      const wrong=activeWrongChoiceButtons();
+      if(!wrong.length){positionCrimsonStraw(null,false);return;}
+      if(wrong.length===1){soloCovered=!soloCovered;positionCrimsonStraw(wrong[0],soloCovered);return;}
+      idx=(idx+1)%wrong.length;positionCrimsonStraw(wrong[idx],true);
+    };
+    const initial=activeWrongChoiceButtons();if(initial.length)positionCrimsonStraw(initial[0],true);
+    trackCrimsonInterval(setInterval(update,1900));
+  }
+  function startCrimsonTenguGust(){
+    document.body.classList.add('crimson-tengu-gust');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
+  }
+  function ensureCrimsonSteamLayer(){
+    const panel=document.querySelector('.question-panel');if(!panel)return null;
+    let layer=$('crimsonSteamLayer');if(layer)return layer;
+    layer=document.createElement('div');layer.id='crimsonSteamLayer';layer.className='crimson-steam-layer';layer.setAttribute('aria-hidden','true');
+    layer.innerHTML='<i class="steam-a"></i><i class="steam-b"></i><i class="steam-c"></i><i class="steam-d"></i>';
+    panel.appendChild(layer);return layer;
+  }
+  function startCrimsonSteam(){ensureCrimsonSteamLayer();document.body.classList.add('crimson-steam-active');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');}
+  function ensureCrimsonMoonFlash(){
+    const panel=document.querySelector('.question-panel');if(!panel)return null;
+    let fx=$('crimsonMoonFlash');if(fx)return fx;
+    fx=document.createElement('div');fx.id='crimsonMoonFlash';fx.className='crimson-moon-flash';fx.setAttribute('aria-hidden','true');panel.appendChild(fx);return fx;
+  }
+  async function rotateCrimsonChoices(){
+    if(crimsonMoonShiftBusy||paused||specialActive||locked||!currentQuestion)return;
+    const buttons=[...els.choices.children];if(buttons.length<2)return;
+    crimsonMoonShiftBusy=true;document.body.classList.add('crimson-moon-shifting');
+    buttons.forEach(b=>b.disabled=true);const fx=ensureCrimsonMoonFlash();if(fx){fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');}
+    await sleep(180);
+    const first=els.choices.firstElementChild;if(first)els.choices.appendChild(first);
+    await sleep(260);
+    document.body.classList.remove('crimson-moon-shifting');
+    if(fx)fx.classList.remove('active');
+    [...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});
+    crimsonMoonShiftBusy=false;updateSpecialHud();
+  }
+  function startCrimsonMoonShift(){
+    ensureCrimsonMoonFlash();document.body.classList.add('crimson-moon-shift-active');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
+    trackCrimsonInterval(setInterval(()=>{rotateCrimsonChoices();},3000));
+  }
+  async function showCrimsonGenmaSlash(){
+    ensureBossSpecialFxLayer();const fx=$('bossStrikeTransition');if(!fx)return;
+    hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
+    try{
+      $('bossStrikeKicker').textContent='FINAL STRIKE';$('bossStrikeTitle').textContent='無明の一閃';
+      fx.hidden=false;fx.className='boss-strike-transition slash crimson-genma-slash';void fx.offsetWidth;playSE(cutinSE);fx.classList.add('active');
+      await sleep(620);fx.classList.remove('active');await sleep(100);fx.hidden=true;
+    }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
+  }
+  async function startCrimsonGenmaFinal(){
+    prepareQuestion();locked=true;[...els.choices.children].forEach(b=>b.disabled=true);updateSpecialHud();syncPauseButton();
+    document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
+    await sleep(1800);await showCrimsonGenmaSlash();
+    document.body.classList.add('crimson-genma-dim','boss-time-pressure');
+    await announceTimeLimit(15);
+    locked=false;[...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});syncPauseButton();updateSpecialHud();
+    startTimer(15);
+  }
   async function runBossFifthAction(){
     const spec=currentBossSpecial();
     ensureMonsterFx();ensureBossSpecialFxLayer();clearBossAction();locked=true;stopTimer();clearQuestionUi();
@@ -1608,9 +1753,28 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         bossSpecialSequence={type:'reverse-reconstruct',step:1};
         populateSpecialQuestion(makeReverseQuestion(),{chip:'逆算',step:1});startTimer(60);break;
       }
+      case'crimson-straw':{
+        bossSpecialSequence={type:'crimson-straw',step:'final'};prepareQuestion();startCrimsonStrawCycle();startTimer(60);break;
+      }
+      case'crimson-gust':{
+        bossSpecialSequence={type:'crimson-gust',step:'final'};prepareQuestion();startCrimsonTenguGust();startTimer(60);break;
+      }
+      case'crimson-steam':{
+        bossSpecialSequence={type:'crimson-steam',step:'final'};prepareQuestion();startCrimsonSteam();startTimer(60);break;
+      }
+      case'crimson-time':{
+        bossSpecialSequence={type:'crimson-time',step:'final'};document.body.classList.add('boss-time-pressure');await announceTimeLimit(spec.time);prepareQuestion();startTimer(spec.time);break;
+      }
+      case'crimson-moon-shift':{
+        bossSpecialSequence={type:'crimson-moon-shift',step:'final'};prepareQuestion();startCrimsonMoonShift();startTimer(60);break;
+      }
+      case'crimson-genma':{
+        bossSpecialSequence={type:'crimson-genma',step:'final'};await startCrimsonGenmaFinal();break;
+      }
     }
   }
   function clearBossAction(){
+    clearCrimsonSpecialEffects();
     bossActionActive=false;bossSpecialSequence=null;clearBossTechniqueFx();
     document.body.classList.remove('boss-obscure-active','boss-time-pressure','vargas-double-strike','boss-technique-active','boss-shield-active');
     document.querySelectorAll('.boss-obscurer').forEach(star=>{star.hidden=true;});
@@ -1949,7 +2113,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
-    registerMonster,hasSecretRelic,syncSecretRelics,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,
+    registerMonster,hasSecretRelic,syncSecretRelics,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
