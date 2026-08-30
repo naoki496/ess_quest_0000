@@ -989,18 +989,19 @@ body.game-paused.crimson-genma-reveal .math-problem,body.special-assist-active.c
 }
 
 
-/* ===== 2026-08-30 Monster detail card containment fix =====
-   Keep the full monster sprite inside the card on PC/tablet/phone in both orientations.
-   Previous rules intentionally enlarged the art beyond 100%, which could place the
-   lower body outside the card on wide layouts. */
+/* ===== 2026-08-30 Monster detail card clipped-enlargement tuning =====
+   Show monsters larger again, while keeping the art safely clipped inside the card.
+   The image may slightly exceed the internal art frame, but never the dialog itself. */
 .monster-card{
   overflow:hidden;
+  --monster-card-art-scale:1.16;
+  --monster-card-art-shift:-2%;
 }
 .monster-card-art{
   position:relative;
   overflow:hidden!important;
   margin:2px 0 10px;
-  height:min(44dvh,340px);
+  height:min(46dvh,360px);
   display:grid;
   place-items:center;
 }
@@ -1014,25 +1015,30 @@ body.game-paused.crimson-genma-reveal .math-problem,body.special-assist-active.c
   min-height:0!important;
   object-fit:contain!important;
   object-position:center center!important;
-  transform:none!important;
-  transform-origin:center center!important;
+  transform:translateY(var(--monster-card-art-shift)) scale(var(--monster-card-art-scale))!important;
+  transform-origin:50% 42%!important;
 }
 
-/* Portrait keeps a generous art area, but never lets the sprite cover metadata. */
+/* Portrait keeps a generous art area, enlarged a little less to preserve text space. */
 @media (orientation:portrait){
-  .monster-card{overflow:hidden!important}
+  .monster-card{overflow:hidden!important;--monster-card-art-scale:1.12;--monster-card-art-shift:-4%}
   .monster-card-art{
-    height:min(43dvh,340px)!important;
+    height:min(44dvh,350px)!important;
     margin:2px 0 10px!important;
     place-items:center!important;
   }
 }
 
-/* Short landscape screens need a lower fixed ceiling so the metadata/description
-   remains visible without pushing the sprite outside the dialog. */
+/* Wide desktop/tablet layouts can carry slightly larger art for the card showcase. */
+@media (orientation:landscape) and (min-height:521px){
+  .monster-card{--monster-card-art-scale:1.18;--monster-card-art-shift:-2%}
+}
+
+/* Short landscape screens still enlarge the sprite, but more conservatively. */
 @media (orientation:landscape) and (max-height:520px){
+  .monster-card{--monster-card-art-scale:1.11;--monster-card-art-shift:-1%}
   .monster-card-art{
-    height:clamp(112px,39dvh,190px)!important;
+    height:clamp(118px,41dvh,204px)!important;
     margin:0 0 6px!important;
   }
 }
