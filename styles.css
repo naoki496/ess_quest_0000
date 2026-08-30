@@ -987,3 +987,52 @@ body.game-paused.crimson-genma-reveal .math-problem,body.special-assist-active.c
   }
   .monster-card-close{position:sticky;float:right;right:0;top:0;margin-bottom:-36px}
 }
+
+
+/* ===== 2026-08-30 Monster detail card containment fix =====
+   Keep the full monster sprite inside the card on PC/tablet/phone in both orientations.
+   Previous rules intentionally enlarged the art beyond 100%, which could place the
+   lower body outside the card on wide layouts. */
+.monster-card{
+  overflow:hidden;
+}
+.monster-card-art{
+  position:relative;
+  overflow:hidden!important;
+  margin:2px 0 10px;
+  height:min(44dvh,340px);
+  display:grid;
+  place-items:center;
+}
+.monster-card-art img{
+  display:block;
+  width:auto!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:none!important;
+  transform-origin:center center!important;
+}
+
+/* Portrait keeps a generous art area, but never lets the sprite cover metadata. */
+@media (orientation:portrait){
+  .monster-card{overflow:hidden!important}
+  .monster-card-art{
+    height:min(43dvh,340px)!important;
+    margin:2px 0 10px!important;
+    place-items:center!important;
+  }
+}
+
+/* Short landscape screens need a lower fixed ceiling so the metadata/description
+   remains visible without pushing the sprite outside the dialog. */
+@media (orientation:landscape) and (max-height:520px){
+  .monster-card-art{
+    height:clamp(112px,39dvh,190px)!important;
+    margin:0 0 6px!important;
+  }
+}

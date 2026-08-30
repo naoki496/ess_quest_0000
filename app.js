@@ -1522,10 +1522,21 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       banner.classList.remove('active');await sleep(160);banner.hidden=true;
     }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
   }
-  function setBossStepChip(text,step=1){
+  const MULTI_PHASE_BOSS_SPECIALS=new Set(['shield','double','shield-reverse','reconstruct','shield-double','reverse-reconstruct','crimson-steam']);
+  function bossTechniqueChipLabel(phase=''){
+    const spec=currentBossSpecial();
+    const name=spec?.name||'';
+    const detail=String(phase||'').trim();
+    if(!name)return detail;
+    if(!detail||detail===name||!MULTI_PHASE_BOSS_SPECIALS.has(spec.type))return name;
+    return `${name}｜${detail}`;
+  }
+  function setBossStepChip(text='',step=1){
+    const label=bossTechniqueChipLabel(text);
+    if(!label){$('bossStrikeChip')?.remove();return;}
     let chip=$('bossStrikeChip');
     if(!chip){chip=document.createElement('span');chip.id='bossStrikeChip';chip.className='boss-strike-chip';document.querySelector('.question-panel')?.appendChild(chip);}
-    chip.textContent=text;chip.dataset.step=String(step);
+    chip.textContent=label;chip.dataset.step=String(step);
   }
   function populateSpecialQuestion(q,{chip='',step=1}={}){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
@@ -1733,7 +1744,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
   }
   async function startCrimsonGenmaFinal(){
-    prepareQuestion();locked=true;[...els.choices.children].forEach(b=>b.disabled=true);updateSpecialHud();syncPauseButton();
+    prepareQuestion();setBossStepChip(CRIMSON_LAST_SPECIAL.name,1);locked=true;[...els.choices.children].forEach(b=>b.disabled=true);updateSpecialHud();syncPauseButton();
     document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
     document.body.classList.add('crimson-genma-ready');
     await sleep(520);await showCrimsonGenmaSlash();
@@ -1756,7 +1767,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       case'obscure':{
         bossSpecialSequence={type:'obscure',step:'final'};
         configureBossObscurers(bossObscurerCount());document.body.classList.add('boss-obscure-active');
-        prepareQuestion();startTimer(60);break;
+        prepareQuestion();setBossStepChip(spec.name,1);startTimer(60);break;
       }
       case'shield':{
         bossSpecialSequence={type:'shield',step:'shield'};await showShieldForm();
@@ -1792,20 +1803,20 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         populateSpecialQuestion(makeReverseQuestion(),{chip:'逆算',step:1});startTimer(60);break;
       }
       case'crimson-straw':{
-        bossSpecialSequence={type:'crimson-straw',step:'final'};prepareQuestion();startCrimsonStrawCycle();startTimer(60);break;
+        bossSpecialSequence={type:'crimson-straw',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startCrimsonStrawCycle();startTimer(60);break;
       }
       case'crimson-gust':{
-        bossSpecialSequence={type:'crimson-gust',step:'final'};prepareQuestion();startCrimsonTenguGust();startTimer(60);break;
+        bossSpecialSequence={type:'crimson-gust',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startCrimsonTenguGust();startTimer(60);break;
       }
       case'crimson-steam':{
         startCrimsonSteam();bossSpecialSequence={type:'crimson-steam',step:'shield1'};await showShieldForm();
         populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'湯煙結界・壱',step:1});startTimer(60);break;
       }
       case'crimson-time':{
-        bossSpecialSequence={type:'crimson-time',step:'final'};document.body.classList.add('boss-time-pressure');await announceTimeLimit(spec.time);prepareQuestion();startTimer(spec.time);break;
+        bossSpecialSequence={type:'crimson-time',step:'final'};document.body.classList.add('boss-time-pressure');await announceTimeLimit(spec.time);prepareQuestion();setBossStepChip(spec.name,1);startTimer(spec.time);break;
       }
       case'crimson-moon-shift':{
-        bossSpecialSequence={type:'crimson-moon-shift',step:'final'};prepareQuestion();startCrimsonMoonShift();startTimer(60);break;
+        bossSpecialSequence={type:'crimson-moon-shift',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startCrimsonMoonShift();startTimer(60);break;
       }
       case'crimson-genma':{
         bossSpecialSequence={type:'crimson-genma',step:'final'};await startCrimsonGenmaFinal();break;
@@ -1944,7 +1955,10 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         bossSpecialSequence={type:'crimson-steam',step:'shield2'};populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'湯煙結界・弐',step:2});startTimer(60,{preserveCountCue:true});return;
       }
       if(seq.type==='crimson-steam'&&seq.step==='shield2'){
-        await intermediate('第二の湯煙結界を破壊！');await showShieldBreak();bossSpecialSequence={type:'crimson-steam',step:'final'};
+        await intermediate('第二の湯煙結界を破壊！');
+        await showShieldBreak();
+        await showBossPhaseTransition('CORE EXPOSED','コア露出','impact');
+        bossSpecialSequence={type:'crimson-steam',step:'final'};
         populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'本撃',step:3});startTimer(60,{preserveCountCue:true});return;
       }
       if(seq.type==='shield'&&seq.step==='shield'){
