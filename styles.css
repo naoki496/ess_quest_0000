@@ -777,3 +777,26 @@ body[data-mode="back"] .choices button.debug-answer::after{
 @media (orientation:landscape) and (max-height:500px){
   .choices button.debug-answer::after{right:2px;top:2px;padding:1px 4px;font-size:.42rem}
 }
+
+
+/* --- Third world: Crimson World --- */
+body[data-mode="crimson"] .title-bg,body[data-mode="crimson"] .sub-bg{background-image:url('./assets/crimson_stage1.png');filter:saturate(1.05) brightness(.72)}
+body[data-mode="crimson"] .title-shade{background:linear-gradient(90deg,rgba(22,8,4,.72),rgba(84,32,12,.20) 52%,rgba(8,4,4,.60)),linear-gradient(180deg,rgba(55,18,5,.06),rgba(7,5,8,.40))}
+body[data-mode="crimson"] .title-shell{background:linear-gradient(180deg,rgba(31,14,10,.88),rgba(18,11,13,.96))}
+body[data-mode="crimson"] .mode-orb{background:#e97845;box-shadow:0 0 12px #ff9c61}
+body[data-mode="crimson"] .title-mode-plate,body[data-mode="crimson"] .title-track,body[data-mode="crimson"] .title-wallet{border-color:rgba(236,130,75,.34);background:rgba(30,13,10,.80)}
+body[data-mode="crimson"] .title-mode-plate span:not(.mode-orb),body[data-mode="crimson"] .title-track span,body[data-mode="crimson"] .title-wallet span{color:#f0b28a}
+body[data-mode="crimson"] .title-art img{object-fit:contain;object-position:center bottom}
+body[data-mode="crimson"] .actor.hero>img{width:96%;height:90%;max-width:96%;max-height:90%;justify-self:center;align-self:end}
+body[data-mode="crimson"] .question-panel{border-color:rgba(242,185,118,.52)}
+body[data-mode="crimson"] .choices button{border-color:rgba(239,181,111,.48)}
+.world-warp-shell{max-width:980px}.world-warp-list{display:grid;gap:14px;min-height:0;overflow:auto;padding:8px 4px 14px}
+.world-warp-card{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:96px;padding:16px 20px;border-radius:16px;border:1px solid rgba(238,206,139,.35);background:linear-gradient(180deg,rgba(20,39,67,.96),rgba(10,23,43,.98));color:#fff;text-align:left;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.22)}
+.world-warp-card span{display:grid;gap:3px}.world-warp-card small{color:#d9bd82;font-size:.68rem;letter-spacing:.12em}.world-warp-card b{font-size:1.35rem}.world-warp-card strong{font-size:.78rem;color:#f5d68e}.world-warp-card.locked{filter:grayscale(.7);opacity:.62;cursor:default}.world-warp-card.current{outline:2px solid rgba(255,214,118,.52)}
+.fraction-stack{display:inline-grid;grid-template-rows:auto 3px auto;align-items:center;justify-items:center;min-width:.9em;vertical-align:middle;line-height:.88;margin:0 .08em}.fraction-num,.fraction-den{font-size:.72em;line-height:1}.fraction-bar{width:100%;min-width:.8em;height:2px;background:currentColor;border-radius:2px;margin:2px 0}.fraction-op,.fraction-q{display:inline-block;margin:0 .16em;vertical-align:middle}.math-problem{display:flex;align-items:center;justify-content:center;gap:.04em}.choices button .fraction-stack{font-size:1.15em}.choices button .fraction-bar{height:2px}
+.debug-stage-btn.debug-world-crimson{border-color:rgba(240,132,76,.62);background:linear-gradient(180deg,rgba(92,43,24,.96),rgba(45,21,20,.98))}
+@media (orientation:portrait){body[data-mode="crimson"] .title-art img{height:138%}.world-warp-card{min-height:78px;padding:12px 14px}.world-warp-card b{font-size:1.05rem}}
+@media (orientation:landscape){body[data-mode="crimson"] .title-art img{height:109%;left:50%;max-width:109%}}
+
+.music-world-tabs{grid-template-columns:repeat(3,1fr)}
+body[data-mode="crimson"] .music-world-tabs button.active{color:#ffe2c9;border-color:rgba(240,139,79,.72);background:linear-gradient(180deg,rgba(112,55,28,.66),rgba(48,22,18,.84))}

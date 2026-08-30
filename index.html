@@ -43,6 +43,7 @@
           <button id="shopBtn" class="menu-btn"><span class="menu-glyph">◆</span><span>ショップ</span></button>
           <button id="collectionBtn" class="menu-btn"><span class="menu-glyph">✦</span><span>コレクション</span></button>
           <button id="monsterBookBtn" class="menu-btn monster-book-btn"><span class="menu-glyph">◆</span><span>モンスター図鑑</span></button>
+          <button id="worldWarpBtn" class="menu-btn secret" hidden><span class="menu-glyph">∞</span><span>世界を渡る</span></button>
           <button id="backWorldBtn" class="menu-btn secret" hidden><span class="menu-glyph">∞</span><span>ウラステージへ</span></button>
           <button id="frontWorldBtn" class="menu-btn secret-back" hidden><span class="menu-glyph">↩</span><span>表のタイトルへ</span></button>
         </nav>
@@ -61,8 +62,17 @@
       <div><span class="rule-icon">◷</span><div><strong>60</strong><span>びょう</span><small>1もんの制限時間</small></div></div>
       <div><span class="rule-icon">◇</span><div><strong>3</strong><span>たく</span><small>こたえを選択</small></div></div>
       <div><span class="rule-icon">♥</span><div><strong>3</strong><span>ライフ</span><small>3ミスでステージ再挑戦</small></div></div>
-      <div><span class="rule-icon">★</span><div><strong>75</strong><span>もん</span><small>全5ステージ</small></div></div>
+      <div><span class="rule-icon">★</span><div><strong id="titleQuestionCount">75</strong><span>もん</span><small>全5ステージ</small></div></div>
     </div>
+  </div>
+</section>
+
+<section id="worldWarpScreen" class="screen sub-screen world-warp-screen" hidden>
+  <div class="sub-bg"></div>
+  <div class="sub-shell panel-gold world-warp-shell">
+    <header class="sub-header"><div><small>WORLD CROSSING</small><h2>世界を渡る</h2></div></header>
+    <div id="worldWarpList" class="world-warp-list"></div>
+    <footer class="sub-footer"><button id="worldWarpBackBtn" class="back-btn">タイトルにもどる</button></footer>
   </div>
 </section>
 
@@ -123,6 +133,7 @@
     <div class="music-world-tabs" role="tablist" aria-label="世界を選択">
       <button id="musicFrontTab" type="button" role="tab">表の世界</button>
       <button id="musicBackTab" type="button" role="tab">裏の世界</button>
+      <button id="musicCrimsonTab" type="button" role="tab">紅の世界</button>
     </div>
     <p class="music-note">一度到達したステージやボス戦のBGMが解禁されます。</p>
     <div id="musicTrackList" class="music-track-list"></div>
