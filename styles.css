@@ -795,7 +795,7 @@ body[data-mode="crimson"] .choices button{border-color:rgba(239,181,111,.48)}
 .world-warp-card span{display:grid;gap:3px}.world-warp-card small{color:#d9bd82;font-size:.68rem;letter-spacing:.12em}.world-warp-card b{font-size:1.35rem}.world-warp-card strong{font-size:.78rem;color:#f5d68e}.world-warp-card.locked{filter:grayscale(.7);opacity:.62;cursor:default}.world-warp-card.current{outline:2px solid rgba(255,214,118,.52)}
 .fraction-stack{display:inline-grid;grid-template-rows:auto 3px auto;align-items:center;justify-items:center;min-width:.9em;vertical-align:middle;line-height:.88;margin:0 .08em}.fraction-num,.fraction-den{font-size:.72em;line-height:1}.fraction-bar{width:100%;min-width:.8em;height:2px;background:currentColor;border-radius:2px;margin:2px 0}.fraction-op,.fraction-q{display:inline-block;margin:0 .16em;vertical-align:middle}.math-problem{display:flex;align-items:center;justify-content:center;gap:.04em}.choices button .fraction-stack{font-size:1.15em}.choices button .fraction-bar{height:2px}
 .debug-stage-btn.debug-world-crimson{border-color:rgba(240,132,76,.62);background:linear-gradient(180deg,rgba(92,43,24,.96),rgba(45,21,20,.98))}
-@media (orientation:portrait){body[data-mode="crimson"] .title-art img{height:138%}.world-warp-card{min-height:78px;padding:12px 14px}.world-warp-card b{font-size:1.05rem}}
+@media (orientation:portrait){body[data-mode="crimson"] .title-art img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom}.world-warp-card{min-height:78px;padding:12px 14px}.world-warp-card b{font-size:1.05rem}}
 @media (orientation:landscape){body[data-mode="crimson"] .title-art img{height:109%;left:50%;max-width:109%}}
 
 .music-world-tabs{grid-template-columns:repeat(3,1fr)}

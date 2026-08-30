@@ -62,7 +62,7 @@
       <div><span class="rule-icon">◷</span><div><strong>60</strong><span>びょう</span><small>1もんの制限時間</small></div></div>
       <div><span class="rule-icon">◇</span><div><strong>3</strong><span>たく</span><small>こたえを選択</small></div></div>
       <div><span class="rule-icon">♥</span><div><strong>3</strong><span>ライフ</span><small>3ミスでステージ再挑戦</small></div></div>
-      <div><span class="rule-icon">★</span><div><strong id="titleQuestionCount">75</strong><span>もん</span><small>全5ステージ</small></div></div>
+      <div><span class="rule-icon">★</span><div><strong id="titleQuestionCount">75</strong><span>もん</span><small id="titleQuestionRuleNote">全5ステージ</small></div></div>
     </div>
   </div>
 </section>
@@ -204,7 +204,7 @@
     <small>GAME OVER</small>
     <h2 id="gameOverTitle">ざんねん！</h2>
     <p id="gameOverMessage">このステージの最初からやりなおしますか？</p>
-    <p class="game-over-note">タイトルにもどると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / 75 からになります。</p>
+    <p class="game-over-note">タイトルにもどると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>75</span> からになります。</p>
     <div class="pause-actions">
       <button id="gameOverRetryBtn" class="menu-btn primary" type="button">ステージ最初から</button>
       <button id="gameOverTitleBtn" class="menu-btn pause-danger" type="button">タイトルにもどる</button>
@@ -225,7 +225,7 @@
   <section id="pauseConfirm" class="pause-card pause-confirm panel-gold" hidden>
     <small>CONFIRM</small>
     <h2>タイトルにもどりますか？</h2>
-    <p><strong>現在の冒険の途中経過はセーブされません。</strong><br>次に冒険を始めると、STAGE 1・0 / 75 からのスタートになります。<br><span>モンスター図鑑やコレクションなど、すでに記録されたデータはそのまま残ります。</span></p>
+    <p><strong>現在の冒険の途中経過はセーブされません。</strong><br>次に冒険を始めると、STAGE 1・0 / <span data-run-total>75</span> からのスタートになります。<br><span>モンスター図鑑やコレクションなど、すでに記録されたデータはそのまま残ります。</span></p>
     <div class="pause-actions">
       <button id="pauseCancelTitleBtn" class="menu-btn primary" type="button">ポーズにもどる</button>
       <button id="pauseConfirmTitleBtn" class="menu-btn pause-danger" type="button">タイトルにもどる</button>

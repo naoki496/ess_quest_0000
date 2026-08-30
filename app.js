@@ -368,6 +368,8 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'夜の東京':'紅の世界';
     els.titleTrackName.textContent=titleTrackLabel();
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
+    const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
+    const restartTotal=mode==='crimson'?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
     if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;
     els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;
     if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
@@ -601,7 +603,8 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     return [...normals,...bosses];
   }
   function monsterFlavor(m){
-    if(m.boss)return `${getStages()[m.stage].name}に立ちはだかるボスモンスター。5問の勝負を乗り越えよう。`;
+    if(m.lastBoss)return '紅の世界の最終決戦に立ちはだかる剣聖。分数の乗除5問を乗り越えよう。';
+    if(m.boss)return `${getStages()[m.stage]?.name||'この地'}に立ちはだかるボスモンスター。5問の勝負を乗り越えよう。`;
     const labels=['','身近な姿をしたモンスター。','少し珍しい力を持つモンスター。','めったに姿を見せないレアモンスター。','強い魔力を宿したスーパーレア。','遭遇そのものが特別なSSRモンスター。'];
     return labels[m.rarity]||'未知のモンスター。';
   }
@@ -775,7 +778,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function makeCrimsonQuestion(idx){
     if(idx===0){const d=rand(1,9);const q=rand(1,Math.max(1,Math.floor(9/d)));const a=d*q;return{expression:`${a}÷${d}`,answer:q};}
     if(idx===1){for(let i=0;i<1000;i++){const d=rand(2,9),q=rand(4,99),a=d*q;if(a>=10&&a<=999)return{expression:`${a}÷${d}`,answer:q};}return{expression:'144÷6',answer:24};}
-    if(idx===2){const scale=Math.random()<.35?100:10;let a=rand(1,999)/scale,b=rand(1,499)/scale,op=Math.random()<.5?'+':'-';if(op==='-'&&b>a)[a,b]=[b,a];const ans=round2(op==='+'?a+b:a-b);return{expression:`${a}${op}${b}`,answer:ans};}
+    if(idx===2){const scale=Math.random()<.35?100:10;let a,b;do{a=rand(1,999)/scale;}while(Number.isInteger(a));do{b=rand(1,499)/scale;}while(Number.isInteger(b));let op=Math.random()<.5?'+':'-';if(op==='-'&&b>a)[a,b]=[b,a];const ans=round2(op==='+'?a+b:a-b);return{expression:`${a}${op}${b}`,answer:ans};}
     if(idx===3){if(Math.random()<.5){let a;do{a=rand(11,199)/10;}while(Number.isInteger(a));const b=rand(2,9);return{expression:`${a}×${b}`,answer:round2(a*b)};}for(let i=0;i<300;i++){const d=rand(2,9),q=rand(11,99)/10;if(Number.isInteger(q))continue;const a=round2(d*q);if(Number.isInteger(a))continue;return{expression:`${a}÷${d}`,answer:round2(q)};}return{expression:'7.2÷3',answer:2.4};}
     for(let i=0;i<3000;i++){
       let a=normFraction(rand(1,15),rand(2,12)),b=normFraction(rand(1,15),rand(2,12));if(a.d===1||b.d===1||a.d===b.d)continue;
@@ -1142,7 +1145,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function prepareMapOverlay(initial=false){
     els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'NIGHT TOKYO':'CRIMSON WORLD';
     els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':'紅の世界';
-    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':'./assets/crimson_stage1.png';
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':`./assets/${currentStage().bg}`;
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
     const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
     const mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'];
