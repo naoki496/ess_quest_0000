@@ -214,6 +214,14 @@
   function effectiveOwnedCount(){return debugFullUnlock?100:save.owned.length;}
   function isBackWorldUnlocked(){return debugFullUnlock||save.backUnlocked;}
   function canWorldWarp(){return debugFullUnlock||save.frontClears>0;}
+  // BGM world tabs follow story progression. The back-world catalogue must not
+  // be exposed before the Light World has been cleared once.
+  function isMusicWorldVisible(world){
+    if(world==='front')return true;
+    if(world==='back')return debugFullUnlock||save.frontClears>0;
+    if(world==='crimson')return isCrimsonWorldUnlocked();
+    return false;
+  }
   function isCrimsonWorldUnlocked(){return debugFullUnlock||hasSecretRelic('common_master');}
   function isMonsterSeen(world,id){return debugFullUnlock||!!save.monsterBook?.[world]?.includes(id);}
   function effectiveEncounterCount(world,id){const n=save.monsterEncounters?.[world]?.[id]||0;return debugFullUnlock?Math.max(1,n):n;}
@@ -366,7 +374,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${effectiveGold()} G`;
-    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'夜の東京':'紅の世界';
+    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':'紅の世界';
     els.titleTrackName.textContent=titleTrackLabel();
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
@@ -377,7 +385,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     if(mode==='front'){
       els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }else if(mode==='back'){
-      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='NIGHT TOKYO / ANOTHER QUEST';els.titleSubtitle.innerHTML='夜の東京を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');
+      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='BACK WORLD / ANOTHER QUEST';els.titleSubtitle.innerHTML='裏の世界を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');
     }else{
       els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }
@@ -388,7 +396,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     if(!els.worldWarpList)return;
     const worlds=[
       {key:'front',name:'光の世界',desc:'はじまりの世界',unlocked:true},
-      {key:'back',name:'裏の世界',desc:'夜の東京',unlocked:isBackWorldUnlocked()},
+      {key:'back',name:'裏の世界',desc:'裏の世界',unlocked:isBackWorldUnlocked()},
       {key:'crimson',name:'紅の世界',desc:'晩秋の第三世界',unlocked:isCrimsonWorldUnlocked()}
     ];
     els.worldWarpList.innerHTML='';
@@ -410,12 +418,16 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function renderMusicPlayer(){
     if(!els.musicTrackList)return;
     const tracks=musicTracks(musicWorld);
+    if(!isMusicWorldVisible(musicWorld)){musicWorld='front';musicTrackIndex=-1;stopMusicPlayer();}
+    els.musicFrontTab.hidden=false;
+    els.musicBackTab.hidden=!isMusicWorldVisible('back');
     els.musicFrontTab.classList.toggle('active',musicWorld==='front');
     els.musicBackTab.classList.toggle('active',musicWorld==='back');
-    if(els.musicCrimsonTab){els.musicCrimsonTab.hidden=!isCrimsonWorldUnlocked();els.musicCrimsonTab.classList.toggle('active',musicWorld==='crimson');}
+    if(els.musicCrimsonTab){els.musicCrimsonTab.hidden=!isMusicWorldVisible('crimson');els.musicCrimsonTab.classList.toggle('active',musicWorld==='crimson');}
     els.musicFrontTab.setAttribute('aria-selected',musicWorld==='front'?'true':'false');
     els.musicBackTab.setAttribute('aria-selected',musicWorld==='back'?'true':'false');
-    if(els.musicCrimsonTab)els.musicCrimsonTab.setAttribute('aria-selected',musicWorld==='crimson'?'true':'false');
+    els.musicBackTab.setAttribute('aria-hidden',els.musicBackTab.hidden?'true':'false');
+    if(els.musicCrimsonTab){els.musicCrimsonTab.setAttribute('aria-selected',musicWorld==='crimson'?'true':'false');els.musicCrimsonTab.setAttribute('aria-hidden',els.musicCrimsonTab.hidden?'true':'false');}
     els.musicTrackList.innerHTML='';
     tracks.forEach((track,i)=>{
       const unlocked=isMusicUnlocked(musicWorld,track.id);
@@ -464,7 +476,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     curtain.hidden=false;curtain.className='scene-curtain entering';void curtain.offsetWidth;
     await sleep(260);curtain.className='scene-curtain covered';
     await transitionTo(()=>{
-      if(opening){musicWorld=mode;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;}
+      if(opening){musicWorld=isMusicWorldVisible(mode)?mode:'front';musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;}
       else{stopMusicPlayer();musicTrackIndex=-1;els.musicOverlay.hidden=true;renderTitle();}
     },mode==='back'?'back':'normal',1450);
     await sleep(70);curtain.className='scene-curtain leaving';await sleep(420);curtain.hidden=true;curtain.className='scene-curtain';
@@ -472,7 +484,8 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   async function openMusicPlayer(){if(!els.musicOverlay.hidden)return;await transitionMusicOverlay(true);}
   async function closeMusicPlayer(){if(els.musicOverlay.hidden)return;await transitionMusicOverlay(false);}
   function switchMusicWorld(world){
-    if(musicWorld===world)return;stopMusicPlayer();musicTrackIndex=-1;musicWorld=world;renderMusicPlayer();
+    if(!isMusicWorldVisible(world)||musicWorld===world)return;
+    stopMusicPlayer();musicTrackIndex=-1;musicWorld=world;renderMusicPlayer();
   }
 
   function renderDebugPanel(){
@@ -624,6 +637,11 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
       if(owned){const im=card.querySelector('img');im.onerror=()=>{im.onerror=null;im.src=monsterPlaceholder(m,!!m.boss);};card.onclick=()=>showMonsterCard(m);}else card.disabled=true;
       els.monsterBookGrid.appendChild(card);
     });
+    // Re-anchor the encyclopedia after opening/filtering/orientation changes so a
+    // retained scroll offset cannot make the grid appear vertically misplaced.
+    const bookViewport=els.monsterBookGrid.closest('.monster-book-viewport');
+    if(bookViewport)bookViewport.scrollTop=0;
+    if(els.monsterBookFilters)els.monsterBookFilters.scrollLeft=0;
   }
   function showMonsterCard(m){
     const counts=save.monsterEncounters[mode]||{};
@@ -1176,7 +1194,7 @@ function advanceMapFromInput(){
 function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdvanceResolve=resolve;});}
 
   function prepareMapOverlay(initial=false){
-    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'NIGHT TOKYO':'CRIMSON WORLD';
+    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':'CRIMSON WORLD';
     els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':'紅の世界';
     els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':'./assets/crimson_map.png';
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
@@ -2083,7 +2101,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.musicCloseBtn.onclick=()=>closeMusicPlayer();
   els.musicOverlay.onclick=e=>{if(e.target===els.musicOverlay){playSE(cancelSE);closeMusicPlayer();}};
   els.musicFrontTab.onclick=()=>switchMusicWorld('front');
-  els.musicBackTab.onclick=()=>switchMusicWorld('back');
+  els.musicBackTab.onclick=()=>{if(isMusicWorldVisible('back'))switchMusicWorld('back');};
   if(els.musicCrimsonTab)els.musicCrimsonTab.onclick=()=>{if(isCrimsonWorldUnlocked())switchMusicWorld('crimson');};
   els.musicPrevBtn.onclick=()=>moveMusicTrack(-1);
   els.musicNextBtn.onclick=()=>moveMusicTrack(1);

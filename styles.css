@@ -887,3 +887,103 @@ body.game-paused.crimson-genma-reveal .math-problem,body.special-assist-active.c
 
 @keyframes crimsonSteamVeil{0%{transform:translate3d(-3%,1%,0) scale(1)}100%{transform:translate3d(4%,-2%,0) scale(1.08)}}
 @keyframes crimsonGenmaReveal{0%{opacity:.055;filter:blur(.32px)}30%{opacity:.15;filter:blur(.22px)}65%{opacity:.48;filter:blur(.10px)}100%{opacity:1;filter:blur(0)}}
+
+
+/* ===== 2026-08-30 Monster Encyclopedia viewport/position normalization ===== */
+/* Keep the encyclopedia centered inside the actual safe viewport on every device. */
+.monster-book-screen{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:calc(8px + var(--safe-top)) calc(8px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));
+}
+.monster-book-shell{
+  flex:0 1 auto;
+  width:min(1160px,calc(100vw - var(--safe-left) - var(--safe-right) - 16px));
+  height:min(780px,calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px));
+  max-width:100%;
+  max-height:100%;
+  margin:auto;
+  min-width:0;
+  min-height:0;
+  grid-template-rows:auto auto minmax(0,1fr) auto;
+}
+.monster-book-header,.monster-book-filters,.monster-book-viewport,.monster-book-shell>.sub-footer{min-width:0}
+.monster-book-viewport{
+  position:relative;
+  width:100%;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  scroll-padding-top:2px;
+}
+.monster-book-grid{width:100%;align-content:start}
+.monster-book-shell>.sub-footer{position:relative;z-index:3;background:linear-gradient(180deg,rgba(6,15,31,0),rgba(6,15,31,.96) 32%)}
+
+/* Portrait phones: two columns keeps art/text readable and anchored. */
+@media (orientation:portrait) and (max-width:520px){
+  .monster-book-screen{overflow:hidden;align-items:center}
+  .monster-book-shell{padding:10px;gap:7px;border-radius:18px}
+  .monster-book-header{min-height:49px;padding:6px 9px 7px}
+  .monster-book-header h2{font-size:clamp(1.25rem,7vw,1.65rem)}
+  .monster-book-header small{font-size:.56rem}
+  .monster-book-header .wallet{padding:6px 9px}
+  .monster-book-filters{gap:5px;min-height:31px}
+  .monster-book-filters button{padding:6px 10px;font-size:.7rem}
+  .monster-book-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .monster-book-cell{min-height:164px;padding:7px}
+  .monster-book-thumb{min-height:96px}
+  .monster-book-thumb img{height:106px}
+  .monster-book-cell b{font-size:.76rem}
+  .monster-book-cell small{font-size:.61rem}
+  .monster-book-shell>.sub-footer{padding-top:4px}
+  .monster-book-shell>.sub-footer .back-btn{min-height:34px}
+}
+
+/* Short landscape screens reserve stable rows for header/filter/footer. */
+@media (orientation:landscape) and (max-height:480px){
+  .monster-book-screen{padding:calc(5px + var(--safe-top)) calc(5px + var(--safe-right)) calc(5px + var(--safe-bottom)) calc(5px + var(--safe-left));align-items:center}
+  .monster-book-shell{
+    width:calc(100vw - var(--safe-left) - var(--safe-right) - 10px);
+    height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 10px);
+    padding:8px;gap:5px;border-radius:15px;
+  }
+  .monster-book-header{min-height:42px;padding:4px 7px 5px}
+  .monster-book-header h2{font-size:1.18rem}
+  .monster-book-header small{font-size:.48rem}
+  .monster-book-header .wallet{padding:4px 7px}
+  .monster-book-filters{margin:0;min-height:25px;gap:4px;padding-bottom:1px}
+  .monster-book-filters button{padding:4px 8px;font-size:.61rem}
+  .monster-book-shell>.sub-footer{min-height:30px;padding-top:2px}
+  .monster-book-shell>.sub-footer .back-btn{min-height:28px;height:28px;padding:3px 12px;font-size:.7rem}
+}
+
+/* Detail modal remains centered inside safe areas, independent of page scroll. */
+.monster-card-overlay{
+  padding:calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+  overflow:auto;
+  align-items:center;
+  justify-items:center;
+}
+.monster-card{max-width:100%;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 24px);margin:auto}
+@media (orientation:portrait) and (max-width:520px){
+  .monster-card{width:min(430px,100%);overflow:hidden}
+  .monster-card-art{height:min(43dvh,340px)}
+}
+
+/* Keep monster detail content inside very short landscape viewports. */
+@media (orientation:landscape) and (max-height:480px){
+  .monster-card-overlay{overflow:hidden}
+  .monster-card{
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-gutter:stable;
+  }
+  .monster-card-close{position:sticky;float:right;right:0;top:0;margin-bottom:-36px}
+}
