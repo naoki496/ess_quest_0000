@@ -139,12 +139,12 @@
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
   function musicTracks(world){
     const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:CRIMSON_STAGES;
-    const worldLabel=world==='front'?'表の世界':world==='back'?'裏の世界':'紅の世界';
+    const worldLabel=world==='front'?'光の世界':world==='back'?'裏の世界':'紅の世界';
     const normal=stages.map((st,i)=>({
       id:`stage-${i+1}`,file:st.bgm,label:`STAGE ${i+1}`,title:st.bgm.replace(/\.mp3$/i,''),
       where:`${worldLabel} STAGE ${i+1}「${st.name}」の通常戦闘で流れるBGM。`
     }));
-    const bossWhere=world==='front'?'表の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。';
+    const bossWhere=world==='front'?'光の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。';
     const finalStage=stages[4];
     return [...normal,
       {id:'boss',file:stages[0].bossBgm,label:'BOSS',title:stages[0].bossBgm.replace(/\.mp3$/i,''),where:bossWhere},
@@ -281,8 +281,8 @@ const SECRET_RELICS=[
   {id:'common_master',name:'妖刀マサムネ',icon:'🗡️',flavor:'コモンアイテムを すべて集めた証。',notice:'コモンアイテムを すべて集めた証。'},
   {id:'uncommon_master',name:'白銀の首輪',icon:'📿',flavor:'アンコモンアイテムを すべて集めた証。',notice:'アンコモンアイテムを すべて集めた証。'},
   {id:'rare_master',name:'オブシディアンコア',icon:'💎',flavor:'レアアイテムを すべて集めた証。',notice:'レアアイテムを すべて集めた証。'},
-  {id:'front_sr_master',name:'蒼穹の縁結び',icon:'∞',flavor:'表の世界の SRモンスターを すべて見つけた証。',notice:'表の世界の SRモンスターを すべて見つけた証。'},
-  {id:'front_ssr_master',name:'時空羅針盤',icon:'🧭',flavor:'表の世界の SSRモンスターを すべて見つけた証。',notice:'表の世界の SSRモンスターを すべて見つけた証。'},
+  {id:'front_sr_master',name:'蒼穹の縁結び',icon:'∞',flavor:'光の世界の SRモンスターを すべて見つけた証。',notice:'光の世界の SRモンスターを すべて見つけた証。'},
+  {id:'front_ssr_master',name:'時空羅針盤',icon:'🧭',flavor:'光の世界の SSRモンスターを すべて見つけた証。',notice:'光の世界の SSRモンスターを すべて見つけた証。'},
   {id:'back_sr_master',name:'クリプティック・コード',icon:'⌘',flavor:'裏の世界の SRモンスターを すべて見つけた証。',notice:'裏の世界の SRモンスターを すべて見つけた証。'},
   {id:'back_ssr_master',name:'旅立ちを祝すハルシオン',icon:'🪶',flavor:'裏の世界の SSRモンスターを すべて見つけた証。',notice:'裏の世界の SSRモンスターを すべて見つけた証。'},
   {id:'world3_sr_master',name:'黄泉の供物',icon:'🍂',flavor:'紅の世界の SRモンスターを すべて見つけた証。',notice:'紅の世界の SRモンスターを すべて見つけた証。'},
@@ -487,7 +487,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
       for(const world of ['front','back','crimson']){
         const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:CRIMSON_STAGES;
         stages.forEach((st,i)=>{
-          const prefix=world==='front'?'表':world==='back'?'裏':'紅';
+          const prefix=world==='front'?'光':world==='back'?'裏':'紅';
           const start=document.createElement('button');start.type='button';start.className=`debug-stage-btn debug-stage-start debug-world-${world}`;
           start.textContent=`${prefix} S${i+1} 最初`;start.title=`${st.name}：ステージ最初から`;
           start.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(start);
@@ -631,7 +631,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     els.monsterCardName.textContent=m.name;
     els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};
     els.monsterCardImage.src=`./assets/${m.img}`;
-    els.monsterCardWorld.textContent=mode==='front'?'表の世界':mode==='back'?'裏の世界':'紅の世界';
+    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':'紅の世界';
     els.monsterCardStage.textContent=m.lastBoss?'LAST BOSS':`STAGE ${m.stage+1}`;
     els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;
     els.monsterCardText.textContent=monsterFlavor(m);
@@ -1178,7 +1178,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function prepareMapOverlay(initial=false){
     els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'NIGHT TOKYO':'CRIMSON WORLD';
     els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':'紅の世界';
-    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':`./assets/${currentStage().bg}`;
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':'./assets/crimson_map.png';
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
     const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
     const mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'];
@@ -1616,9 +1616,10 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     crimsonSpecialIntervals.forEach(id=>clearInterval(id));crimsonSpecialIntervals=[];
     crimsonSpecialTimeouts.forEach(id=>clearTimeout(id));crimsonSpecialTimeouts=[];
     crimsonMoonShiftBusy=false;
-    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim');
+    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim','crimson-genma-ready','crimson-genma-reveal');
     const panel=document.querySelector('.question-panel');if(panel)panel.classList.remove('crimson-special-panel');
     ['crimsonStrawLayer','crimsonSteamLayer','crimsonMoonFlash'].forEach(id=>$(id)?.remove());
+    document.querySelectorAll('.crimson-tengu-blown').forEach(b=>{b.classList.remove('crimson-tengu-blown');b.disabled=b.dataset.eliminated==='true';});
     if(els.mathProblem){els.mathProblem.style.removeProperty('opacity');els.mathProblem.style.removeProperty('filter');}
   }
   function activeWrongChoiceButtons(){
@@ -1642,28 +1643,44 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     cover.style.width=`${tr.width+pad*2}px`;cover.style.height=`${tr.height+pad*2}px`;
     cover.classList.add('is-visible');
   }
+  function activeChoiceButtons(){
+    return[...els.choices.children].filter(b=>b.dataset.eliminated!=='true');
+  }
   function startCrimsonStrawCycle(){
     document.body.classList.add('crimson-straw-active');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
     let idx=0,soloCovered=true;
     const update=()=>{
       if(paused||specialActive||locked)return;
-      const wrong=activeWrongChoiceButtons();
-      if(!wrong.length){positionCrimsonStraw(null,false);return;}
-      if(wrong.length===1){soloCovered=!soloCovered;positionCrimsonStraw(wrong[0],soloCovered);return;}
-      idx=(idx+1)%wrong.length;positionCrimsonStraw(wrong[idx],true);
+      const candidates=activeChoiceButtons();
+      if(!candidates.length){positionCrimsonStraw(null,false);return;}
+      if(candidates.length===1){soloCovered=!soloCovered;positionCrimsonStraw(candidates[0],soloCovered);return;}
+      idx=(idx+1)%candidates.length;positionCrimsonStraw(candidates[idx],true);
     };
-    const initial=activeWrongChoiceButtons();if(initial.length)positionCrimsonStraw(initial[0],true);
-    trackCrimsonInterval(setInterval(update,1900));
+    const initial=activeChoiceButtons();if(initial.length)positionCrimsonStraw(initial[0],true);
+    trackCrimsonInterval(setInterval(update,1750));
   }
   function startCrimsonTenguGust(){
     document.body.classList.add('crimson-tengu-gust');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
+    let idx=-1;
+    const blow=()=>{
+      if(paused||specialActive||locked)return;
+      const candidates=activeChoiceButtons();if(!candidates.length)return;
+      document.querySelectorAll('.crimson-tengu-blown').forEach(b=>{b.classList.remove('crimson-tengu-blown');b.disabled=b.dataset.eliminated==='true';});
+      idx=(idx+1)%candidates.length;const target=candidates[idx];
+      target.classList.add('crimson-tengu-blown');target.disabled=true;
+      trackCrimsonTimeout(setTimeout(()=>{
+        target.classList.remove('crimson-tengu-blown');
+        if(!locked&&!paused&&!specialActive&&target.dataset.eliminated!=='true')target.disabled=false;
+      },900));
+    };
+    blow();trackCrimsonInterval(setInterval(blow,1450));
   }
   function ensureCrimsonSteamLayer(){
-    const panel=document.querySelector('.question-panel');if(!panel)return null;
+    const host=els.gameScreen||document.querySelector('.game-screen');if(!host)return null;
     let layer=$('crimsonSteamLayer');if(layer)return layer;
     layer=document.createElement('div');layer.id='crimsonSteamLayer';layer.className='crimson-steam-layer';layer.setAttribute('aria-hidden','true');
-    layer.innerHTML='<i class="steam-a"></i><i class="steam-b"></i><i class="steam-c"></i><i class="steam-d"></i>';
-    panel.appendChild(layer);return layer;
+    layer.innerHTML='<i class="steam-a"></i><i class="steam-b"></i><i class="steam-c"></i><i class="steam-d"></i><i class="steam-e"></i><i class="steam-f"></i>';
+    host.appendChild(layer);return layer;
   }
   function startCrimsonSteam(){ensureCrimsonSteamLayer();document.body.classList.add('crimson-steam-active');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');}
   function ensureCrimsonMoonFlash(){
@@ -1686,7 +1703,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function startCrimsonMoonShift(){
     ensureCrimsonMoonFlash();document.body.classList.add('crimson-moon-shift-active');document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
-    trackCrimsonInterval(setInterval(()=>{rotateCrimsonChoices();},3000));
+    trackCrimsonInterval(setInterval(()=>{rotateCrimsonChoices();},1450));
   }
   async function showCrimsonGenmaSlash(){
     ensureBossSpecialFxLayer();const fx=$('bossStrikeTransition');if(!fx)return;
@@ -1700,9 +1717,12 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   async function startCrimsonGenmaFinal(){
     prepareQuestion();locked=true;[...els.choices.children].forEach(b=>b.disabled=true);updateSpecialHud();syncPauseButton();
     document.querySelector('.question-panel')?.classList.add('crimson-special-panel');
-    await sleep(1800);await showCrimsonGenmaSlash();
-    document.body.classList.add('crimson-genma-dim','boss-time-pressure');
+    document.body.classList.add('crimson-genma-ready');
+    await sleep(520);await showCrimsonGenmaSlash();
+    document.body.classList.add('boss-time-pressure');
     await announceTimeLimit(15);
+    document.body.classList.remove('crimson-genma-ready','crimson-genma-dim');
+    document.body.classList.add('crimson-genma-reveal');
     locked=false;[...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});syncPauseButton();updateSpecialHud();
     startTimer(15);
   }
@@ -1760,7 +1780,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         bossSpecialSequence={type:'crimson-gust',step:'final'};prepareQuestion();startCrimsonTenguGust();startTimer(60);break;
       }
       case'crimson-steam':{
-        bossSpecialSequence={type:'crimson-steam',step:'final'};prepareQuestion();startCrimsonSteam();startTimer(60);break;
+        startCrimsonSteam();bossSpecialSequence={type:'crimson-steam',step:'shield1'};await showShieldForm();
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'湯煙結界・壱',step:1});startTimer(60);break;
       }
       case'crimson-time':{
         bossSpecialSequence={type:'crimson-time',step:'final'};document.body.classList.add('boss-time-pressure');await announceTimeLimit(spec.time);prepareQuestion();startTimer(spec.time);break;
@@ -1900,6 +1921,14 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(ok&&bossPhase&&bossQuestion===4&&bossSpecialSequence){
       const seq=bossSpecialSequence;
       const intermediate=async(message)=>{els.feedbackText.textContent=message;showAnswerMark(true);playSE(correctSE);await sleep(520);};
+      if(seq.type==='crimson-steam'&&seq.step==='shield1'){
+        await intermediate('第一の湯煙結界を破壊！');await showShieldBreak();await sleep(120);await showShieldForm();
+        bossSpecialSequence={type:'crimson-steam',step:'shield2'};populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'湯煙結界・弐',step:2});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='crimson-steam'&&seq.step==='shield2'){
+        await intermediate('第二の湯煙結界を破壊！');await showShieldBreak();bossSpecialSequence={type:'crimson-steam',step:'final'};
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'本撃',step:3});startTimer(60,{preserveCountCue:true});return;
+      }
       if(seq.type==='shield'&&seq.step==='shield'){
         await intermediate('結界を破壊！');await showShieldBreak();bossSpecialSequence={type:'shield',step:'final'};
         populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'本撃',step:2});startTimer(60,{preserveCountCue:true});return;
@@ -1981,6 +2010,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await sleep(980);
     els.enemyActor.classList.add('boss-defeat');
     await sleep(2100);
+    if(mode==='crimson'&&crimsonLastPhase){enemyVisualToken++;concealEnemyVisual(true);}
     els.enemyActor.classList.remove('boss-defeat','finisher-hit');
     els.heroActor.classList.remove('finisher-front','finisher-back');
     els.attackEffect.className='attack-effect';
@@ -2040,7 +2070,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       persist();syncSecretRelics();
     }else renderTitle();
     renderResult();els.resultOverlay.hidden=false;
-    if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'時空の扉が開いた……。表のタイトルに「ウラステージへ」が追加されました。':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}
+    if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'時空の扉が開いた……。光の世界のタイトルに「ウラステージへ」が追加されました。':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}
     else enqueuePendingSecretRelicNotices({showNow:true});
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}

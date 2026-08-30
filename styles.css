@@ -834,10 +834,11 @@ body[data-mode="crimson"] .music-world-tabs button.active{color:#ffe2c9;border-c
 .crimson-straw-obscurer b{position:absolute;z-index:3;left:4%;right:4%;bottom:12%;height:16%;border-radius:999px;background:linear-gradient(180deg,#9d5e21,#5f3212);box-shadow:inset 0 2px rgba(255,217,130,.35)}
 
 /* 深山烏天狗・玄羽：天狗颪 */
-body.crimson-tengu-gust .choices button{will-change:transform;animation:crimsonTenguGustA 2.55s ease-in-out infinite alternate}
+body.crimson-tengu-gust .choices button{will-change:transform,opacity,filter;animation:crimsonTenguGustA 2.55s ease-in-out infinite alternate;transition:opacity .2s ease,filter .2s ease,transform .34s cubic-bezier(.2,.8,.2,1)}
 body.crimson-tengu-gust .choices button:nth-child(2){animation-name:crimsonTenguGustB;animation-duration:2.15s;animation-delay:-.7s}
 body.crimson-tengu-gust .choices button:nth-child(3){animation-name:crimsonTenguGustC;animation-duration:2.85s;animation-delay:-1.1s}
-body.crimson-tengu-gust .question-panel::after{content:"";position:absolute;z-index:38;pointer-events:none;inset:0;border-radius:inherit;background:repeating-linear-gradient(171deg,transparent 0 10%,rgba(230,247,255,.12) 10.5% 11.5%,transparent 12% 20%);animation:crimsonWindLines 1.25s linear infinite;mix-blend-mode:screen}
+body.crimson-tengu-gust .choices button.crimson-tengu-blown{animation:none!important;transform:translateX(118%) rotate(4deg) scale(.92)!important;opacity:.12!important;filter:blur(3px) brightness(1.5)!important;pointer-events:none!important}
+body.crimson-tengu-gust .question-panel::after{content:"";position:absolute;z-index:38;pointer-events:none;inset:0;border-radius:inherit;background:repeating-linear-gradient(171deg,transparent 0 10%,rgba(230,247,255,.14) 10.5% 11.5%,transparent 12% 20%);animation:crimsonWindLines .88s linear infinite;mix-blend-mode:screen}
 body.special-assist-active.crimson-tengu-gust .choices button,body.game-paused.crimson-tengu-gust .choices button,body.special-assist-active.crimson-tengu-gust .question-panel::after,body.game-paused.crimson-tengu-gust .question-panel::after{animation-play-state:paused!important}
 @keyframes crimsonTenguGustA{0%{transform:translate(-5%,1px) rotate(-.5deg)}50%{transform:translate(2%,-2px) rotate(.3deg)}100%{transform:translate(6%,2px) rotate(.55deg)}}
 @keyframes crimsonTenguGustB{0%{transform:translate(5%,-2px) rotate(.45deg)}55%{transform:translate(-1%,2px) rotate(-.25deg)}100%{transform:translate(-6%,-1px) rotate(-.6deg)}}
@@ -845,10 +846,12 @@ body.special-assist-active.crimson-tengu-gust .choices button,body.game-paused.c
 @keyframes crimsonWindLines{from{background-position:0 0}to{background-position:120px -24px}}
 
 /* 湯宿総支配人・お滝：湯煙隠し */
-.crimson-steam-layer{position:absolute;inset:-3%;z-index:41;overflow:hidden;border-radius:inherit;pointer-events:none}
-.crimson-steam-layer i{position:absolute;width:48%;height:36%;border-radius:50%;opacity:.82;background:radial-gradient(ellipse at center,rgba(255,255,255,.96) 0%,rgba(246,249,246,.83) 26%,rgba(230,240,235,.55) 52%,rgba(225,235,230,0) 76%);filter:blur(8px);will-change:transform}
-.crimson-steam-layer .steam-a{left:-28%;top:3%;animation:crimsonSteamA 5.6s ease-in-out infinite alternate}.crimson-steam-layer .steam-b{right:-24%;top:28%;animation:crimsonSteamB 6.2s ease-in-out infinite alternate-reverse}.crimson-steam-layer .steam-c{left:8%;bottom:-17%;animation:crimsonSteamC 5.1s ease-in-out infinite alternate}.crimson-steam-layer .steam-d{right:4%;top:-16%;animation:crimsonSteamD 6.7s ease-in-out infinite alternate-reverse;opacity:.68}
-body.special-assist-active .crimson-steam-layer i,body.game-paused .crimson-steam-layer i{animation-play-state:paused!important}
+.crimson-steam-layer{position:absolute;inset:0;z-index:44;overflow:hidden;pointer-events:none;background:rgba(224,234,229,.42);backdrop-filter:blur(2.2px) brightness(.82) saturate(.82);-webkit-backdrop-filter:blur(2.2px) brightness(.82) saturate(.82);box-shadow:inset 0 0 110px rgba(238,244,240,.40)}
+.crimson-steam-layer::before,.crimson-steam-layer::after{content:"";position:absolute;inset:-8%;background:radial-gradient(ellipse at 35% 35%,rgba(255,255,255,.42),transparent 38%),radial-gradient(ellipse at 72% 62%,rgba(241,247,243,.48),transparent 42%);filter:blur(22px);opacity:.82;animation:crimsonSteamVeil 4.8s ease-in-out infinite alternate}
+.crimson-steam-layer::after{transform:scaleX(-1);animation-direction:alternate-reverse;opacity:.68}
+.crimson-steam-layer i{position:absolute;width:54%;height:42%;border-radius:50%;opacity:.91;background:radial-gradient(ellipse at center,rgba(255,255,255,.98) 0%,rgba(246,249,246,.88) 28%,rgba(230,240,235,.64) 54%,rgba(225,235,230,0) 78%);filter:blur(11px);will-change:transform}
+.crimson-steam-layer .steam-a{left:-25%;top:0;animation:crimsonSteamA 4.2s ease-in-out infinite alternate}.crimson-steam-layer .steam-b{right:-22%;top:22%;animation:crimsonSteamB 4.8s ease-in-out infinite alternate-reverse}.crimson-steam-layer .steam-c{left:4%;bottom:-13%;animation:crimsonSteamC 4.1s ease-in-out infinite alternate}.crimson-steam-layer .steam-d{right:0;top:-12%;animation:crimsonSteamD 5.0s ease-in-out infinite alternate-reverse;opacity:.84}.crimson-steam-layer .steam-e{left:28%;top:26%;animation:crimsonSteamB 4.6s ease-in-out infinite alternate;opacity:.76}.crimson-steam-layer .steam-f{right:24%;bottom:5%;animation:crimsonSteamA 5.2s ease-in-out infinite alternate-reverse;opacity:.78}
+body.special-assist-active .crimson-steam-layer i,body.game-paused .crimson-steam-layer i,body.special-assist-active .crimson-steam-layer::before,body.special-assist-active .crimson-steam-layer::after,body.game-paused .crimson-steam-layer::before,body.game-paused .crimson-steam-layer::after{animation-play-state:paused!important}
 @keyframes crimsonSteamA{0%{transform:translate(0,4%) scale(.9)}45%{transform:translate(95%,38%) scale(1.15)}100%{transform:translate(185%,68%) scale(.98)}}
 @keyframes crimsonSteamB{0%{transform:translate(0,0) scale(1)}52%{transform:translate(-82%,-34%) scale(1.18)}100%{transform:translate(-170%,22%) scale(.94)}}
 @keyframes crimsonSteamC{0%{transform:translate(-12%,0) scale(1.05)}55%{transform:translate(72%,-118%) scale(.88)}100%{transform:translate(138%,-172%) scale(1.12)}}
@@ -860,11 +863,15 @@ body.special-assist-active .crimson-steam-layer i,body.game-paused .crimson-stea
 .crimson-moon-flash.active{animation:crimsonMoonFlash .46s ease-out both}
 body.crimson-moon-shifting .choices{filter:blur(1.2px) brightness(1.3)}
 body.crimson-moon-shifting .choices button{pointer-events:none!important}
+body.crimson-moon-shift-active .equation-box{background:linear-gradient(180deg,#e7c77a,#b98735)!important;border-color:#79511e!important;box-shadow:inset 0 0 24px rgba(88,52,10,.25),0 0 18px rgba(221,171,75,.30),0 5px 12px rgba(0,0,0,.30)!important}
+body.crimson-moon-shift-active .math-problem{color:#21150a!important;text-shadow:0 1px rgba(255,239,190,.35)}
 @keyframes crimsonMoonFlash{0%{opacity:0}30%{opacity:.95}100%{opacity:0}}
 
 /* 秋尽の剣聖・玄真：無明の一閃 */
-body.crimson-genma-dim .math-problem{opacity:.15;filter:blur(.15px);transition:opacity .22s ease,filter .22s ease}
-body.crimson-genma-dim .equation-box{box-shadow:inset 0 0 26px rgba(35,39,52,.2),0 5px 12px rgba(0,0,0,.26)}
+body.crimson-genma-ready .math-problem{opacity:.055;filter:blur(.32px)}
+body.crimson-genma-reveal .math-problem{animation:crimsonGenmaReveal 15s linear forwards}
+body.crimson-genma-ready .equation-box,body.crimson-genma-reveal .equation-box{box-shadow:inset 0 0 30px rgba(35,39,52,.26),0 5px 12px rgba(0,0,0,.26)}
+body.game-paused.crimson-genma-reveal .math-problem,body.special-assist-active.crimson-genma-reveal .math-problem{animation-play-state:paused!important}
 .boss-strike-transition.crimson-genma-slash{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.12),rgba(0,0,0,.94) 63%)}
 .boss-strike-transition.crimson-genma-slash .boss-slash{filter:drop-shadow(0 0 12px rgba(222,238,255,.95))}
 
@@ -877,3 +884,6 @@ body.crimson-genma-dim .equation-box{box-shadow:inset 0 0 26px rgba(35,39,52,.2)
   body.crimson-tengu-gust .choices button{animation-duration:3s}
   .crimson-steam-layer i{opacity:.72}
 }
+
+@keyframes crimsonSteamVeil{0%{transform:translate3d(-3%,1%,0) scale(1)}100%{transform:translate3d(4%,-2%,0) scale(1.08)}}
+@keyframes crimsonGenmaReveal{0%{opacity:.055;filter:blur(.32px)}30%{opacity:.15;filter:blur(.22px)}65%{opacity:.48;filter:blur(.10px)}100%{opacity:1;filter:blur(0)}}
