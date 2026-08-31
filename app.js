@@ -36,7 +36,7 @@
   const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
   let debugFullUnlock=false;
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
-  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,silverClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0};
+  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,silverClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
   let save=loadSave();
 
   const FRONT_STAGES=[
@@ -127,11 +127,11 @@
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
     resultOverlay:$('resultOverlay'),resultMistakes:$('resultMistakes'),resultTimeouts:$('resultTimeouts'),resultRestarts:$('resultRestarts'),resultGold:$('resultGold'),resultErrors:$('resultErrors'),replayBtn:$('replayBtn'),toTitleBtn:$('toTitleBtn'),
-    rewardOverlay:$('rewardOverlay'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
+    rewardOverlay:$('rewardOverlay'),rewardCard:$('rewardCard'),rewardKicker:$('rewardKicker'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
   };
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
-  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false;
+  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false,silverSnowballCycleToken=0;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -216,9 +216,13 @@
       merged.secretRelicNotified=Array.isArray(raw.secretRelicNotified)?raw.secretRelicNotified:[];
       merged.secretRelicVersion=Number.isFinite(Number(raw.secretRelicVersion))?Number(raw.secretRelicVersion):0;
       merged.mapTipIntroIndex=Math.max(0,Number(raw.mapTipIntroIndex)||0);
+      merged.mapSecretTipTierSeen=Math.max(0,Number(raw.mapSecretTipTierSeen)||0);
+      merged.worldUnlockNotified=Array.isArray(raw.worldUnlockNotified)?raw.worldUnlockNotified:[];
+      merged.worldUnlockNew=Array.isArray(raw.worldUnlockNew)?raw.worldUnlockNew:[];
+      merged.worldUnlockVersion=Math.max(0,Number(raw.worldUnlockVersion)||0);
       inferMusicUnlocksFromSave(merged);
       return merged;
-    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0};inferMusicUnlocksFromSave(fallback);return fallback;}
+    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};inferMusicUnlocksFromSave(fallback);return fallback;}
   }
   function persist(){
     if(!debugFullUnlock)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
@@ -316,9 +320,23 @@ const SECRET_RELICS=[
   {id:'world4_sr_master',name:'未来の結晶',icon:'❄️',flavor:'銀の世界の SRモンスターを すべて見つけた証。',notice:'銀の世界の SRモンスターを すべて見つけた証。'},
   {id:'world4_ssr_master',name:'コランダムギア',icon:'⚙️',flavor:'銀の世界の SSRモンスターを すべて見つけた証。',notice:'銀の世界の SSRモンスターを すべて見つけた証。'}
 ];
-const SECRET_RELIC_VERSION=3;
+const SECRET_RELIC_VERSION=4;
+const WORLD_UNLOCK_VERSION=1;
+const WORLD_UNLOCKS=[
+  {world:'back',sourceId:'item-100',sourceName:'時空の鍵',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界'},
+  {world:'crimson',sourceId:'common_master',sourceName:'妖刀マサムネ',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界'},
+  {world:'silver',sourceId:'uncommon_master',sourceName:'白銀の首輪',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'}
+];
 const secretRelicById=id=>SECRET_RELICS.find(r=>r.id===id);
 function hasSecretRelic(id){return debugFullUnlock||!!save.secretRelics?.includes(id);}
+function isWorldActuallyUnlocked(world){
+  if(world==='front')return true;
+  if(world==='back')return !!save.backUnlocked;
+  if(world==='crimson')return !!save.secretRelics?.includes('common_master');
+  if(world==='silver')return !!save.secretRelics?.includes('uncommon_master');
+  return false;
+}
+function worldUnlockByKey(world){return WORLD_UNLOCKS.find(w=>w.world===world);}
 function ownsItemRange(from,to){for(let id=from;id<=to;id++)if(!save.owned.includes(id))return false;return true;}
 function ownsMonsterRaritySet(world,rarity){
   const catalog=world==='front'?FRONT_MONSTERS:world==='back'?BACK_MONSTERS:world==='crimson'?CRIMSON_MONSTERS:SILVER_MONSTERS;
@@ -356,19 +374,55 @@ function initializeSecretRelics(){
   syncSecretRelics({silent:migrating});
   if(migrating){save.secretRelicVersion=SECRET_RELIC_VERSION;persistQuietly();}
 }
+function initializeWorldUnlockState(){
+  save.worldUnlockNotified=Array.isArray(save.worldUnlockNotified)?save.worldUnlockNotified:[];
+  save.worldUnlockNew=Array.isArray(save.worldUnlockNew)?save.worldUnlockNew:[];
+  const migrating=save.worldUnlockVersion!==WORLD_UNLOCK_VERSION;
+  if(migrating){
+    // Existing saves must not receive retroactive unlock popups after an update.
+    for(const w of WORLD_UNLOCKS)if(isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
+    save.worldUnlockNew=save.worldUnlockNew.filter(world=>isWorldActuallyUnlocked(world));
+    save.worldUnlockVersion=WORLD_UNLOCK_VERSION;
+    persistQuietly();
+  }
+}
 
 let rewardFollowupQueue=[];
-function presentRewardNotice({icon='✦',name='',text=''}){
+function presentRewardNotice({icon='✦',name='',text='',kind='item',kicker='NEW ITEM'}){
+  if(els.rewardCard)els.rewardCard.classList.toggle('world-unlock',kind==='world-unlock');
+  if(els.rewardKicker)els.rewardKicker.textContent=kicker;
   els.rewardIcon.textContent=icon;els.rewardName.textContent=name;els.rewardText.textContent=text;els.rewardOverlay.hidden=false;
+}
+function enqueuePendingWorldUnlockNotices({showNow=true}={}){
+  if(debugFullUnlock)return;
+  save.worldUnlockNotified=Array.isArray(save.worldUnlockNotified)?save.worldUnlockNotified:[];
+  save.worldUnlockNew=Array.isArray(save.worldUnlockNew)?save.worldUnlockNew:[];
+  const notified=new Set(save.worldUnlockNotified);
+  const pending=WORLD_UNLOCKS.filter(w=>isWorldActuallyUnlocked(w.world)&&!notified.has(w.world));
+  if(!pending.length)return;
+  for(const w of pending){
+    save.worldUnlockNotified.push(w.world);
+    if(!save.worldUnlockNew.includes(w.world))save.worldUnlockNew.push(w.world);
+    rewardFollowupQueue.push({kind:'world-unlock',kicker:'NEW WORLD UNLOCKED',icon:'∞',name:w.name,text:`${w.sourceName}が、新たな道を開いた。\n${w.desc}\n「世界渡り」から新たな世界へ行けるようになった。`});
+  }
+  persistQuietly();renderTitle();
+  if(showNow&&els.rewardOverlay.hidden&&rewardFollowupQueue.length)presentRewardNotice(rewardFollowupQueue.shift());
 }
 function enqueuePendingSecretRelicNotices({showNow=true}={}){
   if(debugFullUnlock)return;
+  // Secret relics that do not unlock a new world are recorded silently.
+  // Only an actual world unlock receives a dedicated notification.
   const notified=new Set(save.secretRelicNotified||[]);
-  const pending=(save.secretRelics||[]).filter(id=>!notified.has(id)).map(secretRelicById).filter(Boolean);
-  if(!pending.length)return;
-  for(const r of pending){save.secretRelicNotified.push(r.id);rewardFollowupQueue.push({icon:r.icon,name:r.name,text:`ひみつのアイテムを手に入れた！ ${r.notice}`});}
-  persistQuietly();
-  if(showNow&&els.rewardOverlay.hidden&&rewardFollowupQueue.length){presentRewardNotice(rewardFollowupQueue.shift());}
+  const pending=(save.secretRelics||[]).filter(id=>!notified.has(id));
+  if(pending.length){for(const id of pending)save.secretRelicNotified.push(id);persistQuietly();}
+  enqueuePendingWorldUnlockNotices({showNow});
+}
+function hasNewWorldWaiting(){return !debugFullUnlock&&!!save.worldUnlockNew?.some(world=>isWorldActuallyUnlocked(world));}
+function isWorldMarkedNew(world){return !debugFullUnlock&&!!save.worldUnlockNew?.includes(world)&&isWorldActuallyUnlocked(world);}
+function markWorldVisited(world){
+  if(debugFullUnlock||!Array.isArray(save.worldUnlockNew))return;
+  const next=save.worldUnlockNew.filter(w=>w!==world);
+  if(next.length!==save.worldUnlockNew.length){save.worldUnlockNew=next;persistQuietly();}
 }
 
   function titleTrackLabel(){return `${effectiveOwnedCount()} / 100`;}
@@ -413,23 +467,24 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     }else{
       els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FOURTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }
-    if(els.worldWarpBtn)setMenuButton(els.worldWarpBtn,'∞','世界を渡る');
+    if(els.worldWarpBtn){setMenuButton(els.worldWarpBtn,'∞','世界を渡る');els.worldWarpBtn.classList.toggle('has-new-world',hasNewWorldWaiting());els.worldWarpBtn.setAttribute('aria-label',hasNewWorldWaiting()?'世界を渡る・新しい世界があります':'世界を渡る');}
   }
 
   function renderWorldWarp(){
     if(!els.worldWarpList)return;
     const worlds=[
-      {key:'front',name:'光の世界',desc:'はじまりの世界',unlocked:true},
-      {key:'back',name:'裏の世界',desc:'裏の世界',unlocked:isBackWorldUnlocked()},
-      {key:'crimson',name:'紅の世界',desc:'晩秋の第三世界',unlocked:isCrimsonWorldUnlocked()},
-      {key:'silver',name:'銀の世界',desc:'永遠の雪に閉ざされた第四世界',unlocked:isSilverWorldUnlocked()}
+      {key:'front',name:'光の世界',desc:'剣と魔法が息づく、冒険のはじまりの世界',unlocked:true},
+      {key:'back',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界',unlocked:isBackWorldUnlocked()},
+      {key:'crimson',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界',unlocked:isCrimsonWorldUnlocked()},
+      {key:'silver',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',unlocked:isSilverWorldUnlocked()}
     ];
     els.worldWarpList.innerHTML='';
     worlds.forEach(w=>{
-      const b=document.createElement('button');b.type='button';b.className=`world-warp-card${w.unlocked?'':' locked'}${mode===w.key?' current':''}`;
-      b.innerHTML=`<span><small>${w.unlocked?w.desc:'LOCKED'}</small><b>${w.unlocked?w.name:'？？？'}</b></span><strong>${w.unlocked?(mode===w.key?'現在地':'この世界へ'):'未解放'}</strong>`;
+      const isNew=isWorldMarkedNew(w.key);
+      const b=document.createElement('button');b.type='button';b.className=`world-warp-card${w.unlocked?'':' locked'}${mode===w.key?' current':''}${isNew?' new-world':''}`;
+      b.innerHTML=`<span><small>${w.unlocked?w.desc:'LOCKED'}</small><b>${w.unlocked?w.name:'？？？'}</b></span><strong>${w.unlocked?(mode===w.key?'現在地':(isNew?'NEW · この世界へ':'この世界へ')):'未解放'}</strong>`;
       b.disabled=!w.unlocked||mode===w.key;
-      if(w.unlocked&&mode!==w.key)b.onclick=async()=>{mode=w.key;await transitionTo(()=>{renderTitle();showOnly(els.titleScreen);},mode==='back'?'back':'normal',1500);};
+      if(w.unlocked&&mode!==w.key)b.onclick=async()=>{markWorldVisited(w.key);mode=w.key;await transitionTo(()=>{renderTitle();showOnly(els.titleScreen);},mode==='back'?'back':'normal',1500);};
       els.worldWarpList.appendChild(b);
     });
   }
@@ -535,9 +590,13 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
           boss5.textContent=`${prefix} S${i+1} ボス5`;boss5.title=`${st.name}：ボス5問目から`;
           boss5.onclick=()=>debugJumpToBossFifth(world,i);els.debugStageGrid.appendChild(boss5);
         });
+        // Crimson has an additional LAST BOSS after STAGE 5. Keep those two jump buttons
+        // inside the Crimson block so the Silver-world entries never split the Crimson order.
+        if(world==='crimson'){
+          const lastStart=document.createElement('button');lastStart.type='button';lastStart.className='debug-stage-btn debug-stage-start debug-world-crimson';lastStart.textContent='紅 LAST 最初';lastStart.onclick=()=>debugJumpToCrimsonLast(0);els.debugStageGrid.appendChild(lastStart);
+          const last5=document.createElement('button');last5.type='button';last5.className='debug-stage-btn debug-boss5-btn debug-world-crimson';last5.textContent='紅 LAST ボス5';last5.onclick=()=>debugJumpToCrimsonLast(4);els.debugStageGrid.appendChild(last5);
+        }
       }
-      const lastStart=document.createElement('button');lastStart.type='button';lastStart.className='debug-stage-btn debug-stage-start debug-world-crimson';lastStart.textContent='紅 LAST 最初';lastStart.onclick=()=>debugJumpToCrimsonLast(0);els.debugStageGrid.appendChild(lastStart);
-      const last5=document.createElement('button');last5.type='button';last5.className='debug-stage-btn debug-boss5-btn debug-world-crimson';last5.textContent='紅 LAST ボス5';last5.onclick=()=>debugJumpToCrimsonLast(4);els.debugStageGrid.appendChild(last5);
     }
   }
   function openDebugPanel(){if(!els.debugOverlay)return;renderDebugPanel();els.debugOverlay.hidden=false;}
@@ -1214,16 +1273,32 @@ const MAP_TIPS=[
   {key:'bgm-1',category:'BGMページ',text:'タイトル画面の「♫」から、ゲームで流れる曲を聞くことができるよ。'},
   {key:'bgm-2',category:'BGMページ',text:'ステージをすすめると、BGMページで聞ける曲もふえていくよ！'},
   {key:'bgm-3',category:'BGMページ',text:'BGMページでは、曲をもどしたり、つぎへ送ったり、くり返して聞いたりできるよ。'},
-  {key:'secret-1',category:'隠しアイテム',text:'ある条件をたっせいすると、ふつうは見えない「ひみつのアイテム」が手に入ることも……？'},
-  {key:'secret-2',category:'隠しアイテム',text:'コレクションや図鑑を集めつづけると、何かいいことがあるかも……？'},
-  {key:'secret-3',category:'隠しアイテム',text:'ひみつのアイテムは、いつもの 100こには数えられない、とくべつなアイテムだよ。'}
+  {key:'secret-shop',category:'ひみつのアイテム',text:'ショップに並ばないアイテムも、この世界には存在するらしい……。',minTier:0},
+  {key:'secret-road',category:'ひみつのアイテム',text:'コレクションを完成に近づけることで、新しい道が開くこともあるかもしれない。',minTier:0},
+  {key:'secret-rarity',category:'ひみつのアイテム',text:'同じレアリティのアイテムを集め続けると、特別なものが現れることがあるらしい……。',minTier:1},
+  {key:'secret-book',category:'ひみつのアイテム',text:'図鑑を埋めることにも、戦いとは別の意味があるようだ。',minTier:1},
+  {key:'secret-high',category:'ひみつのアイテム',text:'★4や★5のモンスターには、すべて出会ってみる価値があるかもしれない。',minTier:2},
+  {key:'secret-key',category:'ひみつのアイテム',text:'世界を渡るための鍵は、必ずしも鍵の形をしているとは限らない。',minTier:3}
 ];
-const MAP_TIP_INTRO_KEYS=['special-1','book-1','gold-1','collection-1','bgm-1','secret-2'];
+const MAP_TIP_INTRO_KEYS=['special-1','book-1','gold-1','collection-1','bgm-1','secret-shop'];
+const MAP_SECRET_TIER_HINTS={1:'secret-rarity',2:'secret-high',3:'secret-key'};
 let lastMapTipKey='';
+function currentMapSecretTipTier(){
+  if(save.secretRelics?.includes('uncommon_master')||save.silverClears>0)return 3;
+  if(save.secretRelics?.includes('common_master')||save.crimsonClears>0)return 2;
+  if(save.backUnlocked||save.frontClears>0)return 1;
+  return 0;
+}
 function chooseMapTip(){
   let tip=null;
-  if(!debugFullUnlock&&save.mapTipIntroIndex<MAP_TIP_INTRO_KEYS.length){const key=MAP_TIP_INTRO_KEYS[save.mapTipIntroIndex++];tip=MAP_TIPS.find(t=>t.key===key)||MAP_TIPS[0];persistQuietly();}
-  else{const pool=MAP_TIPS.filter(t=>t.key!==lastMapTipKey);tip=pick(pool.length?pool:MAP_TIPS);}
+  const tier=currentMapSecretTipTier();
+  if(!debugFullUnlock&&save.mapTipIntroIndex<MAP_TIP_INTRO_KEYS.length){
+    const key=MAP_TIP_INTRO_KEYS[save.mapTipIntroIndex++];tip=MAP_TIPS.find(t=>t.key===key)||MAP_TIPS[0];persistQuietly();
+  }else if(!debugFullUnlock&&tier>(save.mapSecretTipTierSeen||0)){
+    save.mapSecretTipTierSeen=tier;const key=MAP_SECRET_TIER_HINTS[tier]||MAP_SECRET_TIER_HINTS[1];tip=MAP_TIPS.find(t=>t.key===key)||MAP_TIPS[0];persistQuietly();
+  }else{
+    const pool=MAP_TIPS.filter(t=>(t.minTier??0)<=tier&&t.key!==lastMapTipKey);tip=pick(pool.length?pool:MAP_TIPS);
+  }
   lastMapTipKey=tip.key;return tip;
 }
 let mapAdvanceResolve=null,mapAdvanceTimer=null;
@@ -1777,8 +1852,12 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function clearCrimsonSpecialEffects(){
     crimsonSpecialIntervals.forEach(id=>clearInterval(id));crimsonSpecialIntervals=[];
     crimsonSpecialTimeouts.forEach(id=>clearTimeout(id));crimsonSpecialTimeouts=[];
-    crimsonMoonShiftBusy=false;silverSpecialBusy=false;
+    crimsonMoonShiftBusy=false;silverSpecialBusy=false;silverSnowballCycleToken++;
     document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim','crimson-genma-ready','crimson-genma-reveal','silver-snowball-active','silver-snowball-moving','silver-mirror-active','silver-beast-ring-active','silver-spotlight-active','silver-mimesis-active','silver-mimesis-flipping');
+    // Cancel any in-flight FLIP animations from Vargas's snowball attack when a question ends,
+    // a retry begins, or the battle scene is rebuilt. This prevents a stale animation from
+    // re-enabling choices after the boss state has already changed.
+    [...els.choices.children].forEach(b=>{try{b.getAnimations?.().forEach(a=>a.cancel());}catch{}b.style.removeProperty('z-index');b.style.removeProperty('will-change');});
     const panel=document.querySelector('.question-panel');if(panel)panel.classList.remove('crimson-special-panel','silver-special-panel');
     ['crimsonStrawLayer','crimsonSteamLayer','crimsonMoonFlash','silverBeastRingLayer','silverMimesisFlash'].forEach(id=>$(id)?.remove());
     document.querySelectorAll('.crimson-tengu-blown,.silver-beast-blocked,.silver-spotlit').forEach(b=>{b.classList.remove('crimson-tengu-blown','silver-beast-blocked','silver-spotlit');});
@@ -1890,16 +1969,71 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     locked=false;[...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});syncPauseButton();updateSpecialHud();
     startTimer(15);
   }
+  function nextSilverSnowballOrder(buttons){
+    // With three answers, always use a cyclic permutation instead of a random shuffle that
+    // can accidentally return the same order. Every cycle therefore produces visible travel.
+    if(buttons.length===3)return Math.random()<.5?[buttons[1],buttons[2],buttons[0]]:[buttons[2],buttons[0],buttons[1]];
+    let order=shuffle(buttons),same=order.every((b,i)=>b===buttons[i]);
+    if(same&&order.length>1)order=[...order.slice(1),order[0]];
+    return order;
+  }
+  function silverSnowballKeyframes(before,after,panel,index){
+    const dx=before.left-after.left,dy=before.top-after.top;
+    const horizontal=Math.abs(dx)>=Math.abs(dy);
+    // Add a small arc perpendicular to the main travel direction. The amount is bounded by
+    // the question panel's real spare space, so portrait phones do not throw a snowball out
+    // of the GUI while desktop/tablet layouts still get a conspicuous crossing trajectory.
+    let arcX=0,arcY=0;
+    if(horizontal){
+      const up=Math.max(0,Math.min(before.top,after.top)-panel.top-4);
+      const down=Math.max(0,panel.bottom-Math.max(before.bottom,after.bottom)-4);
+      const room=Math.max(up,down),sign=down>=up?1:-1;
+      arcY=sign*Math.min(34,room*.72,Math.max(10,Math.abs(dx)*.13));
+    }else{
+      const left=Math.max(0,Math.min(before.left,after.left)-panel.left-4);
+      const right=Math.max(0,panel.right-Math.max(before.right,after.right)-4);
+      const room=Math.max(left,right),sign=(index%2===0?(right>=left?1:-1):(left>=right?-1:1));
+      arcX=sign*Math.min(30,room*.72,Math.max(8,Math.abs(dy)*.09));
+    }
+    const spin=(index%2===0?1:-1)*360;
+    return[
+      {transform:`translate(${dx}px,${dy}px) rotate(0deg) scale(1)`,offset:0},
+      {transform:`translate(${dx*.70+arcX}px,${dy*.70+arcY}px) rotate(${spin*.42}deg) scale(1.04)`,offset:.38},
+      {transform:`translate(${dx*.30-arcX*.35}px,${dy*.30-arcY*.28}px) rotate(${spin*.78}deg) scale(.97)`,offset:.72},
+      {transform:`translate(0px,0px) rotate(${spin}deg) scale(1)`,offset:1}
+    ];
+  }
   async function shuffleSilverChoices(){
-    if(silverSpecialBusy||paused||specialActive||locked||!currentQuestion)return;
-    const buttons=[...els.choices.children].filter(b=>b.dataset.mirrorFake!=='true');if(buttons.length<2)return;
-    silverSpecialBusy=true;document.body.classList.add('silver-snowball-moving');buttons.forEach(b=>b.disabled=true);syncPauseButton();
-    await sleep(360);for(const b of shuffle(buttons))els.choices.appendChild(b);await sleep(260);
+    if(silverSpecialBusy||paused||specialActive||locked||!currentQuestion||!document.body.classList.contains('silver-snowball-active'))return;
+    const buttons=[...els.choices.children].filter(b=>b.dataset.mirrorFake!=='true'&&b.dataset.eliminated!=='true');if(buttons.length<2)return;
+    const token=silverSnowballCycleToken;
+    const before=new Map(buttons.map(b=>[b,b.getBoundingClientRect()]));
+    const order=nextSilverSnowballOrder(buttons);
+    silverSpecialBusy=true;document.body.classList.add('silver-snowball-moving');buttons.forEach(b=>b.disabled=true);syncPauseButton();updateSpecialHud();
+    // Move the real DOM nodes to their destination slots, then visually animate each one from
+    // its previous slot to the new slot (FLIP). Because input is locked during the travel,
+    // the clickable geometry can safely live at the destination while the snowball crosses it.
+    order.forEach(b=>els.choices.appendChild(b));
+    const panelRect=(document.querySelector('.question-panel')||els.choices).getBoundingClientRect();
+    const animations=buttons.map((b,index)=>{
+      const after=b.getBoundingClientRect(),from=before.get(b);
+      b.style.willChange='transform';b.style.zIndex=String(10+index);
+      try{return b.animate(silverSnowballKeyframes(from,after,panelRect,index),{duration:1750,easing:'cubic-bezier(.22,.72,.18,1)',fill:'none'});}catch{return null;}
+    }).filter(Boolean);
+    if(animations.length){
+      await Promise.all(animations.map(a=>a.finished.catch(()=>{})));
+    }else{
+      await sleep(1750);
+    }
+    buttons.forEach(b=>{b.style.removeProperty('z-index');b.style.removeProperty('will-change');});
+    if(token!==silverSnowballCycleToken||!document.body.classList.contains('silver-snowball-active'))return;
     document.body.classList.remove('silver-snowball-moving');silverSpecialBusy=false;restoreChoiceInteractivity();updateSpecialHud();syncPauseButton();
   }
   function startSilverSnowball(){
+    silverSnowballCycleToken++;
     document.body.classList.add('silver-snowball-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');
-    trackCrimsonInterval(setInterval(()=>{shuffleSilverChoices();},2800));
+    // About 1 second of stable tapping time follows each 1.75-second roll.
+    trackCrimsonInterval(setInterval(()=>{shuffleSilverChoices();},2750));
   }
   function mirrorPenaltyButton(real){
     const fake=document.createElement('button');fake.type='button';fake.className='silver-mirror-fake';fake.dataset.mirrorFake='true';fake.dataset.answerValue=real.dataset.answerValue||'';fake.innerHTML=real.innerHTML;fake.setAttribute('aria-label','鏡像の偽物');
@@ -2304,7 +2438,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       persist();syncSecretRelics();
     }else renderTitle();
     renderResult();els.resultOverlay.hidden=false;
-    if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'時空の扉が開いた……。光の世界のタイトルに「ウラステージへ」が追加されました。':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}
+    if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'特別なアイテムを手に入れた！':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}
     else enqueuePendingSecretRelicNotices({showNow:true});
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
@@ -2379,7 +2513,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeSilverQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,fitMathProblemToBox,restoreChoiceInteractivity,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeSilverQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,fitMathProblemToBox,restoreChoiceInteractivity,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
@@ -2388,6 +2522,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   if(document.fonts?.ready)document.fonts.ready.then(()=>fitVisibleNames()).catch(()=>{});
 
   initializeSecretRelics();
+  initializeWorldUnlockState();
   installDebugSecretGesture();
   renderTitle();showOnly(els.titleScreen);enqueuePendingSecretRelicNotices({showNow:true});
 })();

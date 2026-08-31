@@ -1063,10 +1063,8 @@ body[data-mode="silver"] .music-world-tabs button.active{color:#f0fbff;border-co
 /* Silver boss specials */
 .question-panel.silver-special-panel{overflow:visible}
 body.silver-snowball-active .choices{overflow:visible;gap:12px}
-body.silver-snowball-active .choices button{border-radius:50%;aspect-ratio:1.35/1;background:radial-gradient(circle at 35% 28%,#fff 0 16%,#dfeaf0 38%,#aec4cf 72%,#6f8998 100%);color:#102331;border-color:#eaf7ff;box-shadow:inset -8px -10px 16px rgba(70,95,110,.24),inset 7px 6px 12px rgba(255,255,255,.62),0 8px 18px rgba(0,0,0,.30);transition:transform .36s cubic-bezier(.18,.78,.22,1),filter .25s ease}
-body.silver-snowball-moving .choices button{filter:blur(.45px) brightness(1.08);transform:rotate(12deg) translateY(-4px) scale(.98);pointer-events:none}
-body.silver-snowball-moving .choices button:nth-child(2){transform:rotate(-14deg) translateY(5px) scale(1.02)}
-body.silver-snowball-moving .choices button:nth-child(3){transform:rotate(18deg) translateY(-2px) scale(.99)}
+body.silver-snowball-active .choices button{position:relative;border-radius:50%;aspect-ratio:1.35/1;background:radial-gradient(circle at 35% 28%,#fff 0 16%,#dfeaf0 38%,#aec4cf 72%,#6f8998 100%);color:#102331;border-color:#eaf7ff;box-shadow:inset -8px -10px 16px rgba(70,95,110,.24),inset 7px 6px 12px rgba(255,255,255,.62),0 8px 18px rgba(0,0,0,.30);transition:filter .20s ease;transform-origin:50% 50%}
+body.silver-snowball-moving .choices button{filter:blur(.2px) brightness(1.08);pointer-events:none}
 
 body.silver-mirror-active .choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 body.silver-mirror-active .choices .silver-mirror-fake{position:relative;color:#d4c8ff;border-color:rgba(170,120,255,.86);background:linear-gradient(145deg,rgba(74,46,120,.66),rgba(30,42,78,.74));opacity:.68;box-shadow:inset 0 0 0 2px rgba(226,209,255,.13),inset 0 0 25px rgba(122,79,208,.28),0 0 13px rgba(136,90,224,.28);filter:saturate(.7)}
@@ -1115,3 +1113,17 @@ body.silver-mirror-active .choices .silver-mirror-fake.mirror-vanished{
 body.special-assist-active .silver-beast-ring-layer .beast,
 body.special-assist-active.silver-beast-ring-active .choices button,
 body.special-assist-active .silver-mirror-fake.mirror-shatter{animation-play-state:paused!important}
+
+/* v34: new-world unlock communication */
+.menu-btn.has-new-world::after{content:"NEW";position:absolute;right:10px;top:50%;transform:translateY(-50%);padding:3px 7px;border-radius:999px;background:#ffe07b;color:#3a2607;font:900 .56rem/1 Arial,sans-serif;letter-spacing:.08em;box-shadow:0 0 14px rgba(255,218,108,.5);animation:newWorldBadgePulse 1.65s ease-in-out infinite}
+@keyframes newWorldBadgePulse{0%,100%{filter:brightness(1);box-shadow:0 0 10px rgba(255,218,108,.35)}50%{filter:brightness(1.15);box-shadow:0 0 20px rgba(255,218,108,.72)}}
+.world-warp-card.new-world{border-color:rgba(255,220,119,.72);box-shadow:0 8px 18px rgba(0,0,0,.22),0 0 18px rgba(255,215,105,.16)}
+.world-warp-card.new-world strong{color:#ffe17d;text-shadow:0 0 10px rgba(255,218,108,.34)}
+.reward-card p{white-space:pre-line;line-height:1.72}
+.reward-card.world-unlock{border-color:rgba(255,222,126,.68);background:radial-gradient(circle at 50% 16%,rgba(65,107,156,.34),transparent 37%),linear-gradient(180deg,rgba(8,22,43,.99),rgba(4,12,27,.995));box-shadow:0 18px 54px rgba(0,0,0,.5),0 0 34px rgba(119,203,255,.16)}
+.reward-card.world-unlock small{color:#9eeaff;text-shadow:0 0 10px rgba(83,220,255,.35)}
+.reward-card.world-unlock .reward-icon{font-size:5.5rem;color:#f8e4a0;text-shadow:0 0 15px rgba(116,231,255,.62),0 0 34px rgba(255,216,106,.26)}
+.reward-card.world-unlock h2{color:#fff3c5;text-shadow:0 0 16px rgba(255,218,118,.22)}
+@media (orientation:landscape) and (max-height:500px){.menu-btn.has-new-world::after{right:6px;padding:2px 5px;font-size:.46rem}.reward-card.world-unlock .reward-icon{font-size:3.6rem}.reward-card p{font-size:.72rem;line-height:1.5}}
+.menu-btn.has-new-world{padding-right:72px}
+@media (orientation:landscape) and (max-height:500px){.menu-btn.has-new-world{padding-right:54px}}
