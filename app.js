@@ -131,7 +131,7 @@
   };
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
-  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false,silverSnowballCycleToken=0;
+  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false,silverSnowballCycleToken=0,silverBeastCycleToken=0;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -1647,7 +1647,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     silver:[
       {type:'silver-snowball',name:'剛腕雪崩',time:60},
       {type:'silver-mirror',name:'鏡界大奇術',time:60},
-      {type:'silver-beast-ring',name:'獣輪大旋回',time:60},
+      {type:'silver-beast-ring',name:'驚獣大火輪',time:60},
       {type:'silver-spotlight',name:'白夜大演目',time:60},
       {type:'silver-mimesis',name:'逆相鏡界',time:60}
     ]
@@ -1852,8 +1852,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function clearCrimsonSpecialEffects(){
     crimsonSpecialIntervals.forEach(id=>clearInterval(id));crimsonSpecialIntervals=[];
     crimsonSpecialTimeouts.forEach(id=>clearTimeout(id));crimsonSpecialTimeouts=[];
-    crimsonMoonShiftBusy=false;silverSpecialBusy=false;silverSnowballCycleToken++;
-    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim','crimson-genma-ready','crimson-genma-reveal','silver-snowball-active','silver-snowball-moving','silver-mirror-active','silver-beast-ring-active','silver-spotlight-active','silver-mimesis-active','silver-mimesis-flipping');
+    crimsonMoonShiftBusy=false;silverSpecialBusy=false;silverSnowballCycleToken++;silverBeastCycleToken++;
+    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim','crimson-genma-ready','crimson-genma-reveal','silver-snowball-active','silver-snowball-moving','silver-mirror-active','silver-beast-ring-active','silver-beast-ring-moving','silver-spotlight-active','silver-mimesis-active','silver-mimesis-flipping');
     // Cancel any in-flight FLIP animations from Vargas's snowball attack when a question ends,
     // a retry begins, or the battle scene is rebuilt. This prevents a stale animation from
     // re-enabling choices after the boss state has already changed.
@@ -2054,12 +2054,44 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function ensureSilverBeastRing(){
     const panel=document.querySelector('.question-panel');if(!panel)return null;let layer=$('silverBeastRingLayer');if(layer)return layer;
-    layer=document.createElement('div');layer.id='silverBeastRingLayer';layer.className='silver-beast-ring-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML='<i class="silver-ring"></i><span class="beast beast-a">🐺</span><span class="beast beast-b">🐆</span>';panel.appendChild(layer);return layer;
+    layer=document.createElement('div');layer.id='silverBeastRingLayer';layer.className='silver-beast-ring-layer';layer.setAttribute('aria-hidden','true');
+    layer.innerHTML='<i class="silver-ring fire-ring-a"></i><i class="silver-ring fire-ring-b"></i><span class="beast-shadow"></span><span class="beast-eyes"><i></i><i></i></span><span class="beast-claw"><i></i><i></i><i></i></span>';
+    panel.appendChild(layer);return layer;
+  }
+  async function rotateSilverBeastRingChoices(){
+    if(silverSpecialBusy||paused||specialActive||locked||!currentQuestion||!document.body.classList.contains('silver-beast-ring-active'))return;
+    const buttons=[...els.choices.children].filter(b=>b.dataset.mirrorFake!=='true'&&b.dataset.eliminated!=='true');
+    if(buttons.length<2)return;
+    const token=silverBeastCycleToken;
+    const before=new Map(buttons.map(b=>[b,b.getBoundingClientRect()]));
+    const order=buttons.length===3?[buttons[1],buttons[2],buttons[0]]:[...buttons.slice(1),buttons[0]];
+    silverSpecialBusy=true;document.body.classList.add('silver-beast-ring-moving');
+    buttons.forEach(b=>{b.disabled=true;b.style.willChange='transform';});
+    for(const b of order)els.choices.appendChild(b);
+    const animations=order.map((b,i)=>{
+      const first=before.get(b),last=b.getBoundingClientRect();
+      const dx=first.left-last.left,dy=first.top-last.top;
+      const lift=(i%2===0?-1:1)*Math.min(24,Math.max(12,Math.abs(dx)*.08+10));
+      const turn=i%2===0?-8:8;
+      return b.animate([
+        {transform:`translate(${dx}px,${dy}px) rotate(0deg) scale(1)`,offset:0},
+        {transform:`translate(${dx*.56}px,${dy*.56+lift}px) rotate(${turn}deg) scale(1.06)`,offset:.48},
+        {transform:'translate(0px,0px) rotate(0deg) scale(1)',offset:1}
+      ],{duration:920,easing:'cubic-bezier(.18,.78,.2,1)',fill:'both'});
+    });
+    const shadow=$('silverBeastRingLayer')?.querySelector('.beast-shadow');
+    if(shadow){shadow.classList.remove('sweep');void shadow.offsetWidth;shadow.classList.add('sweep');}
+    await Promise.allSettled(animations.map(a=>a.finished));
+    if(token!==silverBeastCycleToken)return;
+    buttons.forEach(b=>b.style.removeProperty('will-change'));
+    if(shadow)shadow.classList.remove('sweep');
+    document.body.classList.remove('silver-beast-ring-moving');
+    silverSpecialBusy=false;restoreChoiceInteractivity();syncPauseButton();updateSpecialHud();
   }
   function startSilverBeastRing(){
-    ensureSilverBeastRing();document.body.classList.add('silver-beast-ring-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');let idx=-1;
-    const block=()=>{if(paused||specialActive||locked)return;const buttons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true');if(!buttons.length)return;document.querySelectorAll('.silver-beast-blocked').forEach(b=>b.classList.remove('silver-beast-blocked'));idx=(idx+1)%buttons.length;const b=buttons[idx];b.classList.add('silver-beast-blocked');restoreChoiceInteractivity();scheduleSilverActiveTimeout(()=>{b.classList.remove('silver-beast-blocked');restoreChoiceInteractivity();},1050);};
-    block();trackCrimsonInterval(setInterval(block,1350));
+    ensureSilverBeastRing();document.body.classList.add('silver-beast-ring-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');
+    rotateSilverBeastRingChoices();
+    trackCrimsonInterval(setInterval(()=>{rotateSilverBeastRingChoices();},2600));
   }
   function startSilverSpotlight(){
     document.body.classList.add('silver-spotlight-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');let idx=-1;
@@ -2381,16 +2413,30 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.enemyActor.classList.remove('boss-defeat','finisher-hit');
     els.heroActor.classList.remove('finisher-front','finisher-back');
     els.attackEffect.className='attack-effect';
-    if(mode==='crimson'&&crimsonLastPhase){await finishRun();return;}
+    if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',20);await finishRun();return;}
     await clearStage();
+  }
+
+  function currentStageClearGold(){
+    if(mode==='front')return stageIndex===4?20:5;
+    if(mode==='back')return stageIndex===4?20:7;
+    if(mode==='crimson')return stageIndex<=3?15:5;
+    if(mode==='silver')return stageIndex===4?20:15;
+    return 5;
+  }
+  function grantStageClearGold(key,reward){
+    const amount=Math.max(0,Number(reward)||0);
+    if(runStageRewards.has(key))return 0;
+    runStageRewards.add(key);stats.gold+=amount;
+    if(!debugFullUnlock){save.gold+=amount;persist();}
+    return amount;
   }
 
   async function clearStage(){
     resetSpecialGauge();
-    if(!runStageRewards.has(stageIndex)){
-      runStageRewards.add(stageIndex);stats.gold+=5;
-      if(!debugFullUnlock){save.gold+=5;persist();}
-    }
+    const stageGold=currentStageClearGold();
+    grantStageClearGold(stageIndex,stageGold);
+    const stageClearGold=$('stageClearGold');if(stageClearGold)stageClearGold.textContent=`＋${stageGold} G`;
     els.stageClearName.textContent=currentStage().name;
     requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));
     els.stageClearOverlay.hidden=false;
