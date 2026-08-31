@@ -36,7 +36,7 @@
   const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
   let debugFullUnlock=false;
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
-  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[]},monsterEncounters:{front:{},back:{},crimson:{}},musicUnlocked:{front:[],back:[],crimson:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0};
+  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,silverClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0};
   let save=loadSave();
 
   const FRONT_STAGES=[
@@ -64,6 +64,14 @@
   ];
   const CRIMSON_LAST={name:'秋尽の剣聖・玄真',key:'crimson-last',count:5,normalCount:0,bossCount:5,bgm:'驚天動地.mp3',bossBgm:'驚天動地.mp3',bg:'crimson_last.png',boss:['秋尽の剣聖・玄真','boss_crimson_last.png']};
 
+  const SILVER_STAGES=[
+    {name:'孤独の雪原',key:'silver1',count:15,normalCount:10,bossCount:5,bgm:'silver world.mp3',bossBgm:'CRAZY.mp3',bg:'silver_stage1.png',boss:['怪力道化・バルガ','boss_silver_1.png']},
+    {name:'氷鏡の美術館',key:'silver2',count:15,normalCount:10,bossCount:5,bgm:'Nightfall.mp3',bossBgm:'CRAZY.mp3',bg:'silver_stage2.png',boss:['幻彩奇術師・ミラベル','boss_silver_2.png']},
+    {name:'天穹の雪嶺',key:'silver3',count:15,normalCount:10,bossCount:5,bgm:'reverberation.mp3',bossBgm:'CRAZY.mp3',bg:'silver_stage3.png',boss:['白牙の猛獣使い・ヴェルカ','boss_silver_3.png']},
+    {name:'白夜の大天幕',key:'silver4',count:15,normalCount:10,bossCount:5,bgm:'Frozen Steel.mp3',bossBgm:'CRAZY.mp3',bg:'silver_stage4.png',boss:['銀幕団長・アルジェント','boss_silver_4.png']},
+    {name:'世界の果て',key:'silver5',count:15,normalCount:10,bossCount:5,bgm:'chilblains.mp3',bossBgm:'SAVER.mp3',bg:'silver_stage5.png',boss:['終幕の写し身・ミメシス','boss_silver_5.png']}
+  ];
+
   const FRONT_MONSTER_NAMES=[
     [['ぷるるスライム',1],['きのこぞう',1],['リーフラット',2],['モリバット',2],['フラワーフェアリー',3],['白銀オオカミ',4],['虹羽ユニコーン',5]],
     [['いわムシ',1],['ケイブスライム',1],['クリスタルバット',2],['いわゴーレム',2],['宝石ミミック',3],['水晶騎士',4],['地底竜クリスタロス',5]],
@@ -86,12 +94,20 @@
     [['提灯小僧',1],['古銭ねずみ',1],['算盤童子',2],['反物おばけ',2],['番傘小僧',3],['百目商人',4],['夜行鬼',5]],
     [['草履童',1],['襖小僧',1],['屏風の化生',2],['甲冑の付喪神',2],['落武者の霊',3],['影武者・朧',4],['修羅鎧',5]]
   ];
+  const SILVER_MONSTER_NAMES=[
+    [['ゆきころがし',1],['こおりツノウサギ',1],['しろがねオオカミ',2],['雪灯りの精',2],['氷牙トナカイ',3],['吹雪の白梟',4],['永久凍土の巨獣',5]],
+    [['額縁こぞう',1],['雪像ネズミ',1],['絵具の亡霊',2],['氷像の兵士',2],['鏡写しの少女',3],['白磁の獣',4],['未完の名画',5]],
+    [['ゆきつばめ',1],['氷柱コウモリ',1],['雪崩ヤギ',2],['霜羽ワシ',2],['氷壁の山霊',3],['吹雪竜',4],['白嶺の巨鳥',5]],
+    [['玉乗りペンギン',1],['ラッパ雪だるま',1],['ジャグリングモンキー',2],['一輪車ゴブリン',2],['双子の道化',3],['白獅子の曲芸王',4],['凍れる象王',5]],
+    [['壊れたマリオネット',1],['忘却の仮面',1],['空席の影',2],['糸繰り人形',2],['捨てられた道化師',3],['銀糸の操者',4],['終幕の獣',5]]
+  ];
   function buildMonsterCatalog(raw,world){
     let id=0;return raw.flatMap((stageArr,stage)=>stageArr.map(([name,rarity])=>({id:`${world}-${++id}`,world,stage,rarity,name,img:`monster_${world}_${stage+1}_${rarity}_${id}.png`})));
   }
   const FRONT_MONSTERS=buildMonsterCatalog(FRONT_MONSTER_NAMES,'front');
   const BACK_MONSTERS=buildMonsterCatalog(BACK_MONSTER_NAMES,'back');
   const CRIMSON_MONSTERS=buildMonsterCatalog(CRIMSON_MONSTER_NAMES,'crimson');
+  const SILVER_MONSTERS=buildMonsterCatalog(SILVER_MONSTER_NAMES,'silver');
   const RARITY_WEIGHTS=[[1,.50],[2,.30],[3,.15],[4,.04],[5,.01]];
 
 
@@ -99,7 +115,7 @@
     titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),
     playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
-    musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicFrontTab:$('musicFrontTab'),musicBackTab:$('musicBackTab'),musicCrimsonTab:$('musicCrimsonTab'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
+    musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicFrontTab:$('musicFrontTab'),musicBackTab:$('musicBackTab'),musicCrimsonTab:$('musicCrimsonTab'),musicSilverTab:$('musicSilverTab'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     worldWarpList:$('worldWarpList'),worldWarpBackBtn:$('worldWarpBackBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
@@ -115,7 +131,7 @@
   };
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
-  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false;
+  let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -138,13 +154,13 @@
   // BGM collection: only tracks already used by the current game are listed.
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
   function musicTracks(world){
-    const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:CRIMSON_STAGES;
-    const worldLabel=world==='front'?'光の世界':world==='back'?'裏の世界':'紅の世界';
+    const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:SILVER_STAGES;
+    const worldLabel=world==='front'?'光の世界':world==='back'?'裏の世界':world==='crimson'?'紅の世界':'銀の世界';
     const normal=stages.map((st,i)=>({
       id:`stage-${i+1}`,file:st.bgm,label:`STAGE ${i+1}`,title:st.bgm.replace(/\.mp3$/i,''),
       where:`${worldLabel} STAGE ${i+1}「${st.name}」の通常戦闘で流れるBGM。`
     }));
-    const bossWhere=world==='front'?'光の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。';
+    const bossWhere=world==='front'?'光の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='crimson'?'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。':'銀の世界 STAGE 1～4のボス戦で流れる共通BGM。';
     const finalStage=stages[4];
     return [...normal,
       {id:'boss',file:stages[0].bossBgm,label:'BOSS',title:stages[0].bossBgm.replace(/\.mp3$/i,''),where:bossWhere},
@@ -152,8 +168,8 @@
     ];
   }
   function inferMusicUnlocksFromSave(target){
-    target.musicUnlocked=target.musicUnlocked||{front:[],back:[],crimson:[]};
-    for(const world of ['front','back','crimson']){
+    target.musicUnlocked=target.musicUnlocked||{front:[],back:[],crimson:[],silver:[]};
+    for(const world of ['front','back','crimson','silver']){
       const list=Array.isArray(target.musicUnlocked[world])?target.musicUnlocked[world]:[];
       const set=new Set(list);
       const book=target.monsterBook?.[world]||[];
@@ -164,7 +180,7 @@
         if(boss){const stage=Number(boss[1]);set.add(`stage-${stage}`);set.add(world==='crimson'?'boss':(stage===5?'final':'boss'));}
         if(world==='crimson'&&id==='boss-crimson-last')set.add('final');
       }
-      if((world==='front'&&(target.frontClears>0||target.backUnlocked))||(world==='back'&&target.backClears>0)||(world==='crimson'&&target.crimsonClears>0)){
+      if((world==='front'&&(target.frontClears>0||target.backUnlocked))||(world==='back'&&target.backClears>0)||(world==='crimson'&&target.crimsonClears>0)||(world==='silver'&&target.silverClears>0)){
         for(let i=1;i<=5;i++)set.add(`stage-${i}`);set.add('boss');set.add('final');
       }
       target.musicUnlocked[world]=[...set];
@@ -173,7 +189,7 @@
   function isMusicUnlocked(world,id){return debugFullUnlock||!!save.musicUnlocked?.[world]?.includes(id);}
   function unlockMusic(world,id){
     if(debugFullUnlock)return false;
-    if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[],crimson:[]};
+    if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[],crimson:[],silver:[]};
     if(!Array.isArray(save.musicUnlocked[world]))save.musicUnlocked[world]=[];
     if(save.musicUnlocked[world].includes(id))return false;
     save.musicUnlocked[world].push(id);
@@ -193,16 +209,16 @@
       const raw=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
       const merged={...DEFAULT_SAVE,...raw};
       merged.owned=Array.isArray(raw.owned)?raw.owned:[100];
-      merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[]};
-      merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})}};
-      merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[]};
+      merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[]};
+      merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},silver:{...(raw.monsterEncounters?.silver||{})}};
+      merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[]};
       merged.secretRelics=Array.isArray(raw.secretRelics)?raw.secretRelics:[];
       merged.secretRelicNotified=Array.isArray(raw.secretRelicNotified)?raw.secretRelicNotified:[];
       merged.secretRelicVersion=Number.isFinite(Number(raw.secretRelicVersion))?Number(raw.secretRelicVersion):0;
       merged.mapTipIntroIndex=Math.max(0,Number(raw.mapTipIntroIndex)||0);
       inferMusicUnlocksFromSave(merged);
       return merged;
-    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[]},monsterEncounters:{front:{},back:{},crimson:{}},musicUnlocked:{front:[],back:[],crimson:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0};inferMusicUnlocksFromSave(fallback);return fallback;}
+    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0};inferMusicUnlocksFromSave(fallback);return fallback;}
   }
   function persist(){
     if(!debugFullUnlock)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
@@ -220,9 +236,11 @@
     if(world==='front')return true;
     if(world==='back')return debugFullUnlock||save.frontClears>0;
     if(world==='crimson')return isCrimsonWorldUnlocked();
+    if(world==='silver')return isSilverWorldUnlocked();
     return false;
   }
   function isCrimsonWorldUnlocked(){return debugFullUnlock||hasSecretRelic('common_master');}
+  function isSilverWorldUnlocked(){return debugFullUnlock||hasSecretRelic('uncommon_master');}
   function isMonsterSeen(world,id){return debugFullUnlock||!!save.monsterBook?.[world]?.includes(id);}
   function effectiveEncounterCount(world,id){const n=save.monsterEncounters?.[world]?.[id]||0;return debugFullUnlock?Math.max(1,n):n;}
 
@@ -294,14 +312,16 @@ const SECRET_RELICS=[
   {id:'back_sr_master',name:'クリプティック・コード',icon:'⌘',flavor:'裏の世界の SRモンスターを すべて見つけた証。',notice:'裏の世界の SRモンスターを すべて見つけた証。'},
   {id:'back_ssr_master',name:'旅立ちを祝すハルシオン',icon:'🪶',flavor:'裏の世界の SSRモンスターを すべて見つけた証。',notice:'裏の世界の SSRモンスターを すべて見つけた証。'},
   {id:'world3_sr_master',name:'黄泉の供物',icon:'🍂',flavor:'紅の世界の SRモンスターを すべて見つけた証。',notice:'紅の世界の SRモンスターを すべて見つけた証。'},
-  {id:'world3_ssr_master',name:'黒曜城',icon:'🏯',flavor:'紅の世界の SSRモンスターを すべて見つけた証。',notice:'紅の世界の SSRモンスターを すべて見つけた証。'}
+  {id:'world3_ssr_master',name:'黒曜城',icon:'🏯',flavor:'紅の世界の SSRモンスターを すべて見つけた証。',notice:'紅の世界の SSRモンスターを すべて見つけた証。'},
+  {id:'world4_sr_master',name:'未来の結晶',icon:'❄️',flavor:'銀の世界の SRモンスターを すべて見つけた証。',notice:'銀の世界の SRモンスターを すべて見つけた証。'},
+  {id:'world4_ssr_master',name:'コランダムギア',icon:'⚙️',flavor:'銀の世界の SSRモンスターを すべて見つけた証。',notice:'銀の世界の SSRモンスターを すべて見つけた証。'}
 ];
-const SECRET_RELIC_VERSION=2;
+const SECRET_RELIC_VERSION=3;
 const secretRelicById=id=>SECRET_RELICS.find(r=>r.id===id);
 function hasSecretRelic(id){return debugFullUnlock||!!save.secretRelics?.includes(id);}
 function ownsItemRange(from,to){for(let id=from;id<=to;id++)if(!save.owned.includes(id))return false;return true;}
 function ownsMonsterRaritySet(world,rarity){
-  const catalog=world==='front'?FRONT_MONSTERS:world==='back'?BACK_MONSTERS:CRIMSON_MONSTERS;
+  const catalog=world==='front'?FRONT_MONSTERS:world==='back'?BACK_MONSTERS:world==='crimson'?CRIMSON_MONSTERS:SILVER_MONSTERS;
   const targets=catalog.filter(m=>m.rarity===rarity);
   const seen=new Set(save.monsterBook?.[world]||[]);
   return targets.length>0&&targets.every(m=>seen.has(m.id));
@@ -317,6 +337,8 @@ function eligibleSecretRelics(){
   if(ownsMonsterRaritySet('back',5))ids.push('back_ssr_master');
   if(ownsMonsterRaritySet('crimson',4))ids.push('world3_sr_master');
   if(ownsMonsterRaritySet('crimson',5))ids.push('world3_ssr_master');
+  if(ownsMonsterRaritySet('silver',4))ids.push('world4_sr_master');
+  if(ownsMonsterRaritySet('silver',5))ids.push('world4_ssr_master');
   return ids;
 }
 function syncSecretRelics({silent=false}={}){
@@ -374,7 +396,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${effectiveGold()} G`;
-    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':'紅の世界';
+    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':'銀の世界';
     els.titleTrackName.textContent=titleTrackLabel();
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
@@ -386,8 +408,10 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
       els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }else if(mode==='back'){
       els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='BACK WORLD / ANOTHER QUEST';els.titleSubtitle.innerHTML='裏の世界を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');
-    }else{
+    }else if(mode==='crimson'){
       els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
+    }else{
+      els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FOURTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }
     if(els.worldWarpBtn)setMenuButton(els.worldWarpBtn,'∞','世界を渡る');
   }
@@ -397,7 +421,8 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     const worlds=[
       {key:'front',name:'光の世界',desc:'はじまりの世界',unlocked:true},
       {key:'back',name:'裏の世界',desc:'裏の世界',unlocked:isBackWorldUnlocked()},
-      {key:'crimson',name:'紅の世界',desc:'晩秋の第三世界',unlocked:isCrimsonWorldUnlocked()}
+      {key:'crimson',name:'紅の世界',desc:'晩秋の第三世界',unlocked:isCrimsonWorldUnlocked()},
+      {key:'silver',name:'銀の世界',desc:'永遠の雪に閉ざされた第四世界',unlocked:isSilverWorldUnlocked()}
     ];
     els.worldWarpList.innerHTML='';
     worlds.forEach(w=>{
@@ -424,10 +449,12 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     els.musicFrontTab.classList.toggle('active',musicWorld==='front');
     els.musicBackTab.classList.toggle('active',musicWorld==='back');
     if(els.musicCrimsonTab){els.musicCrimsonTab.hidden=!isMusicWorldVisible('crimson');els.musicCrimsonTab.classList.toggle('active',musicWorld==='crimson');}
+    if(els.musicSilverTab){els.musicSilverTab.hidden=!isMusicWorldVisible('silver');els.musicSilverTab.classList.toggle('active',musicWorld==='silver');}
     els.musicFrontTab.setAttribute('aria-selected',musicWorld==='front'?'true':'false');
     els.musicBackTab.setAttribute('aria-selected',musicWorld==='back'?'true':'false');
     els.musicBackTab.setAttribute('aria-hidden',els.musicBackTab.hidden?'true':'false');
     if(els.musicCrimsonTab){els.musicCrimsonTab.setAttribute('aria-selected',musicWorld==='crimson'?'true':'false');els.musicCrimsonTab.setAttribute('aria-hidden',els.musicCrimsonTab.hidden?'true':'false');}
+    if(els.musicSilverTab){els.musicSilverTab.setAttribute('aria-selected',musicWorld==='silver'?'true':'false');els.musicSilverTab.setAttribute('aria-hidden',els.musicSilverTab.hidden?'true':'false');}
     els.musicTrackList.innerHTML='';
     tracks.forEach((track,i)=>{
       const unlocked=isMusicUnlocked(musicWorld,track.id);
@@ -497,10 +524,10 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     els.debugStagePanel.hidden=!debugFullUnlock;
     if(els.debugStageGrid){
       els.debugStageGrid.innerHTML='';
-      for(const world of ['front','back','crimson']){
-        const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:CRIMSON_STAGES;
+      for(const world of ['front','back','crimson','silver']){
+        const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:SILVER_STAGES;
         stages.forEach((st,i)=>{
-          const prefix=world==='front'?'光':world==='back'?'裏':'紅';
+          const prefix=world==='front'?'光':world==='back'?'裏':world==='crimson'?'紅':'銀';
           const start=document.createElement('button');start.type='button';start.className=`debug-stage-btn debug-stage-start debug-world-${world}`;
           start.textContent=`${prefix} S${i+1} 最初`;start.title=`${st.name}：ステージ最初から`;
           start.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(start);
@@ -522,6 +549,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
       save=loadSave();
       if(mode==='back'&&!save.backUnlocked)mode='front';
       if(mode==='crimson'&&!isCrimsonWorldUnlocked())mode='front';
+      if(mode==='silver'&&!isSilverWorldUnlocked())mode='front';
     }
     renderTitle();renderDebugPanel();
     if(els.collectionScreen&&!els.collectionScreen.hidden)renderCollection();
@@ -649,7 +677,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     els.monsterCardName.textContent=m.name;
     els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};
     els.monsterCardImage.src=`./assets/${m.img}`;
-    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':'紅の世界';
+    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':'銀の世界';
     els.monsterCardStage.textContent=m.lastBoss?'LAST BOSS':`STAGE ${m.stage+1}`;
     els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;
     els.monsterCardText.textContent=monsterFlavor(m);
@@ -660,11 +688,11 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
 
 
-  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:CRIMSON_STAGES;}
+  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:SILVER_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
   function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};locked=true;updateSpecialHud();syncPauseButton();}
 
-  function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:CRIMSON_MONSTERS;}
+  function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:SILVER_MONSTERS;}
   function rarityRoll(r=Math.random()){
     let acc=0;for(const [rarity,w] of RARITY_WEIGHTS){acc+=w;if(r<acc)return rarity;}return 5;
   }
@@ -735,6 +763,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   function currentBoss(){const [name,img]=currentStage().boss;return{id:(mode==='crimson'&&crimsonLastPhase)?'boss-crimson-last':`boss-${mode}-${stageIndex+1}`,world:mode,stage:(mode==='crimson'&&crimsonLastPhase)?5:stageIndex,rarity:5,name,img,boss:true,lastBoss:mode==='crimson'&&crimsonLastPhase};}
   function makeBossQuestion(idx){
     if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false);}
+    if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverQuestion(4);}
     if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);
     if(mode==='front')return makeFrontFinalBossQuestion();
     return makeBackFinalBossQuestion();
@@ -836,6 +865,24 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     return{expression:'3/4÷2/5',answer:'15/8',fraction:true,a:{n:3,d:4},b:{n:2,d:5},op:'÷'};
   }
 
+  function makeSilverQuestion(idx){
+    if(idx===0){
+      for(let i=0;i<500;i++){const a=rand(1,9),b=rand(1,9);if(gcd(a,b)!==1||a===b)continue;const k=rand(2,9);if(Math.random()<.5)return{expression:`${a*k}:${b*k} → □:${b}`,answer:a};return{expression:`${a*k}:${b*k} → ${a}:□`,answer:b};}
+      return{expression:'12:18 → 2:□',answer:3};
+    }
+    if(idx===1){
+      for(let i=0;i<500;i++){const a=rand(1,6),b=rand(1,7);if(a===b||gcd(a,b)!==1)continue;const unit=rand(2,12),total=(a+b)*unit;if(total>120)continue;const askLeft=Math.random()<.5;return{expression:`赤:青=${a}:${b}、全部${total}こ。${askLeft?'赤':'青'}は`,answer:(askLeft?a:b)*unit};}
+      return{expression:'赤:青=2:3、全部25こ。赤は',answer:10};
+    }
+    if(idx===2){
+      if(Math.random()<.35){const d=rand(4,20)*2,r=d/2;return{expression:`直径${d}cmの円の面積`,answer:round2(r*r*3.14)};}
+      const r=rand(2,12);return{expression:`半径${r}cmの円の面積`,answer:round2(r*r*3.14)};
+    }
+    if(idx===3){const k=rand(2,12),x1=rand(1,9);let x2=rand(2,12);if(x2===x1)x2=x2===12?2:x2+1;return{expression:`xとyは比例。x=${x1}でy=${k*x1}。x=${x2}のときy`,answer:k*x2};}
+    for(let i=0;i<500;i++){const x1=rand(2,12),y1=rand(2,12),product=x1*y1;const divs=[];for(let x=2;x<=18;x++)if(product%x===0)divs.push(x);if(!divs.length)continue;const x2=pick(divs);if(x2===x1)continue;return{expression:`xとyは反比例。x=${x1}でy=${y1}。x=${x2}のときy`,answer:product/x2};}
+    return{expression:'xとyは反比例。x=3でy=8。x=6のときy',answer:4};
+  }
+
   function currentStage(){return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
   function sameDigitLength(a,b){return String(Math.abs(a)).length===String(Math.abs(b)).length;}
   function answerKey(v){return typeof v==='number'?String(v):String(v);}
@@ -901,7 +948,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
   };
   function applyEnemyFacing(en){
     if(!els.enemySprite)return;
-    const keepOriginal=!!en&&(en.world==='crimson'||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));
+    const keepOriginal=!!en&&((en.world==='crimson'||en.world==='silver')||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));
     els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);
     els.enemySprite.classList.toggle('bottom-safe-knight',!!en&&en.img==='monster_front_4_2_25.png');
     els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));
@@ -993,7 +1040,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
     const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
     if(mode==='crimson'&&crimsonLastPhase){els.progressText.textContent=`${Math.min(80,totalProgress)} / 80`;els.progressFill.style.width=`${Math.min(100,(totalProgress-75)/5*100)}%`;els.stageLabel.textContent='LAST BOSS';els.stageName.textContent=s.name;}else{els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
     fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
-    els.battleBg.style.backgroundImage=`url('./assets/${s.bg}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':'./assets/crimson_hero.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':'流浪の剣士';
+    els.battleBg.style.backgroundImage=`url('./assets/${s.bg}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':'./assets/silver_hero.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':'銀狼の少女';
     const en=bossPhase?currentBoss():currentMonster;
     if(en){
       applyEnemyFacing(en);
@@ -1007,7 +1054,7 @@ function enqueuePendingSecretRelicNotices({showNow=true}={}){
 
   function syncPauseButton(){
     if(!els.pauseBtn)return;
-    const playable=!els.gameScreen.hidden&&!paused&&!gameOverActive&&!locked&&!!timerId&&!!currentQuestion;
+    const playable=!els.gameScreen.hidden&&!paused&&!gameOverActive&&!locked&&!silverSpecialBusy&&!crimsonMoonShiftBusy&&!specialActive&&!!timerId&&!!currentQuestion;
     els.pauseBtn.disabled=!playable;
     els.pauseBtn.setAttribute('aria-disabled',playable?'false':'true');
   }
@@ -1194,13 +1241,14 @@ function advanceMapFromInput(){
 function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdvanceResolve=resolve;});}
 
   function prepareMapOverlay(initial=false){
-    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':'CRIMSON WORLD';
-    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':'紅の世界';
-    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':'./assets/crimson_map.png';
+    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':'SILVER WORLD';
+    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':'銀の世界';
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':'./assets/silver_map.png';
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
     const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
     const mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'];
-    const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mapLinesCrimson;
+    const mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'];
+    const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mapLinesSilver;
     els.mapMessage.textContent=lines[stageIndex] || (initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
     const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;
     if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}
@@ -1238,10 +1286,38 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const value=Math.max(0,Math.min(100,specialGauge));
     els.specialFill.style.width=`${value}%`;
     els.specialHud.classList.toggle('ready',value>=100);
-    const canUse=value>=100&&!specialActive&&!crimsonMoonShiftBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
+    const canUse=value>=100&&!specialActive&&!crimsonMoonShiftBusy&&!silverSpecialBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
     els.specialBtn.hidden=value<100||!currentQuestion||!timerId||paused||gameOverActive||specialActive;
     els.specialBtn.disabled=!canUse;
     els.specialBtn.setAttribute('aria-disabled',canUse?'false':'true');
+  }
+  function restoreChoiceInteractivity(){
+    if(!els.choices)return;
+    const buttons=[...els.choices.children];
+    const globallyLocked=paused||specialActive||locked||silverSpecialBusy||crimsonMoonShiftBusy;
+    if(globallyLocked){buttons.forEach(b=>b.disabled=true);return;}
+
+    const viable=b=>b.dataset.eliminated!=='true'&&!b.classList.contains('mirror-vanished');
+    if(document.body.classList.contains('silver-spotlight-active')){
+      const active=buttons.filter(viable);
+      // A choice removed by the hero special can still carry the old spotlight class.
+      // Normalize the visual state first so exactly one viable choice is lit/enabled.
+      buttons.forEach(b=>{if(!viable(b))b.classList.remove('silver-spotlit');});
+      let lit=active.find(b=>b.classList.contains('silver-spotlit'));
+      if(!lit&&active.length)lit=active[0];
+      buttons.forEach(b=>{
+        const on=!!lit&&b===lit;
+        b.classList.toggle('silver-spotlit',on);
+        b.disabled=!viable(b)||!on;
+      });
+      return;
+    }
+
+    buttons.forEach(b=>{
+      b.disabled=!viable(b)
+        ||b.classList.contains('silver-beast-blocked')
+        ||b.classList.contains('crimson-tengu-blown');
+    });
   }
   function adjustSpecialGauge(delta){
     specialGauge=Math.max(0,Math.min(100,specialGauge+delta));
@@ -1249,8 +1325,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function resetSpecialGauge(){specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('special-assist-active');updateSpecialHud();}
   async function activateSpecialMove(){
-    if(specialActive||crimsonMoonShiftBusy||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
-    const wrongButtons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
+    if(specialActive||crimsonMoonShiftBusy||silverSpecialBusy||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
+    const wrongButtons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&b.dataset.mirrorFake!=='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
     if(!wrongButtons.length)return;
     specialActive=true;locked=true;
     const resumeTime=timeLeft;
@@ -1258,7 +1334,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     [...els.choices.children].forEach(b=>b.disabled=true);
     document.body.classList.add('special-assist-active');
     specialGauge=0;updateSpecialHud();
-    const heroFile=mode==='front'?'hero.png':mode==='back'?'back_hero.png':'crimson_hero.png';
+    const heroFile=mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':'silver_hero.png';
     await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
     const target=pick(wrongButtons);
     playFinisherSE();
@@ -1274,7 +1350,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await sleep(260);
     document.body.classList.remove('special-assist-active');
     specialActive=false;locked=false;
-    [...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});
+    restoreChoiceInteractivity();
     updateSpecialHud();syncPauseButton();
     if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true});
   }
@@ -1283,9 +1359,41 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const panel=els.mathProblem.closest('.question-panel');
     if(panel)panel.classList.toggle('fraction-question',!!active);
   }
+  function resetMathProblemFit(){
+    if(!els.mathProblem)return;
+    for(const prop of ['font-size','max-width','width','white-space','line-height','overflow-wrap','word-break','display','text-align'])els.mathProblem.style.removeProperty(prop);
+  }
+  function fitMathProblemToBox(q=currentQuestion){
+    const el=els.mathProblem,box=el?.closest('.equation-box');
+    if(!el||!box)return;
+    resetMathProblemFit();
+    if(q?.fraction||mode!=='silver')return;
+    const maxWidth=Math.max(100,box.clientWidth-18);
+    const maxHeight=Math.max(42,box.clientHeight-10);
+    el.style.maxWidth=`${maxWidth}px`;
+    el.style.whiteSpace='nowrap';
+    const base=parseFloat(getComputedStyle(el).fontSize)||32;
+    const portrait=window.matchMedia?.('(orientation:portrait)').matches;
+    const minSingle=portrait?21:(window.innerHeight<=500?20:24);
+    let size=base;
+    while(el.scrollWidth>maxWidth&&size>minSingle){size=Math.max(minSingle,size-1);el.style.fontSize=`${size}px`;}
+    if(el.scrollWidth>maxWidth){
+      el.style.width=`${maxWidth}px`;
+      el.style.maxWidth=`${maxWidth}px`;
+      el.style.whiteSpace='normal';
+      el.style.display='block';
+      el.style.textAlign='center';
+      el.style.lineHeight='1.15';
+      el.style.overflowWrap='anywhere';
+      el.style.wordBreak='normal';
+      size=minSingle;el.style.fontSize=`${size}px`;
+      while(el.scrollHeight>maxHeight&&size>16){size--;el.style.fontSize=`${size}px`;}
+    }
+  }
   function renderQuestionContent(q){
     setFractionQuestionLayout(!!q?.fraction);
-    if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=`${q.expression}=?`;
+    if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=q?.displayExpression||`${q.expression}=?`;
+    fitMathProblemToBox(q);
   }
   function renderChoiceButton(b,v,answer){
     b.dataset.answerValue=answerKey(v);
@@ -1294,13 +1402,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
-    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):makeCrimsonQuestion(stageIndex));
+    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):makeSilverQuestion(stageIndex));
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';
     makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});
     locked=false;syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){setFractionQuestionLayout(false);els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
+  function clearQuestionUi(){setFractionQuestionLayout(false);resetMathProblemFit();els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -1460,6 +1568,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       {type:'crimson-steam',name:'湯煙隠し',time:60},
       {type:'crimson-time',name:'刻限算盤',time:20},
       {type:'crimson-moon-shift',name:'月影転位',time:60}
+    ],
+    silver:[
+      {type:'silver-snowball',name:'剛腕雪崩',time:60},
+      {type:'silver-mirror',name:'鏡界大奇術',time:60},
+      {type:'silver-beast-ring',name:'獣輪大旋回',time:60},
+      {type:'silver-spotlight',name:'白夜大演目',time:60},
+      {type:'silver-mimesis',name:'逆相鏡界',time:60}
     ]
   };
   const CRIMSON_LAST_SPECIAL={type:'crimson-genma',name:'無明の一閃',time:15};
@@ -1541,7 +1656,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function populateSpecialQuestion(q,{chip='',step=1}={}){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
     currentQuestion=q;
-    if(q.fraction)renderQuestionContent(q);else els.mathProblem.textContent=q.displayExpression||`${q.expression}=?`;els.feedbackText.textContent='';els.choices.innerHTML='';
+    renderQuestionContent(q);els.feedbackText.textContent='';els.choices.innerHTML='';
     makeChoices(q.answer).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,q.answer);els.choices.appendChild(b);});
     if(chip)setBossStepChip(chip,step);else{$('bossStrikeChip')?.remove();}
     locked=false;syncPauseButton();updateSpecialHud();
@@ -1641,14 +1756,34 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function trackCrimsonInterval(id){crimsonSpecialIntervals.push(id);return id;}
   function trackCrimsonTimeout(id){crimsonSpecialTimeouts.push(id);return id;}
+  // Silver-world short penalties/blocks must freeze while PAUSE or the hero cut-in is active.
+  // A normal setTimeout would keep counting behind the pause overlay and silently change the
+  // boss state before the player returns, so measure only active battle time instead.
+  function scheduleSilverActiveTimeout(fn,activeMs){
+    let remaining=Math.max(0,Number(activeMs)||0),last=performance.now(),cancelled=false;
+    const tick=()=>{
+      if(cancelled)return;
+      const now=performance.now();
+      if(!paused&&!specialActive)remaining-=Math.max(0,now-last);
+      last=now;
+      if(remaining<=0){cancelled=true;fn();return;}
+      const id=setTimeout(tick,Math.min(80,Math.max(20,remaining)));
+      trackCrimsonTimeout(id);
+    };
+    const id=setTimeout(tick,Math.min(80,Math.max(20,remaining)));
+    trackCrimsonTimeout(id);
+    return()=>{cancelled=true;};
+  }
   function clearCrimsonSpecialEffects(){
     crimsonSpecialIntervals.forEach(id=>clearInterval(id));crimsonSpecialIntervals=[];
     crimsonSpecialTimeouts.forEach(id=>clearTimeout(id));crimsonSpecialTimeouts=[];
-    crimsonMoonShiftBusy=false;
-    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim','crimson-genma-ready','crimson-genma-reveal');
-    const panel=document.querySelector('.question-panel');if(panel)panel.classList.remove('crimson-special-panel');
-    ['crimsonStrawLayer','crimsonSteamLayer','crimsonMoonFlash'].forEach(id=>$(id)?.remove());
-    document.querySelectorAll('.crimson-tengu-blown').forEach(b=>{b.classList.remove('crimson-tengu-blown');b.disabled=b.dataset.eliminated==='true';});
+    crimsonMoonShiftBusy=false;silverSpecialBusy=false;
+    document.body.classList.remove('crimson-straw-active','crimson-tengu-gust','crimson-steam-active','crimson-moon-shift-active','crimson-moon-shifting','crimson-genma-dim','crimson-genma-ready','crimson-genma-reveal','silver-snowball-active','silver-snowball-moving','silver-mirror-active','silver-beast-ring-active','silver-spotlight-active','silver-mimesis-active','silver-mimesis-flipping');
+    const panel=document.querySelector('.question-panel');if(panel)panel.classList.remove('crimson-special-panel','silver-special-panel');
+    ['crimsonStrawLayer','crimsonSteamLayer','crimsonMoonFlash','silverBeastRingLayer','silverMimesisFlash'].forEach(id=>$(id)?.remove());
+    document.querySelectorAll('.crimson-tengu-blown,.silver-beast-blocked,.silver-spotlit').forEach(b=>{b.classList.remove('crimson-tengu-blown','silver-beast-blocked','silver-spotlit');});
+    document.querySelectorAll('[data-mirror-fake="true"]').forEach(b=>b.remove());
+    [...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});
     if(els.mathProblem){els.mathProblem.style.removeProperty('opacity');els.mathProblem.style.removeProperty('filter');}
   }
   function activeWrongChoiceButtons(){
@@ -1755,6 +1890,57 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     locked=false;[...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});syncPauseButton();updateSpecialHud();
     startTimer(15);
   }
+  async function shuffleSilverChoices(){
+    if(silverSpecialBusy||paused||specialActive||locked||!currentQuestion)return;
+    const buttons=[...els.choices.children].filter(b=>b.dataset.mirrorFake!=='true');if(buttons.length<2)return;
+    silverSpecialBusy=true;document.body.classList.add('silver-snowball-moving');buttons.forEach(b=>b.disabled=true);syncPauseButton();
+    await sleep(360);for(const b of shuffle(buttons))els.choices.appendChild(b);await sleep(260);
+    document.body.classList.remove('silver-snowball-moving');silverSpecialBusy=false;restoreChoiceInteractivity();updateSpecialHud();syncPauseButton();
+  }
+  function startSilverSnowball(){
+    document.body.classList.add('silver-snowball-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');
+    trackCrimsonInterval(setInterval(()=>{shuffleSilverChoices();},2800));
+  }
+  function mirrorPenaltyButton(real){
+    const fake=document.createElement('button');fake.type='button';fake.className='silver-mirror-fake';fake.dataset.mirrorFake='true';fake.dataset.answerValue=real.dataset.answerValue||'';fake.innerHTML=real.innerHTML;fake.setAttribute('aria-label','鏡像の偽物');
+    fake.onclick=()=>{
+      if(locked||paused||specialActive||fake.disabled)return;
+      timeLeft=Math.max(1,timeLeft-3);els.timerText.textContent=timeLeft;updateTimerUrgency();
+      fake.disabled=true;fake.classList.remove('mirror-shatter','mirror-vanished');void fake.offsetWidth;fake.classList.add('mirror-shatter');
+      scheduleSilverActiveTimeout(()=>fake.classList.add('mirror-vanished'),360);
+      scheduleSilverActiveTimeout(()=>{if(!fake.isConnected)return;fake.classList.remove('mirror-shatter','mirror-vanished');restoreChoiceInteractivity();},1180);
+    };
+    return fake;
+  }
+  function startSilverMirror(){
+    document.body.classList.add('silver-mirror-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');
+    const originals=[...els.choices.children];for(const b of originals)els.choices.appendChild(mirrorPenaltyButton(b));
+    const mix=()=>{if(paused||specialActive||locked)return;const all=[...els.choices.children];for(const b of shuffle(all))els.choices.appendChild(b);};
+    trackCrimsonInterval(setInterval(mix,2200));
+  }
+  function ensureSilverBeastRing(){
+    const panel=document.querySelector('.question-panel');if(!panel)return null;let layer=$('silverBeastRingLayer');if(layer)return layer;
+    layer=document.createElement('div');layer.id='silverBeastRingLayer';layer.className='silver-beast-ring-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML='<i class="silver-ring"></i><span class="beast beast-a">🐺</span><span class="beast beast-b">🐆</span>';panel.appendChild(layer);return layer;
+  }
+  function startSilverBeastRing(){
+    ensureSilverBeastRing();document.body.classList.add('silver-beast-ring-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');let idx=-1;
+    const block=()=>{if(paused||specialActive||locked)return;const buttons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true');if(!buttons.length)return;document.querySelectorAll('.silver-beast-blocked').forEach(b=>b.classList.remove('silver-beast-blocked'));idx=(idx+1)%buttons.length;const b=buttons[idx];b.classList.add('silver-beast-blocked');restoreChoiceInteractivity();scheduleSilverActiveTimeout(()=>{b.classList.remove('silver-beast-blocked');restoreChoiceInteractivity();},1050);};
+    block();trackCrimsonInterval(setInterval(block,1350));
+  }
+  function startSilverSpotlight(){
+    document.body.classList.add('silver-spotlight-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');let idx=-1;
+    const light=()=>{if(paused||specialActive||locked)return;const buttons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true');if(!buttons.length)return;idx=(idx+1)%buttons.length;buttons.forEach((b,i)=>{const on=i===idx;b.classList.toggle('silver-spotlit',on);b.disabled=!on;});};
+    light();trackCrimsonInterval(setInterval(light,1050));
+  }
+  async function flipSilverMimesisChoices(demo=false){
+    if(silverSpecialBusy||paused||specialActive||!currentQuestion)return;const buttons=[...els.choices.children];if(buttons.length<2)return;silverSpecialBusy=true;locked=true;buttons.forEach(b=>b.disabled=true);document.body.classList.add('silver-mimesis-flipping');
+    let fx=$('silverMimesisFlash');if(!fx){fx=document.createElement('div');fx.id='silverMimesisFlash';fx.className='silver-mimesis-flash';document.querySelector('.question-panel')?.appendChild(fx);}fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');
+    await sleep(demo?520:300);for(const b of [...buttons].reverse())els.choices.appendChild(b);await sleep(demo?520:260);document.body.classList.remove('silver-mimesis-flipping');fx.classList.remove('active');locked=false;silverSpecialBusy=false;restoreChoiceInteractivity();updateSpecialHud();syncPauseButton();
+  }
+  async function startSilverMimesis(){
+    document.body.classList.add('silver-mimesis-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');await flipSilverMimesisChoices(true);trackCrimsonInterval(setInterval(()=>{flipSilverMimesisChoices(false);},2400));
+  }
+
   async function runBossFifthAction(){
     const spec=currentBossSpecial();
     ensureMonsterFx();ensureBossSpecialFxLayer();clearBossAction();locked=true;stopTimer();clearQuestionUi();
@@ -1817,6 +2003,21 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       }
       case'crimson-moon-shift':{
         bossSpecialSequence={type:'crimson-moon-shift',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startCrimsonMoonShift();startTimer(60);break;
+      }
+      case'silver-snowball':{
+        bossSpecialSequence={type:'silver-snowball',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverSnowball();startTimer(60);break;
+      }
+      case'silver-mirror':{
+        bossSpecialSequence={type:'silver-mirror',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverMirror();startTimer(60);break;
+      }
+      case'silver-beast-ring':{
+        bossSpecialSequence={type:'silver-beast-ring',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverBeastRing();startTimer(60);break;
+      }
+      case'silver-spotlight':{
+        bossSpecialSequence={type:'silver-spotlight',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverSpotlight();startTimer(60);break;
+      }
+      case'silver-mimesis':{
+        bossSpecialSequence={type:'silver-mimesis',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);await startSilverMimesis();startTimer(60);break;
       }
       case'crimson-genma':{
         bossSpecialSequence={type:'crimson-genma',step:'final'};await startCrimsonGenmaFinal();break;
@@ -1917,7 +2118,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function showPauseMenu(){els.pauseMenu.hidden=false;els.pauseConfirm.hidden=true;}
   function showPauseConfirm(){els.pauseMenu.hidden=true;els.pauseConfirm.hidden=false;}
   function pauseGame(){
-    if(paused||locked||els.gameScreen.hidden||!timerId||!currentQuestion)return;
+    if(paused||locked||silverSpecialBusy||crimsonMoonShiftBusy||specialActive||els.gameScreen.hidden||!timerId||!currentQuestion)return;
     pauseRestoreLocked=locked;pauseBgmShouldResume=!!(soundOn&&currentBgm&&!currentBgm.paused);
     paused=true;locked=true;stopTimer();
     if(currentBgm)try{currentBgm.pause();}catch{}
@@ -1927,7 +2128,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function resumeGame(){
     if(!paused)return;
     els.pauseOverlay.hidden=true;document.body.classList.remove('game-paused');paused=false;locked=pauseRestoreLocked;
-    [...els.choices.children].forEach(b=>{b.disabled=b.dataset.eliminated==='true';});
+    restoreChoiceInteractivity();
     if(pauseBgmShouldResume&&soundOn&&currentBgm)currentBgm.play().catch(()=>{});
     if(!locked&&currentQuestion&&timeLeft>0)startTimer(timeLeft,{preserveCountCue:true});else syncPauseButton();
     updateSpecialHud();
@@ -2037,7 +2238,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     // The large correct mark has already had a clear beat before the cut-in; hide it
     // so the cut-in itself remains visually clean even though answer marks are top-layer UI.
     els.answerMark.hidden=true;
-    await showActionCutin('hero',mode==='front'?'hero.png':mode==='back'?'back_hero.png':'crimson_hero.png');
+    await showActionCutin('hero',mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':'silver_hero.png');
     runFinisherMotion();
     await sleep(980);
     els.enemyActor.classList.add('boss-defeat');
@@ -2098,7 +2299,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(!debugFullUnlock){
       if(mode==='front'){save.frontClears++;if(!save.backUnlocked){save.backUnlocked=true;if(!save.owned.includes(100))save.owned.push(100);reward=ITEMS.find(i=>i.id===100);}else reward=randomReward();}
       else if(mode==='back'){save.backClears++;reward=randomReward();}
-      else{save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}
+      else if(mode==='crimson'){save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}
+      else{save.silverClears=(save.silverClears||0)+1;reward=randomReward();}
       persist();syncSecretRelics();
     }else renderTitle();
     renderResult();els.resultOverlay.hidden=false;
@@ -2117,6 +2319,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.musicFrontTab.onclick=()=>switchMusicWorld('front');
   els.musicBackTab.onclick=()=>{if(isMusicWorldVisible('back'))switchMusicWorld('back');};
   if(els.musicCrimsonTab)els.musicCrimsonTab.onclick=()=>{if(isCrimsonWorldUnlocked())switchMusicWorld('crimson');};
+  if(els.musicSilverTab)els.musicSilverTab.onclick=()=>{if(isSilverWorldUnlocked())switchMusicWorld('silver');};
   els.musicPrevBtn.onclick=()=>moveMusicTrack(-1);
   els.musicNextBtn.onclick=()=>moveMusicTrack(1);
   els.musicStopBtn.onclick=()=>{stopMusicPlayer();renderMusicPlayer();};
@@ -2175,12 +2378,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
-    registerMonster,hasSecretRelic,syncSecretRelics,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,
+    setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
+    registerMonster,hasSecretRelic,syncSecretRelics,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeSilverQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,fitMathProblemToBox,restoreChoiceInteractivity,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
-  window.addEventListener('resize',()=>requestAnimationFrame(fitVisibleNames),{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(fitVisibleNames,80),{passive:true});
+  window.addEventListener('resize',()=>requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);}),{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);},80),{passive:true});
   if(document.fonts?.ready)document.fonts.ready.then(()=>fitVisibleNames()).catch(()=>{});
 
   initializeSecretRelics();
