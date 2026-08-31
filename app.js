@@ -113,7 +113,7 @@
 
   const els={
     titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),gameScreen:$('gameScreen'),
-    titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),
+    titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),titleGradeGuide:$('titleGradeGuide'),
     playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
     musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicFrontTab:$('musicFrontTab'),musicBackTab:$('musicBackTab'),musicCrimsonTab:$('musicCrimsonTab'),musicSilverTab:$('musicSilverTab'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
@@ -452,6 +452,7 @@ function markWorldVisited(world){
     els.titleGold.textContent=`${effectiveGold()} G`;
     els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':'銀の世界';
     els.titleTrackName.textContent=titleTrackLabel();
+    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'学習のめやす｜小学校1〜2年生中心':mode==='back'?'学習のめやす｜小学校2〜3年生中心':mode==='crimson'?'学習のめやす｜小学校3〜6年生':'学習のめやす｜小学校6年生中心';
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
     const restartTotal=mode==='crimson'?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
@@ -822,7 +823,7 @@ function markWorldVisited(world){
   function currentBoss(){const [name,img]=currentStage().boss;return{id:(mode==='crimson'&&crimsonLastPhase)?'boss-crimson-last':`boss-${mode}-${stageIndex+1}`,world:mode,stage:(mode==='crimson'&&crimsonLastPhase)?5:stageIndex,rarity:5,name,img,boss:true,lastBoss:mode==='crimson'&&crimsonLastPhase};}
   function makeBossQuestion(idx){
     if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false);}
-    if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion();}
+    if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion(bossQuestion);}
     if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);
     if(mode==='front')return makeFrontFinalBossQuestion();
     return makeBackFinalBossQuestion();
@@ -938,31 +939,77 @@ function markWorldVisited(world){
       return{expression:'赤:青=2:3、全部25こ。赤は',answer:10};
     }
     if(idx===2){
-      if(Math.random()<.35){const d=rand(4,20)*2,r=d/2;return{expression:`直径${d}cmの円の面積`,answer:round2(r*r*3.14)};}
-      const r=rand(2,12);return{expression:`半径${r}cmの円の面積`,answer:round2(r*r*3.14)};
+      // STAGE 3 follows the elementary-school progression: review circumference first,
+      // then move into circle area. Pi is stated explicitly as 3.14 and no rounding
+      // instruction is introduced unless a future word problem specifically requires it.
+      if(!bossPhase&&stageQuestion===0){
+        const d=rand(4,20);const text=`直径${d}cmの円周の長さ（円周率は3.14）`;
+        return{expression:text,displayExpression:text,answer:round2(d*3.14)};
+      }
+      if(!bossPhase&&stageQuestion===1){
+        const r=rand(2,10);const text=`半径${r}cmの円周の長さ（円周率は3.14）`;
+        return{expression:text,displayExpression:text,answer:round2(2*r*3.14)};
+      }
+      if(Math.random()<.35){
+        const d=rand(4,20)*2,r=d/2,text=`直径${d}cmの円の面積（円周率は3.14）`;
+        return{expression:text,displayExpression:text,answer:round2(r*r*3.14)};
+      }
+      const r=rand(2,12),text=`半径${r}cmの円の面積（円周率は3.14）`;
+      return{expression:text,displayExpression:text,answer:round2(r*r*3.14)};
     }
     if(idx===3){const k=rand(2,12),x1=rand(1,9);let x2=rand(2,12);if(x2===x1)x2=x2===12?2:x2+1;return{expression:`xとyは比例。x=${x1}でy=${k*x1}。x=${x2}のときy`,answer:k*x2};}
     for(let i=0;i<500;i++){const x1=rand(2,12),y1=rand(2,12),product=x1*y1;const divs=[];for(let x=2;x<=18;x++)if(product%x===0)divs.push(x);if(!divs.length)continue;const x2=pick(divs);if(x2===x1)continue;return{expression:`xとyは反比例。x=${x1}でy=${y1}。x=${x2}のときy`,answer:product/x2};}
     return{expression:'xとyは反比例。x=3でy=8。x=6のときy',answer:4};
   }
 
-  function makeSilverFinalBossQuestion(){
-    // Final step after the abstract inverse-proportion stage: infer the constant product
-    // from a real situation. This mirrors the elementary-school treatment of
-    // [amount per minute] × [time] = [fixed total amount].
-    for(let i=0;i<800;i++){
-      const rate1=rand(2,12),minutes1=rand(4,15),total=rate1*minutes1;
-      const candidates=[];
-      for(let rate2=2;rate2<=20;rate2++){
-        if(rate2!==rate1&&total%rate2===0){const minutes2=total/rate2;if(minutes2>=2&&minutes2<=20)candidates.push([rate2,minutes2]);}
+  function makeSilverFinalBossQuestion(step=bossQuestion){
+    const phase=Math.max(0,Math.min(4,Number(step)||0));
+    if(phase===0){
+      // Fixed total, but the surface story changes between replays.
+      for(let i=0;i<800;i++){
+        const a=rand(2,12),b=rand(4,15),total=a*b;
+        const options=[];for(let a2=2;a2<=20;a2++)if(a2!==a&&total%a2===0){const b2=total/a2;if(b2>=2&&b2<=20)options.push([a2,b2]);}
+        if(!options.length)continue;
+        const [a2,answer]=pick(options);
+        const scene=pick([
+          `1分に${a}Lずつで${b}分かかる水そう。同じ量を1分に${a2}Lずつ入れると何分？`,
+          `${total}個を1箱${a}個ずつ入れると${b}箱。1箱${a2}個ずつなら何箱？`,
+          `${total}mのロープを${a}mずつ切ると${b}本。${a2}mずつなら何本？`
+        ]);
+        return{expression:scene,displayExpression:scene,answer};
       }
-      if(!candidates.length)continue;
-      const [rate2,answer]=pick(candidates);
-      const text=`1分に${rate1}Lずつで${minutes1}分かかる水そう。同じ量を1分に${rate2}Lずつ入れると何分？`;
+    }
+    if(phase===1){
+      const total=pick([48,60,72,84,96]);
+      const divisors=[];for(let n=2;n<=12;n++)if(total%n===0)divisors.push(n);
+      const groups=pick(divisors),answer=total/groups;
+      const scene=pick([
+        `${total}個のお菓子を${groups}人で同じ数ずつ分けます。1人分は何個？`,
+        `${total}枚のカードを${groups}組に同じ枚数ずつ分けます。1組は何枚？`
+      ]);
+      return{expression:scene,displayExpression:scene,answer};
+    }
+    if(phase===2){
+      const h=rand(3,12),w=rand(4,14),area=h*w;
+      const candidates=[];for(let h2=2;h2<=18;h2++)if(h2!==h&&area%h2===0&&area/h2<=24)candidates.push(h2);
+      const h2=candidates.length?pick(candidates):h;
+      const answer=area/h2;
+      const text=`面積${area}cm²の長方形。たてを${h2}cmにすると、横は何cm？`;
       return{expression:text,displayExpression:text,answer};
     }
-    const text='1分に6Lずつで8分かかる水そう。同じ量を1分に12Lずつ入れると何分？';
-    return{expression:text,displayExpression:text,answer:4};
+    if(phase===3){
+      const m=pick([2,3,4]);const answer=`${m}分の1`;
+      const text=`xとyは反比例します。xを${m}倍にすると、yはどうなる？`;
+      return{expression:text,displayExpression:text,answer,choices:[`${m}倍`,answer,'変わらない']};
+    }
+    const sets=[
+      ['分ける人数と1人分の個数','買う個数と代金','正方形の一辺と周りの長さ'],
+      ['一定の道のりを進む速さとかかる時間','1本の値段と買った本数','正方形の一辺と面積'],
+      ['一定面積の長方形の縦と横','歩いた時間と道のり','同じ速さで走る時間と道のり']
+    ];
+    const choices=pick(sets),answer=choices[0];
+    const text='次のうち、反比例する関係はどれ？';
+    return{expression:text,displayExpression:text,answer,choices};
   }
 
   function currentStage(){return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
@@ -1496,13 +1543,15 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function renderChoiceButton(b,v,answer){
     b.dataset.answerValue=answerKey(v);
     const f=parseFractionKey(v);if(f)b.innerHTML=fractionHtml(f);else b.textContent=v;
+    if(typeof v==='string'&&!f&&!/^[-+]?\d+(?:\.\d+)?$/.test(v))b.classList.add('text-choice');
     applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);
   }
+  function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
     currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):makeSilverQuestion(stageIndex));
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';
-    makeChoices(currentQuestion.answer).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});
+    choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});
     locked=false;syncPauseButton();updateSpecialHud();
   }
 
@@ -1755,7 +1804,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
     currentQuestion=q;
     renderQuestionContent(q);els.feedbackText.textContent='';els.choices.innerHTML='';
-    makeChoices(q.answer).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,q.answer);els.choices.appendChild(b);});
+    choicesForQuestion(q).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,q.answer);els.choices.appendChild(b);});
     if(chip)setBossStepChip(chip,step);else{$('bossStrikeChip')?.remove();}
     locked=false;syncPauseButton();updateSpecialHud();
   }

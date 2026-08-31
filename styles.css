@@ -1172,3 +1172,15 @@ body[data-mode="silver"] .battlefield>.attack-effect.finisher-front-fx .claw-c{l
 @keyframes silverScratchFinA{0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translate(-26%,-12%) rotate(-34deg) scaleX(.62)}27%{opacity:1}60%{clip-path:inset(0 0 0 0);transform:translate(0,-4%) rotate(-30deg) scaleX(1.04)}100%{opacity:0;transform:translate(16%,3%) rotate(-25deg) scaleX(1.18)}}
 @keyframes silverScratchFinB{0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translate(-23%,0) rotate(-15deg) scaleX(.62)}27%{opacity:1}60%{clip-path:inset(0 0 0 0);transform:translate(0,0) rotate(-14deg) scaleX(1.08)}100%{opacity:0;transform:translate(18%,4%) rotate(-8deg) scaleX(1.2)}}
 @keyframes silverScratchFinC{0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translate(-20%,12%) rotate(5deg) scaleX(.58)}27%{opacity:1}60%{clip-path:inset(0 0 0 0);transform:translate(0,5%) rotate(5deg) scaleX(1)}100%{opacity:0;transform:translate(20%,7%) rotate(11deg) scaleX(1.13)}}
+
+/* Text answer variants used by late Silver boss questions. */
+.choices button.text-choice{font-family:"Hiragino Sans","Yu Gothic UI","BIZ UDPGothic",system-ui,sans-serif;font-size:clamp(.72rem,1.45vw,1.05rem);font-weight:800;line-height:1.22;white-space:normal;overflow-wrap:anywhere;padding:5px 8px}
+@media (orientation:portrait){.choices button.text-choice{font-size:clamp(.68rem,2.75vw,.92rem);line-height:1.18;padding:4px 5px}}
+
+/* Portrait boss finisher alignment: the enemy actor moves to the upper-right in portrait,
+   so the final attack effect must use the same enemy-area anchor instead of landscape bottom positioning. */
+@media (orientation:portrait){
+  .battlefield>.attack-effect.finisher-front-fx,.battlefield>.attack-effect.finisher-back-fx{
+    left:auto!important;right:.5%!important;top:3.5%!important;bottom:auto!important;width:34%!important;height:31%!important
+  }
+}
