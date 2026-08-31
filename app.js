@@ -822,7 +822,7 @@ function markWorldVisited(world){
   function currentBoss(){const [name,img]=currentStage().boss;return{id:(mode==='crimson'&&crimsonLastPhase)?'boss-crimson-last':`boss-${mode}-${stageIndex+1}`,world:mode,stage:(mode==='crimson'&&crimsonLastPhase)?5:stageIndex,rarity:5,name,img,boss:true,lastBoss:mode==='crimson'&&crimsonLastPhase};}
   function makeBossQuestion(idx){
     if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false);}
-    if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverQuestion(4);}
+    if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion();}
     if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);
     if(mode==='front')return makeFrontFinalBossQuestion();
     return makeBackFinalBossQuestion();
@@ -926,8 +926,12 @@ function markWorldVisited(world){
 
   function makeSilverQuestion(idx){
     if(idx===0){
-      for(let i=0;i<500;i++){const a=rand(1,9),b=rand(1,9);if(gcd(a,b)!==1||a===b)continue;const k=rand(2,9);if(Math.random()<.5)return{expression:`${a*k}:${b*k} → □:${b}`,answer:a};return{expression:`${a*k}:${b*k} → ${a}:□`,answer:b};}
-      return{expression:'12:18 → 2:□',answer:3};
+      for(let i=0;i<500;i++){
+        const a=rand(1,9),b=rand(1,9);if(gcd(a,b)!==1||a===b)continue;const k=rand(2,9);
+        if(Math.random()<.5){const text=`${a*k}:${b*k} = □:${b}`;return{expression:text,displayExpression:text,answer:a};}
+        const text=`${a*k}:${b*k} = ${a}:□`;return{expression:text,displayExpression:text,answer:b};
+      }
+      return{expression:'12:18 = 2:□',displayExpression:'12:18 = 2:□',answer:3};
     }
     if(idx===1){
       for(let i=0;i<500;i++){const a=rand(1,6),b=rand(1,7);if(a===b||gcd(a,b)!==1)continue;const unit=rand(2,12),total=(a+b)*unit;if(total>120)continue;const askLeft=Math.random()<.5;return{expression:`赤:青=${a}:${b}、全部${total}こ。${askLeft?'赤':'青'}は`,answer:(askLeft?a:b)*unit};}
@@ -940,6 +944,25 @@ function markWorldVisited(world){
     if(idx===3){const k=rand(2,12),x1=rand(1,9);let x2=rand(2,12);if(x2===x1)x2=x2===12?2:x2+1;return{expression:`xとyは比例。x=${x1}でy=${k*x1}。x=${x2}のときy`,answer:k*x2};}
     for(let i=0;i<500;i++){const x1=rand(2,12),y1=rand(2,12),product=x1*y1;const divs=[];for(let x=2;x<=18;x++)if(product%x===0)divs.push(x);if(!divs.length)continue;const x2=pick(divs);if(x2===x1)continue;return{expression:`xとyは反比例。x=${x1}でy=${y1}。x=${x2}のときy`,answer:product/x2};}
     return{expression:'xとyは反比例。x=3でy=8。x=6のときy',answer:4};
+  }
+
+  function makeSilverFinalBossQuestion(){
+    // Final step after the abstract inverse-proportion stage: infer the constant product
+    // from a real situation. This mirrors the elementary-school treatment of
+    // [amount per minute] × [time] = [fixed total amount].
+    for(let i=0;i<800;i++){
+      const rate1=rand(2,12),minutes1=rand(4,15),total=rate1*minutes1;
+      const candidates=[];
+      for(let rate2=2;rate2<=20;rate2++){
+        if(rate2!==rate1&&total%rate2===0){const minutes2=total/rate2;if(minutes2>=2&&minutes2<=20)candidates.push([rate2,minutes2]);}
+      }
+      if(!candidates.length)continue;
+      const [rate2,answer]=pick(candidates);
+      const text=`1分に${rate1}Lずつで${minutes1}分かかる水そう。同じ量を1分に${rate2}Lずつ入れると何分？`;
+      return{expression:text,displayExpression:text,answer};
+    }
+    const text='1分に6Lずつで8分かかる水そう。同じ量を1分に12Lずつ入れると何分？';
+    return{expression:text,displayExpression:text,answer:4};
   }
 
   function currentStage(){return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
@@ -1712,7 +1735,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       banner.classList.remove('active');await sleep(160);banner.hidden=true;
     }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
   }
-  const MULTI_PHASE_BOSS_SPECIALS=new Set(['shield','double','shield-reverse','reconstruct','shield-double','reverse-reconstruct','crimson-steam']);
+  const MULTI_PHASE_BOSS_SPECIALS=new Set(['shield','double','shield-reverse','reconstruct','shield-double','reverse-reconstruct','crimson-steam','silver-beast-ring']);
   function bossTechniqueChipLabel(phase=''){
     const spec=currentBossSpecial();
     const name=spec?.name||'';
@@ -2064,20 +2087,24 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(buttons.length<2)return;
     const token=silverBeastCycleToken;
     const before=new Map(buttons.map(b=>[b,b.getBoundingClientRect()]));
-    const order=buttons.length===3?[buttons[1],buttons[2],buttons[0]]:[...buttons.slice(1),buttons[0]];
-    silverSpecialBusy=true;document.body.classList.add('silver-beast-ring-moving');
+    // Always move the answers to a genuinely different position. Three choices rotate
+    // cyclically; after the hero assist leaves two choices, swap those two.
+    const order=buttons.length===3
+      ? (Math.random()<.5?[buttons[1],buttons[2],buttons[0]]:[buttons[2],buttons[0],buttons[1]])
+      : [...buttons.slice(1),buttons[0]];
+    silverSpecialBusy=true;
+    document.body.classList.add('silver-beast-ring-moving');
     buttons.forEach(b=>{b.disabled=true;b.style.willChange='transform';});
     for(const b of order)els.choices.appendChild(b);
     const animations=order.map((b,i)=>{
       const first=before.get(b),last=b.getBoundingClientRect();
       const dx=first.left-last.left,dy=first.top-last.top;
-      const lift=(i%2===0?-1:1)*Math.min(24,Math.max(12,Math.abs(dx)*.08+10));
-      const turn=i%2===0?-8:8;
+      const arc=(i%2===0?-1:1)*Math.min(30,Math.max(14,Math.abs(dx)*.10+8));
       return b.animate([
         {transform:`translate(${dx}px,${dy}px) rotate(0deg) scale(1)`,offset:0},
-        {transform:`translate(${dx*.56}px,${dy*.56+lift}px) rotate(${turn}deg) scale(1.06)`,offset:.48},
+        {transform:`translate(${dx*.58}px,${dy*.58+arc}px) rotate(${i%2===0?-7:7}deg) scale(1.07)`,offset:.48},
         {transform:'translate(0px,0px) rotate(0deg) scale(1)',offset:1}
-      ],{duration:920,easing:'cubic-bezier(.18,.78,.2,1)',fill:'both'});
+      ],{duration:900,easing:'cubic-bezier(.16,.78,.2,1)',fill:'both'});
     });
     const shadow=$('silverBeastRingLayer')?.querySelector('.beast-shadow');
     if(shadow){shadow.classList.remove('sweep');void shadow.offsetWidth;shadow.classList.add('sweep');}
@@ -2086,12 +2113,17 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     buttons.forEach(b=>b.style.removeProperty('will-change'));
     if(shadow)shadow.classList.remove('sweep');
     document.body.classList.remove('silver-beast-ring-moving');
-    silverSpecialBusy=false;restoreChoiceInteractivity();syncPauseButton();updateSpecialHud();
+    silverSpecialBusy=false;
+    restoreChoiceInteractivity();syncPauseButton();updateSpecialHud();
   }
   function startSilverBeastRing(){
-    ensureSilverBeastRing();document.body.classList.add('silver-beast-ring-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');
-    rotateSilverBeastRingChoices();
-    trackCrimsonInterval(setInterval(()=>{rotateSilverBeastRingChoices();},2600));
+    ensureSilverBeastRing();
+    document.body.classList.add('silver-beast-ring-active');
+    document.querySelector('.question-panel')?.classList.add('silver-special-panel');
+    // The two shields are the defensive layer; the answer rotation remains the
+    // distinctive circus trick so this does not become a recolored Crimson STAGE 3.
+    trackCrimsonTimeout(setTimeout(()=>{rotateSilverBeastRingChoices();},900));
+    trackCrimsonInterval(setInterval(()=>{rotateSilverBeastRingChoices();},2500));
   }
   function startSilverSpotlight(){
     document.body.classList.add('silver-spotlight-active');document.querySelector('.question-panel')?.classList.add('silver-special-panel');let idx=-1;
@@ -2177,7 +2209,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         bossSpecialSequence={type:'silver-mirror',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverMirror();startTimer(60);break;
       }
       case'silver-beast-ring':{
-        bossSpecialSequence={type:'silver-beast-ring',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverBeastRing();startTimer(60);break;
+        startSilverBeastRing();bossSpecialSequence={type:'silver-beast-ring',step:'shield1'};await showShieldForm();
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'火輪結界・壱',step:1});startTimer(60);break;
       }
       case'silver-spotlight':{
         bossSpecialSequence={type:'silver-spotlight',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startSilverSpotlight();startTimer(60);break;
@@ -2326,6 +2359,18 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         await showShieldBreak();
         await showBossPhaseTransition('CORE EXPOSED','コア露出','impact');
         bossSpecialSequence={type:'crimson-steam',step:'final'};
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'本撃',step:3});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='silver-beast-ring'&&seq.step==='shield1'){
+        await intermediate('第一の火輪結界を破壊！');await showShieldBreak();await sleep(120);await showShieldForm();
+        bossSpecialSequence={type:'silver-beast-ring',step:'shield2'};
+        populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'火輪結界・弐',step:2});startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='silver-beast-ring'&&seq.step==='shield2'){
+        await intermediate('第二の火輪結界を破壊！');
+        await showShieldBreak();
+        await showBossPhaseTransition('CORE EXPOSED','コア露出','impact');
+        bossSpecialSequence={type:'silver-beast-ring',step:'final'};
         populateSpecialQuestion(makeBossQuestion(stageIndex),{chip:'本撃',step:3});startTimer(60,{preserveCountCue:true});return;
       }
       if(seq.type==='shield'&&seq.step==='shield'){
@@ -2559,7 +2604,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeSilverQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,fitMathProblemToBox,restoreChoiceInteractivity,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
