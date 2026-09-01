@@ -244,7 +244,7 @@
     return false;
   }
   function isCrimsonWorldUnlocked(){return debugFullUnlock||hasSecretRelic('common_master');}
-  function isSilverWorldUnlocked(){return debugFullUnlock||hasSecretRelic('uncommon_master');}
+  function isSilverWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('uncommon_master')&&hasSecretRelic('front_ssr_master'));}
   function isMonsterSeen(world,id){return debugFullUnlock||!!save.monsterBook?.[world]?.includes(id);}
   function effectiveEncounterCount(world,id){const n=save.monsterEncounters?.[world]?.[id]||0;return debugFullUnlock?Math.max(1,n):n;}
 
@@ -321,11 +321,11 @@ const SECRET_RELICS=[
   {id:'world4_ssr_master',name:'コランダムギア',icon:'⚙️',flavor:'銀の世界の SSRモンスターを すべて見つけた証。',notice:'銀の世界の SSRモンスターを すべて見つけた証。'}
 ];
 const SECRET_RELIC_VERSION=4;
-const WORLD_UNLOCK_VERSION=1;
+const WORLD_UNLOCK_VERSION=2;
 const WORLD_UNLOCKS=[
   {world:'back',sourceId:'item-100',sourceName:'時空の鍵',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界'},
   {world:'crimson',sourceId:'common_master',sourceName:'妖刀マサムネ',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界'},
-  {world:'silver',sourceId:'uncommon_master',sourceName:'白銀の首輪',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'}
+  {world:'silver',sourceIds:['uncommon_master','front_ssr_master'],sourceName:'白銀の首輪と時空羅針盤',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'}
 ];
 const secretRelicById=id=>SECRET_RELICS.find(r=>r.id===id);
 function hasSecretRelic(id){return debugFullUnlock||!!save.secretRelics?.includes(id);}
@@ -333,7 +333,7 @@ function isWorldActuallyUnlocked(world){
   if(world==='front')return true;
   if(world==='back')return !!save.backUnlocked;
   if(world==='crimson')return !!save.secretRelics?.includes('common_master');
-  if(world==='silver')return !!save.secretRelics?.includes('uncommon_master');
+  if(world==='silver')return !!save.secretRelics?.includes('uncommon_master')&&!!save.secretRelics?.includes('front_ssr_master');
   return false;
 }
 function worldUnlockByKey(world){return WORLD_UNLOCKS.find(w=>w.world===world);}
@@ -379,7 +379,10 @@ function initializeWorldUnlockState(){
   save.worldUnlockNew=Array.isArray(save.worldUnlockNew)?save.worldUnlockNew:[];
   const migrating=save.worldUnlockVersion!==WORLD_UNLOCK_VERSION;
   if(migrating){
-    // Existing saves must not receive retroactive unlock popups after an update.
+    // Re-evaluate unlock state whenever conditions change. Worlds that no longer meet
+    // a strengthened requirement (notably Silver v2) must be allowed to notify again
+    // after the missing relic is obtained. Existing genuinely-unlocked worlds remain silent.
+    save.worldUnlockNotified=save.worldUnlockNotified.filter(world=>isWorldActuallyUnlocked(world));
     for(const w of WORLD_UNLOCKS)if(isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
     save.worldUnlockNew=save.worldUnlockNew.filter(world=>isWorldActuallyUnlocked(world));
     save.worldUnlockVersion=WORLD_UNLOCK_VERSION;
@@ -452,7 +455,7 @@ function markWorldVisited(world){
     els.titleGold.textContent=`${effectiveGold()} G`;
     els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':'銀の世界';
     els.titleTrackName.textContent=titleTrackLabel();
-    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'学習のめやす｜小学校1〜2年生中心':mode==='back'?'学習のめやす｜小学校2〜3年生中心':mode==='crimson'?'学習のめやす｜小学校3〜6年生':'学習のめやす｜小学校6年生中心';
+    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'学習のめやす｜小学校1〜2年生中心':mode==='back'?'学習のめやす｜小学校2〜3年生中心':mode==='crimson'?'学習のめやす｜小学校3〜4年生':'学習のめやす｜小学校6年生中心';
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
     const restartTotal=mode==='crimson'?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
@@ -705,7 +708,7 @@ function markWorldVisited(world){
     return [...normals,...bosses];
   }
   function monsterFlavor(m){
-    if(m.lastBoss)return '紅の世界の最終決戦に立ちはだかる剣聖。分数の乗除5問を乗り越えよう。';
+    if(m.lastBoss)return '紅の世界の最終決戦に立ちはだかる剣聖。小3〜4の総合5問を乗り越えよう。';
     if(m.boss)return `${getStages()[m.stage]?.name||'この地'}に立ちはだかるボスモンスター。5問の勝負を乗り越えよう。`;
     const labels=['','身近な姿をしたモンスター。','少し珍しい力を持つモンスター。','めったに姿を見せないレアモンスター。','強い魔力を宿したスーパーレア。','遭遇そのものが特別なSSRモンスター。'];
     return labels[m.rarity]||'未知のモンスター。';
@@ -822,7 +825,7 @@ function markWorldVisited(world){
   }
   function currentBoss(){const [name,img]=currentStage().boss;return{id:(mode==='crimson'&&crimsonLastPhase)?'boss-crimson-last':`boss-${mode}-${stageIndex+1}`,world:mode,stage:(mode==='crimson'&&crimsonLastPhase)?5:stageIndex,rarity:5,name,img,boss:true,lastBoss:mode==='crimson'&&crimsonLastPhase};}
   function makeBossQuestion(idx){
-    if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false);}
+    if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true,bossQuestion);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false,bossQuestion);}
     if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion(bossQuestion);}
     if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);
     if(mode==='front')return makeFrontFinalBossQuestion();
@@ -899,76 +902,220 @@ function markWorldVisited(world){
   }
   function makeFractionChoices(answerKey){
     const a=parseFractionKey(answerKey);if(!a)return makeChoices(Number(answerKey));
-    const candidates=[];
-    const push=(n,d)=>{if(d<=0)return;const k=fractionKey({n,d});if(k!==answerKey&&!candidates.includes(k))candidates.push(k);};
-    push(a.n+1,a.d);push(Math.max(1,a.n-1),a.d);push(a.n,a.d+1);push(a.n+a.d,a.d);push(a.d,a.n||1);
-    while(candidates.length<2)push(a.n+rand(2,5),a.d+rand(1,4));
+    const candidates=[],preferFraction=a.d!==1;
+    const push=(n,d)=>{if(d<=0)return;const k=fractionKey({n,d}),f=parseFractionKey(k);if(k===answerKey||candidates.includes(k))return;if(preferFraction&&f?.d===1)return;candidates.push(k);};
+    push(a.n+1,a.d);push(Math.max(1,a.n-1),a.d);push(a.n,a.d+1);push(a.n+2,a.d+1);push(Math.max(1,a.n-2),a.d+1);
+    let guard=0;while(candidates.length<2&&guard++<30)push(a.n+rand(1,5),a.d+rand(1,4));
+    if(candidates.length<2){const relaxed=(n,d)=>{if(d<=0)return;const k=fractionKey({n,d});if(k!==answerKey&&!candidates.includes(k))candidates.push(k);};relaxed(a.n+a.d,a.d);relaxed(a.d,a.n||1);}
     return shuffle([answerKey,...candidates.slice(0,2)]);
   }
+  function compactNumericChoices(answer,candidates=[]){
+    const key=answerKey(answer),out=[answer];
+    for(const v of candidates){if(v==null||!Number.isFinite(Number(v))||Number(v)<0)continue;if(answerKey(v)===key||out.some(x=>answerKey(x)===answerKey(v)))continue;out.push(normalizeChoiceNumber(Number(v)));if(out.length>=3)break;}
+    for(const v of makeChoices(typeof answer==='number'?answer:Number(answer))){if(out.length>=3)break;if(answerKey(v)!==key&&!out.some(x=>answerKey(x)===answerKey(v)))out.push(v);}
+    return shuffle(out.slice(0,3));
+  }
+  function exactDivision(profile='twoByOne'){
+    const specs={
+      facts:{d:[2,9],q:[2,9],min:4,max:81},
+      tens:{d:[2,9],q:[10,30],min:20,max:90,multiple10:true},
+      twoByOne:{d:[2,9],q:[3,30],min:10,max:99},
+      threeByOne:{d:[2,9],q:[12,99],min:100,max:999},
+      twoByTwo:{d:[11,39],q:[2,8],min:22,max:99},
+      threeByTwo:{d:[11,39],q:[4,30],min:100,max:999},
+      threeByTwoHard:{d:[12,48],q:[8,30],min:180,max:999}
+    };
+    const sp=specs[profile]||specs.twoByOne;
+    for(let i=0;i<2000;i++){
+      const d=rand(sp.d[0],sp.d[1]),q=rand(sp.q[0],sp.q[1]),a=d*q;
+      if(a<sp.min||a>sp.max)continue;if(sp.multiple10&&a%10!==0)continue;
+      return{expression:`${a}÷${d}`,answer:q,choices:compactNumericChoices(q,[q-1,q+1,q+d,q-d])};
+    }
+    return{expression:'84÷4',answer:21,choices:[20,21,24]};
+  }
+  function decimalAddSubQuestion(level='mixed'){
+    const make=(places,min,max)=>rand(min,max)/(places===2?100:10);
+    let a,b,op=Math.random()<.5?'+':'-';
+    if(level==='tenths'){a=make(1,11,199);b=make(1,11,99);}
+    else if(level==='hundredths'){a=make(2,101,999);b=make(2,11,499);}
+    else{a=make(Math.random()<.5?1:2,11,999);b=make(Math.random()<.5?1:2,11,499);}
+    if(op==='-'&&b>a)[a,b]=[b,a];
+    a=normalizeChoiceNumber(a);b=normalizeChoiceNumber(b);
+    const ans=normalizeChoiceNumber(op==='+'?a+b:a-b);
+    const unit=(String(ans).split('.')[1]?.length||0)>=2?.01:.1;
+    return{expression:`${a}${op}${b}`,answer:ans,choices:compactNumericChoices(ans,[ans+unit,Math.max(0,ans-unit),ans+1,Math.max(0,ans-1)])};
+  }
+  function decimalIntegerQuestion(op='×',hard=false){
+    if(op==='×'){
+      const places=hard&&Math.random()<.4?100:10;let a;
+      do{a=rand(11,hard?299:199)/places;}while(Number.isInteger(a));
+      const b=rand(2,9),ans=normalizeChoiceNumber(a*b);
+      return{expression:`${a}×${b}`,answer:ans,choices:compactNumericChoices(ans,[ans+b,Math.max(0,ans-b),ans+1])};
+    }
+    for(let i=0;i<500;i++){
+      const d=rand(2,9),places=hard&&Math.random()<.35?100:10;let q=rand(11,hard?199:99)/places;if(Number.isInteger(q))continue;
+      const a=normalizeChoiceNumber(q*d);if(a<=0||a>99)continue;
+      return{expression:`${a}÷${d}`,answer:normalizeChoiceNumber(q),choices:compactNumericChoices(q,[q+.1,Math.max(0,q-.1),q+1])};
+    }
+    return{expression:'8.4÷4',answer:2.1,choices:[2,2.1,2.4]};
+  }
+  function sameDenominatorFractionQuestion(kind='add',simplify=false,larger=false){
+    for(let i=0;i<2000;i++){
+      const d=rand(larger?6:3,12),op=kind==='mixed'?(Math.random()<.5?'+':'-'):(kind==='sub'?'-':'+');
+      let n1=rand(1,d-1),n2=rand(1,d-1);if(op==='-'&&n2>n1)[n1,n2]=[n2,n1];
+      const raw=op==='+'?n1+n2:n1-n2;if(raw<=0)continue;
+      const r=normFraction(raw,d);if(r.d===1||r.n>24)continue;
+      if(simplify&&gcd(raw,d)===1)continue;
+      const a={n:n1,d},b={n:n2,d},answer=fractionKey(r);
+      const wrongDirect=fractionKey(normFraction(raw,d*2));
+      const wrongNum=fractionKey(normFraction(Math.max(1,raw+(op==='+'?1:-1)),d));
+      const wrongs=[wrongDirect,wrongNum].filter((v,i,a)=>v!==answer&&a.indexOf(v)===i&&parseFractionKey(v)?.d!==1);
+      for(const v of makeFractionChoices(answer))if(v!==answer&&!wrongs.includes(v))wrongs.push(v);
+      const choices=shuffle([answer,...wrongs.slice(0,2)]);
+      return{expression:`${n1}/${d}${op}${n2}/${d}`,answer,fraction:true,a,b,op,choices};
+    }
+    return{expression:'2/7+3/7',answer:'5/7',fraction:true,a:{n:2,d:7},b:{n:3,d:7},op:'+',choices:['5/7','5/14','4/7']};
+  }
+  function calculationOrderQuestion(step=0){
+    const phase=Math.max(0,Math.min(4,Number(step)||0));
+    if(phase===0){const a=rand(5,18),b=rand(2,7),c=rand(2,6),ans=a+b*c;return{expression:`${a}+${b}×${c}`,answer:ans,choices:compactNumericChoices(ans,[(a+b)*c,a+b+c])};}
+    if(phase===1){const c=rand(2,6),q=rand(2,8),b=c*q,t=rand(2,8),a=b+c*t,ans=a-q;return{expression:`${a}-${b}÷${c}`,answer:ans,choices:compactNumericChoices(ans,[t,a-b+c])};}
+    if(phase===2){const a=rand(3,12),b=rand(2,10),c=rand(2,5),ans=(a+b)*c;return{expression:`(${a}+${b})×${c}`,answer:ans,choices:compactNumericChoices(ans,[a+b*c,a+b+c])};}
+    if(phase===3){const d=rand(2,6),q=rand(2,9),a=d*q,c=rand(2,7),e=rand(2,6),ans=q+c*e;return{expression:`${a}÷${d}+${c}×${e}`,answer:ans,choices:compactNumericChoices(ans,[(q+c)*e,q+c+e])};}
+    for(let i=0;i<500;i++){const a=rand(5,18),b=rand(4,16),c=rand(2,4),ans=100-(a+b)*c;if(ans<=0)continue;return{expression:`100-(${a}+${b})×${c}`,answer:ans,choices:compactNumericChoices(ans,[100-a-b*c,100-(a+b)-c])};}
+    return{expression:'100-(12+8)×4',answer:20,choices:[20,60,400]};
+  }
   function makeCrimsonQuestion(idx){
-    if(idx===0){const d=rand(1,9);const q=rand(1,Math.max(1,Math.floor(9/d)));const a=d*q;return{expression:`${a}÷${d}`,answer:q};}
-    if(idx===1){for(let i=0;i<1000;i++){const d=rand(2,9),q=rand(4,99),a=d*q;if(a>=10&&a<=999)return{expression:`${a}÷${d}`,answer:q};}return{expression:'144÷6',answer:24};}
-    if(idx===2){const scale=Math.random()<.35?100:10;let a,b;do{a=rand(1,999)/scale;}while(Number.isInteger(a));do{b=rand(1,499)/scale;}while(Number.isInteger(b));let op=Math.random()<.5?'+':'-';if(op==='-'&&b>a)[a,b]=[b,a];const ans=round2(op==='+'?a+b:a-b);return{expression:`${a}${op}${b}`,answer:ans};}
-    if(idx===3){if(Math.random()<.5){let a;do{a=rand(11,199)/10;}while(Number.isInteger(a));const b=rand(2,9);return{expression:`${a}×${b}`,answer:round2(a*b)};}for(let i=0;i<300;i++){const d=rand(2,9),q=rand(11,99)/10;if(Number.isInteger(q))continue;const a=round2(d*q);if(Number.isInteger(a))continue;return{expression:`${a}÷${d}`,answer:round2(q)};}return{expression:'7.2÷3',answer:2.4};}
-    for(let i=0;i<3000;i++){
-      let a=normFraction(rand(1,15),rand(2,12)),b=normFraction(rand(1,15),rand(2,12));if(a.d===1||b.d===1||a.d===b.d)continue;
-      const op=Math.random()<.5?'+':'-';let n=a.n*b.d+(op==='+'?1:-1)*b.n*a.d,d=a.d*b.d;if(n<=0)continue;const r=normFraction(n,d);if(r.n<=99&&r.d<=99&&r.d!==1)return{expression:`${a.n}/${a.d}${op}${b.n}/${b.d}`,answer:fractionKey(r),fraction:true,a,b,op};
-    }
-    return{expression:'1/2+1/3',answer:'5/6',fraction:true,a:{n:1,d:2},b:{n:1,d:3},op:'+'};
-  }
-  function makeCrimsonFinalQuestion(finalBoss=false){
-    for(let i=0;i<4000;i++){
-      const max=finalBoss?18:10,d1=rand(2,max),d2=rand(2,max),n1=rand(1,max+4),n2=rand(1,max+4),op=Math.random()<.5?'×':'÷';if(op==='÷'&&n2===0)continue;
-      let n=op==='×'?n1*n2:n1*d2,d=op==='×'?d1*d2:d1*n2;if(!finalBoss&&(n>99||d>99))continue;const r=normFraction(n,d);if(r.d===1||r.n<=0||r.n>(finalBoss?999:99)||r.d>(finalBoss?999:99))continue;
-      return{expression:`${n1}/${d1}${op}${n2}/${d2}`,answer:fractionKey(r),fraction:true,a:{n:n1,d:d1},b:{n:n2,d:d2},op};
-    }
-    return{expression:'3/4÷2/5',answer:'15/8',fraction:true,a:{n:3,d:4},b:{n:2,d:5},op:'÷'};
-  }
-
-  function makeSilverQuestion(idx){
     if(idx===0){
-      for(let i=0;i<500;i++){
-        const a=rand(1,9),b=rand(1,9);if(gcd(a,b)!==1||a===b)continue;const k=rand(2,9);
-        if(Math.random()<.5){const text=`${a*k}:${b*k} = □:${b}`;return{expression:text,displayExpression:text,answer:a};}
-        const text=`${a*k}:${b*k} = ${a}:□`;return{expression:text,displayExpression:text,answer:b};
-      }
-      return{expression:'12:18 = 2:□',displayExpression:'12:18 = 2:□',answer:3};
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(qn<4)return exactDivision('facts');
+      if(qn<6){const d=rand(2,9),q=rand(4,9),a=d*q;return{expression:`${a}÷${d}`,answer:q,choices:compactNumericChoices(q,[q-1,q+1])};}
+      if(qn<8)return exactDivision('tens');
+      return exactDivision('twoByOne');
     }
     if(idx===1){
-      for(let i=0;i<500;i++){const a=rand(1,6),b=rand(1,7);if(a===b||gcd(a,b)!==1)continue;const unit=rand(2,12),total=(a+b)*unit;if(total>120)continue;const askLeft=Math.random()<.5;return{expression:`赤:青=${a}:${b}、全部${total}こ。${askLeft?'赤':'青'}は`,answer:(askLeft?a:b)*unit};}
-      return{expression:'赤:青=2:3、全部25こ。赤は',answer:10};
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(qn<3)return exactDivision('twoByOne');
+      if(qn<6)return exactDivision('threeByOne');
+      if(qn<8)return exactDivision('twoByTwo');
+      return exactDivision(qn>=9?'threeByTwoHard':'threeByTwo');
+    }
+    if(idx===2){const qn=bossPhase?bossQuestion:stageQuestion;if(qn<4)return decimalAddSubQuestion('tenths');if(qn<8)return decimalAddSubQuestion('hundredths');return decimalAddSubQuestion('mixed');}
+    if(idx===3){
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(bossPhase&&stageIndex===2)return decimalIntegerQuestion(qn<3?'×':'÷',qn===2);
+      return decimalIntegerQuestion(qn<5?'×':'÷',qn>=8);
+    }
+    const qn=bossPhase?bossQuestion:stageQuestion;
+    if(bossPhase&&stageIndex===3){if(qn<2)return sameDenominatorFractionQuestion('add');if(qn<4)return sameDenominatorFractionQuestion('sub');return sameDenominatorFractionQuestion('mixed',true);}
+    if(qn<3)return sameDenominatorFractionQuestion('add');if(qn<6)return sameDenominatorFractionQuestion('sub');if(qn<8)return sameDenominatorFractionQuestion('mixed',true);return sameDenominatorFractionQuestion('mixed',Math.random()<.5,true);
+  }
+  function makeCrimsonFinalQuestion(finalBoss=false,step=bossQuestion){
+    const phase=Math.max(0,Math.min(4,Number(step)||0));
+    if(!finalBoss)return calculationOrderQuestion(phase);
+    if(phase===0)return exactDivision('threeByTwo');
+    if(phase===1)return decimalAddSubQuestion('mixed');
+    if(phase===2)return decimalIntegerQuestion(Math.random()<.5?'×':'÷',true);
+    if(phase===3)return sameDenominatorFractionQuestion('mixed',true,true);
+    return calculationOrderQuestion(4);
+  }
+
+  function fractionProductQuestion(op='×',integerSide=false,hard=false){
+    for(let i=0;i<4000;i++){
+      const d1=rand(2,12),n1=rand(1,d1-1),a=normFraction(n1,d1);
+      if(integerSide){
+        const k=rand(2,hard?9:7);let n,d;
+        if(op==='×'){n=a.n*k;d=a.d;}else{n=a.n;d=a.d*k;}
+        const r=normFraction(n,d);if(r.n>99||r.d>99||r.d===1)continue;
+        const expression=`${a.n}/${a.d}${op}${k}`;
+        return{expression,displayExpression:`${expression} = ?`,answer:fractionKey(r),choices:makeFractionChoices(fractionKey(r))};
+      }
+      const d2=rand(2,12),n2=rand(1,d2-1),b=normFraction(n2,d2);let n,d;
+      if(op==='×'){n=a.n*b.n;d=a.d*b.d;}else{n=a.n*b.d;d=a.d*b.n;}
+      const r=normFraction(n,d);if(r.n>99||r.d>99||r.d===1)continue;
+      return{expression:`${a.n}/${a.d}${op}${b.n}/${b.d}`,answer:fractionKey(r),fraction:true,a,b,op,choices:makeFractionChoices(fractionKey(r))};
+    }
+    return op==='×'?{expression:'2/3×3/5',answer:'2/5',fraction:true,a:{n:2,d:3},b:{n:3,d:5},op:'×'}:{expression:'3/4÷2/5',answer:'15/8',fraction:true,a:{n:3,d:4},b:{n:2,d:5},op:'÷'};
+  }
+  function ratioQuestion(level='basic'){
+    if(level==='equal'){
+      const bank=[['6:10','9:15'],['8:12','10:15'],['12:18','2:3'],['10:16','15:24']];const [base,answer]=pick(bank);
+      const wrong=answer==='2:3'?['3:4','4:5']:answer==='9:15'?['9:12','12:15']:answer==='10:15'?['12:15','8:10']:['15:20','20:24'];
+      return{expression:`${base} と同じ比は？`,answer,choices:shuffle([answer,...wrong])};
+    }
+    if(level==='missing'){
+      for(let i=0;i<500;i++){const a=rand(1,8),b=rand(2,9);if(a===b||gcd(a,b)!==1)continue;const k=rand(2,7);if(Math.random()<.5){const text=`${a*k}:${b*k} = □:${b}`;return{expression:text,displayExpression:text,answer:a,choices:compactNumericChoices(a,[a+1,Math.max(1,a-1),b])};}const text=`${a*k}:${b*k} = ${a}:□`;return{expression:text,displayExpression:text,answer:b,choices:compactNumericChoices(b,[b+1,Math.max(1,b-1),a])};}
+    }
+    if(level==='oneSide'){
+      for(let i=0;i<500;i++){const a=rand(1,5),b=rand(2,7);if(a===b||gcd(a,b)!==1)continue;const unit=rand(2,12),known=a*unit,answer=b*unit;return{expression:`赤:青=${a}:${b}、赤${known}こ。青は？`,answer,choices:compactNumericChoices(answer,[known,answer-unit,answer+unit])};}
+    }
+    for(let i=0;i<500;i++){const a=rand(1,5),b=rand(2,7);if(a===b||gcd(a,b)!==1)continue;const unit=rand(2,12),total=(a+b)*unit,small=Math.min(a,b)*unit;return{expression:`全部${total}を${a}:${b}に分ける。小さい方は？`,answer:small,choices:compactNumericChoices(small,[Math.max(a,b)*unit,total/(a+b),small+unit])};}
+    return{expression:'全部60を2:3に分ける。小さい方は？',answer:24,choices:[20,24,36]};
+  }
+  function circleQuestion(kind='areaRadius',hard=false){
+    if(kind==='circumferenceDiameter'){const d=rand(4,hard?24:20);const text=`直径${d}cmの円周（円周率は3.14）`;const answer=round2(d*3.14);return{expression:text,displayExpression:text,answer,choices:compactNumericChoices(answer,[round2(answer/2),round2(answer+3.14),round2(answer-3.14)])};}
+    if(kind==='circumferenceRadius'){const r=rand(2,hard?12:10);const text=`半径${r}cmの円周（円周率は3.14）`;const answer=round2(2*r*3.14);return{expression:text,displayExpression:text,answer,choices:compactNumericChoices(answer,[round2(r*3.14),round2(answer+6.28),round2(answer-6.28)])};}
+    if(kind==='areaDiameter'){const r=rand(2,hard?12:10),d=r*2,text=`直径${d}cmの円の面積（円周率は3.14）`;const answer=round2(r*r*3.14);return{expression:text,displayExpression:text,answer,choices:compactNumericChoices(answer,[round2(d*d*3.14),round2(d*3.14),round2(r*3.14)])};}
+    const r=rand(2,hard?12:10),text=`半径${r}cmの円の面積（円周率は3.14）`,answer=round2(r*r*3.14);return{expression:text,displayExpression:text,answer,choices:compactNumericChoices(answer,[round2(2*r*3.14),round2(r*3.14),round2((r+1)*(r+1)*3.14)])};
+  }
+  function proportionalQuestion(type='hole'){
+    if(type==='factor'){
+      const m=pick([2,3,4]),answer=`${m}倍`;return{expression:`xとyは比例。xが${m}倍になるとyは？`,answer,choices:[`${m}倍`,`1/${m}倍`,'変わらない']};
+    }
+    if(type==='classify'){
+      const k=rand(2,6),x=[2,4,6],y=x.map(v=>v*k),text=`x:${x.join(',')} / y:${y.join(',')}　この関係は？`;return{expression:text,displayExpression:text,answer:'比例',choices:['比例','反比例','どちらでもない']};
+    }
+    if(type==='use'){
+      const count=pick([2,3,4]),unit=pick([40,60,80,120]),target=count*pick([2,3,4]),answer=unit*target;return{expression:`${count}こで${unit*count}円。${target}こでは？`,answer,choices:compactNumericChoices(answer,[unit*count,answer-unit,answer+unit])};
+    }
+    const k=rand(2,8),x1=rand(1,6),m=pick([2,3,4]),x2=x1*m,text=`比例　x:${x1}→${x2} / y:${k*x1}→□`;return{expression:text,displayExpression:text,answer:k*x2,choices:compactNumericChoices(k*x2,[k*x1,k*x2-k,k*x2+k])};
+  }
+  function inverseQuestion(type='hole'){
+    if(type==='factor'){
+      const m=pick([2,3,4]),answer=`1/${m}倍`;return{expression:`xとyは反比例。xが${m}倍になるとyは？`,answer,choices:[`${m}倍`,`1/${m}倍`,'変わらない']};
+    }
+    if(type==='constant'){
+      const x=rand(2,12),y=rand(2,12),answer=x*y;return{expression:`反比例　x=${x}, y=${y}。x×yは？`,answer,choices:compactNumericChoices(answer,[x+y,answer+x,Math.max(1,answer-x)])};
+    }
+    if(type==='classify'){
+      const x=[2,4,8],p=pick([24,32,48]),y=x.map(v=>p/v),text=`x:${x.join(',')} / y:${y.join(',')}　この関係は？`;return{expression:text,displayExpression:text,answer:'反比例',choices:['比例','反比例','どちらでもない']};
+    }
+    if(type==='use'){
+      const total=pick([24,36,48,60,72]),x=pick([3,4,6]),divs=[2,3,4,6,8,9,12].filter(v=>v!==x&&total%v===0),x2=pick(divs),answer=total/x2;return{expression:`${total}こをx人で等分。x=${x2}人なら1人？`,answer,choices:compactNumericChoices(answer,[total/x,answer+1,Math.max(1,answer-1)])};
+    }
+    for(let i=0;i<500;i++){const x1=rand(2,10),y1=rand(2,12),p=x1*y1,divs=[];for(let x=2;x<=18;x++)if(p%x===0&&x!==x1)divs.push(x);if(!divs.length)continue;const x2=pick(divs),text=`反比例　x:${x1}→${x2} / y:${y1}→□`;return{expression:text,displayExpression:text,answer:p/x2,choices:compactNumericChoices(p/x2,[y1,Math.max(1,p/x2-1),p/x2+1])};}
+    return{expression:'反比例　x:3→6 / y:8→□',answer:4,choices:[3,4,8]};
+  }
+  function makeSilverQuestion(idx){
+    if(idx===0){
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(qn<2)return fractionProductQuestion('×',true,false);
+      if(qn<5)return fractionProductQuestion('×',false,qn>=4);
+      if(qn===5)return fractionProductQuestion('÷',true,false);
+      return fractionProductQuestion('÷',false,qn>=9);
+    }
+    if(idx===1){
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(bossPhase&&stageIndex===0){if(qn<2)return ratioQuestion('equal');if(qn<4)return ratioQuestion('missing');return ratioQuestion('oneSide');}
+      if(qn<3)return ratioQuestion('equal');if(qn<6)return ratioQuestion('missing');if(qn<8)return ratioQuestion('oneSide');return ratioQuestion('split');
     }
     if(idx===2){
-      // STAGE 3 follows the elementary-school progression: review circumference first,
-      // then move into circle area. Pi is stated explicitly as 3.14 and no rounding
-      // instruction is introduced unless a future word problem specifically requires it.
-      if(!bossPhase&&stageQuestion===0){
-        const d=rand(4,20);const text=`直径${d}cmの円周の長さ（円周率は3.14）`;
-        return{expression:text,displayExpression:text,answer:round2(d*3.14)};
-      }
-      if(!bossPhase&&stageQuestion===1){
-        const r=rand(2,10);const text=`半径${r}cmの円周の長さ（円周率は3.14）`;
-        return{expression:text,displayExpression:text,answer:round2(2*r*3.14)};
-      }
-      if(Math.random()<.35){
-        const d=rand(4,20)*2,r=d/2,text=`直径${d}cmの円の面積（円周率は3.14）`;
-        return{expression:text,displayExpression:text,answer:round2(r*r*3.14)};
-      }
-      const r=rand(2,12),text=`半径${r}cmの円の面積（円周率は3.14）`;
-      return{expression:text,displayExpression:text,answer:round2(r*r*3.14)};
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(bossPhase&&stageIndex===1){if(qn===0)return circleQuestion('circumferenceDiameter');if(qn===1)return circleQuestion('circumferenceRadius');return circleQuestion(qn===4?'areaDiameter':'areaRadius');}
+      if(qn===0)return circleQuestion('circumferenceDiameter');if(qn===1)return circleQuestion('circumferenceRadius');if(qn<6)return circleQuestion('areaRadius');if(qn<8)return circleQuestion('areaDiameter');return circleQuestion(Math.random()<.5?'areaRadius':'areaDiameter',true);
     }
-    if(idx===3){const k=rand(2,12),x1=rand(1,9);let x2=rand(2,12);if(x2===x1)x2=x2===12?2:x2+1;return{expression:`xとyは比例。x=${x1}でy=${k*x1}。x=${x2}のときy`,answer:k*x2};}
-    for(let i=0;i<500;i++){const x1=rand(2,12),y1=rand(2,12),product=x1*y1;const divs=[];for(let x=2;x<=18;x++)if(product%x===0)divs.push(x);if(!divs.length)continue;const x2=pick(divs);if(x2===x1)continue;return{expression:`xとyは反比例。x=${x1}でy=${y1}。x=${x2}のときy`,answer:product/x2};}
-    return{expression:'xとyは反比例。x=3でy=8。x=6のときy',answer:4};
+    if(idx===3){
+      const qn=bossPhase?bossQuestion:stageQuestion;
+      if(bossPhase&&stageIndex===2){if(qn<2)return proportionalQuestion('hole');if(qn===2)return proportionalQuestion('factor');if(qn===3)return proportionalQuestion('use');return proportionalQuestion('hole');}
+      if(qn<3)return proportionalQuestion('hole');if(qn<5)return proportionalQuestion('factor');if(qn<7)return proportionalQuestion('classify');return proportionalQuestion('use');
+    }
+    const qn=bossPhase?bossQuestion:stageQuestion;
+    if(bossPhase&&stageIndex===3){if(qn<3)return inverseQuestion('hole');if(qn===3)return inverseQuestion('constant');return inverseQuestion('factor');}
+    if(qn<3)return inverseQuestion('hole');if(qn<5)return inverseQuestion('constant');if(qn<7)return inverseQuestion('factor');if(qn===7)return inverseQuestion('classify');return inverseQuestion('use');
   }
 
   function makeSilverFinalBossQuestion(step=bossQuestion){
     const phase=Math.max(0,Math.min(4,Number(step)||0));
-
-    // Mimesis is a five-form Grade 6 review. Difficulty comes from recognizing
-    // mathematical relationships and changing representations, not from long prose
-    // or oversized arithmetic. All generated choices are deliberately short enough
-    // for the smallest supported phone layouts.
     if(phase===0){
       const bank=[
         {expression:'6:10 と同じ比は？',answer:'9:15',choices:['9:15','9:12','12:15']},
@@ -978,101 +1125,35 @@ function markWorldVisited(world){
       ];
       const q=pick(bank);return{...q,displayExpression:q.expression};
     }
-
     if(phase===1){
       if(Math.random()<.5){
-        const r=pick([2,3,4,5,6,7,8,9,10]);
-        const area=round2(r*r*3.14);
-        const wrong=[r*2,r===2?3:r-1,r===10?9:r+1].filter((v,i,a)=>v!==r&&a.indexOf(v)===i);
-        const choices=shuffle([r,...wrong]).slice(0,3);
-        if(!choices.includes(r))choices[0]=r;
-        return{
-          expression:`面積${area}cm²の円。半径は？（円周率は3.14）`,
-          answer:r,choices,
-          visualType:'mimesis-circle',circleKind:'area',circleValue:`${area}cm²`,circleAsk:'半径は？'
-        };
+        const r=pick([2,3,4,5,6,7,8,9,10]),area=round2(r*r*3.14),wrong=[r*2,r===2?3:r-1,r===10?9:r+1].filter((v,i,a)=>v!==r&&a.indexOf(v)===i),choices=shuffle([r,...wrong]).slice(0,3);if(!choices.includes(r))choices[0]=r;
+        return{expression:`面積${area}cm²の円。半径は？（円周率は3.14）`,answer:r,choices,visualType:'mimesis-circle',circleKind:'area',circleValue:`${area}cm²`,circleAsk:'半径は？'};
       }
-      const d=pick([4,6,8,10,12,14,16,18,20]);
-      const circumference=round2(d*3.14);
-      const wrong=[d/2,d+2,d===4?6:d-2].filter((v,i,a)=>v!==d&&a.indexOf(v)===i);
-      const choices=shuffle([d,...wrong]).slice(0,3);
-      if(!choices.includes(d))choices[0]=d;
-      return{
-        expression:`円周${circumference}cmの円。直径は？（円周率は3.14）`,
-        answer:d,choices,
-        visualType:'mimesis-circle',circleKind:'circumference',circleValue:`${circumference}cm`,circleAsk:'直径は？'
-      };
+      const d=pick([4,6,8,10,12,14,16,18,20]),circumference=round2(d*3.14),wrong=[d/2,d+2,d===4?6:d-2].filter((v,i,a)=>v!==d&&a.indexOf(v)===i),choices=shuffle([d,...wrong]).slice(0,3);if(!choices.includes(d))choices[0]=d;
+      return{expression:`円周${circumference}cmの円。直径は？（円周率は3.14）`,answer:d,choices,visualType:'mimesis-circle',circleKind:'circumference',circleValue:`${circumference}cm`,circleAsk:'直径は？'};
     }
-
     if(phase===2){
       const tableBank=[
-        {answer:'比例',x:[2,4,8],y:[6,12,24]},
-        {answer:'比例',x:[3,6,12],y:[12,24,48]},
-        {answer:'比例',x:[2,5,10],y:[8,20,40]},
-        {answer:'反比例',x:[2,4,8],y:[24,12,6]},
-        {answer:'反比例',x:[3,6,12],y:[24,12,6]},
-        {answer:'反比例',x:[2,5,10],y:[30,12,6]},
-        {answer:'どちらでもない',x:[2,4,8],y:[6,10,14]},
-        {answer:'どちらでもない',x:[3,6,12],y:[8,14,20]},
-        {answer:'どちらでもない',x:[2,5,10],y:[7,12,18]}
+        {answer:'比例',x:[2,4,8],y:[6,12,24]},{answer:'比例',x:[3,6,12],y:[12,24,48]},{answer:'比例',x:[2,5,10],y:[8,20,40]},
+        {answer:'反比例',x:[2,4,8],y:[24,12,6]},{answer:'反比例',x:[3,6,12],y:[24,12,6]},{answer:'反比例',x:[2,5,10],y:[30,12,6]},
+        {answer:'どちらでもない',x:[2,4,8],y:[6,10,14]},{answer:'どちらでもない',x:[3,6,12],y:[8,14,20]},{answer:'どちらでもない',x:[2,5,10],y:[7,12,18]}
       ];
-      const q=pick(tableBank);
-      return{
-        expression:'この関係は？',answer:q.answer,choices:['比例','反比例','どちらでもない'],
-        visualType:'mimesis-table',tableX:q.x,tableY:q.y
-      };
+      const q=pick(tableBank);return{expression:'この関係は？',answer:q.answer,choices:['比例','反比例','どちらでもない'],visualType:'mimesis-table',tableX:q.x,tableY:q.y};
     }
-
     if(phase===3){
-      const relation=Math.random()<.5?'比例':'反比例';
-      const m=pick([2,3,4]);
-      const upward=Math.random()<.5;
-      const base=rand(2,6);
-      const from=upward?base:base*m;
-      const to=upward?base*m:base;
-      const xFactor=upward?m:1/m;
-      const yFactor=relation==='比例'?xFactor:1/xFactor;
-      const answer=yFactor>=1?`${m}倍`:`1/${m}倍`;
-      return{
-        expression:`xとyは${relation}。x：${from} → ${to}。yは？`,
-        displayExpression:`xとyは${relation}　x：${from} → ${to}　yは？`,
-        answer,choices:[`${m}倍`,`1/${m}倍`,'変わらない']
-      };
+      const relation=Math.random()<.5?'比例':'反比例',m=pick([2,3,4]),upward=Math.random()<.5,base=rand(2,6),from=upward?base:base*m,to=upward?base*m:base,xFactor=upward?m:1/m,yFactor=relation==='比例'?xFactor:1/xFactor,answer=yFactor>=1?`${m}倍`:`1/${m}倍`;
+      return{expression:`xとyは${relation}。x：${from} → ${to}。yは？`,displayExpression:`xとyは${relation}　x：${from} → ${to}　yは？`,answer,choices:[`${m}倍`,`1/${m}倍`,'変わらない']};
     }
-
+    // FINAL only: same conceptual task as agreed, but values are intentionally one step heavier.
     const templates={
-      ratio:{label:'比',true:[
-        '3:5 = 9:15','2:3 = 8:12','4:7 = 12:21','5:8 = 15:24'
-      ],false:[
-        '3:5 = 9:12','2:3 = 8:10','4:7 = 12:18','5:8 = 15:20'
-      ]},
-      circle:{label:'円',true:[
-        '半径4cm → 面積50.24cm²','半径5cm → 面積78.5cm²','直径10cm → 円周31.4cm','直径8cm → 円周25.12cm'
-      ],false:[
-        '半径4cm → 面積25.12cm²','半径5cm → 面積31.4cm²','直径10cm → 円周15.7cm','直径8cm → 円周12.56cm'
-      ]},
-      direct:{label:'比例',true:[
-        'x 2→4 ｜ y 6→12','x 3→9 ｜ y 4→12','x 2→6 ｜ y 5→15','x 4→8 ｜ y 7→14'
-      ],false:[
-        'x 2→4 ｜ y 6→10','x 3→9 ｜ y 4→8','x 2→6 ｜ y 5→10','x 4→8 ｜ y 7→12'
-      ]},
-      inverse:{label:'反比例',true:[
-        'x 2→4 ｜ y 12→6','x 3→6 ｜ y 20→10','x 4→8 ｜ y 18→9','x 2→6 ｜ y 15→5'
-      ],false:[
-        'x 2→4 ｜ y 12→8','x 3→6 ｜ y 20→12','x 4→8 ｜ y 18→12','x 2→6 ｜ y 15→10'
-      ]}
+      ratio:{label:'比',true:['12:18 = 26:39','14:21 = 22:33','15:24 = 35:56','18:30 = 27:45'],false:['12:18 = 26:36','14:21 = 22:30','15:24 = 35:54','18:30 = 27:42']},
+      circle:{label:'円',true:['半径8cm → 面積200.96cm²','半径9cm → 面積254.34cm²','直径18cm → 円周56.52cm','直径24cm → 円周75.36cm'],false:['半径8cm → 面積100.48cm²','半径9cm → 面積56.52cm²','直径18cm → 円周28.26cm','直径24cm → 円周37.68cm']},
+      direct:{label:'比例',true:['x 6→18 ｜ y 14→42','x 8→20 ｜ y 12→30','x 9→27 ｜ y 11→33','x 12→30 ｜ y 16→40'],false:['x 6→18 ｜ y 14→40','x 8→20 ｜ y 12→28','x 9→27 ｜ y 11→30','x 12→30 ｜ y 16→36']},
+      inverse:{label:'反比例',true:['x 6→18 ｜ y 42→14','x 8→20 ｜ y 45→18','x 9→27 ｜ y 36→12','x 12→30 ｜ y 40→16'],false:['x 6→18 ｜ y 42→16','x 8→20 ｜ y 45→20','x 9→27 ｜ y 36→14','x 12→30 ｜ y 40→18']}
     };
-    const fields=shuffle(Object.keys(templates)).slice(0,3);
-    const falseField=pick(fields);
-    const rows=shuffle(fields.map(key=>{
-      const t=templates[key],isFalse=key===falseField;
-      return{label:t.label,text:pick(isFalse?t.false:t.true),isFalse};
-    })).map((row,i)=>({...row,letter:['A','B','C'][i]}));
-    const answer=rows.find(r=>r.isFalse).letter;
-    return{
-      expression:'まちがっているものは？',answer,choices:['A','B','C'],
-      visualType:'mimesis-final',mimesisRows:rows,showPi:rows.some(r=>r.label==='円')
-    };
+    const fields=shuffle(Object.keys(templates)).slice(0,3),falseField=pick(fields),rows=shuffle(fields.map(key=>{const t=templates[key],isFalse=key===falseField;return{label:t.label,text:pick(isFalse?t.false:t.true),isFalse};})).map((row,i)=>({...row,letter:['A','B','C'][i]})),answer=rows.find(r=>r.isFalse).letter;
+    return{expression:'まちがっているものは？',answer,choices:['A','B','C'],visualType:'mimesis-final',mimesisRows:rows,showPi:rows.some(r=>r.label==='円')};
   }
 
   function currentStage(){return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
