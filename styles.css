@@ -1305,3 +1305,58 @@ body[data-mode="silver"] .battlefield>.attack-effect.finisher-front-fx .claw-c{l
 @media (orientation:landscape) and (max-height:500px){
   .question-panel.mimesis-boss-question .choices button{min-height:44px;height:44px}
 }
+
+/* ===== 蒼の世界：主人公・STAGE5記憶暗転・ボス特殊行動 ===== */
+body[data-mode="blue"] .actor.hero>img{width:96%;height:90%;max-width:96%;max-height:90%;justify-self:center;align-self:end}
+body[data-mode="blue"] .question-panel{border-color:rgba(104,194,235,.56);box-shadow:0 0 20px rgba(61,169,221,.12),0 15px 28px rgba(0,0,0,.36),inset 0 0 0 3px rgba(48,109,151,.10)}
+
+/* Q1-10の進行に合わせ、戦闘世界だけを徐々に暗くする。問題UIと上部HUDは常に上層。 */
+.blue-memory-dimmer{position:absolute;inset:0;z-index:15;background:#000;opacity:0;pointer-events:none;transition:opacity 1.5s ease;}
+.blue-memory-dimmer.no-transition{transition:none!important}
+.blue-memory-dimmer.full-black{z-index:25;transition:opacity 1.35s ease}
+
+/* Q10：主人公の身体動作のみを遅くする。攻撃エフェクト・敵ヒット・SEは既存速度のまま。 */
+.actor.hero.blue-q10-slow.attack-front>img{animation-duration:1.55s!important;animation-timing-function:cubic-bezier(.18,.74,.24,1)!important}
+
+.question-panel.blue-special-panel{overflow:visible}
+
+/* STAGE1 夏草の甲王・オオカブト「甲王大相撲」 */
+body.blue-sumo-active .choices button{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+body.blue-sumo-active .choices button::after{content:"";position:absolute;left:8%;right:8%;bottom:5px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);transform-origin:left center;pointer-events:none}
+body.blue-sumo-active .choices button.blue-sumo-holding{transform:translateY(2px) scale(.985);box-shadow:0 2px 8px rgba(0,0,0,.38),inset 0 3px 13px rgba(0,0,0,.18)}
+body.blue-sumo-active .choices button.blue-sumo-holding::after{background:linear-gradient(90deg,#e5f8ff,#67d8ff,#fff2a2);animation:blueSumoHold .8s linear both;box-shadow:0 0 9px rgba(105,221,255,.8)}
+@keyframes blueSumoHold{from{transform:scaleX(.03)}to{transform:scaleX(1)}}
+
+/* STAGE2 秘密基地の守護獣・ヤマヌシ「獣道封鎖」 */
+body.blue-trail-block-active .choices button{position:relative;overflow:hidden}
+body.blue-trail-block-active .choices button.blue-trail-blocked{filter:saturate(.68) brightness(.82)}
+body.blue-trail-block-active .choices button.blue-trail-blocked::after{content:"";position:absolute;z-index:3;left:-8%;right:-8%;top:39%;height:22%;pointer-events:none;opacity:.72;background:repeating-linear-gradient(164deg,rgba(56,34,13,.96) 0 7px,rgba(117,77,30,.96) 8px 12px,transparent 13px 21px);border-radius:55% 18% 48% 22%;box-shadow:0 2px 7px rgba(0,0,0,.36);transform:rotate(-3deg)}
+body.blue-trail-block-active .choices button.blue-trail-blocked::before{content:"";position:absolute;z-index:4;width:28%;height:55%;right:2%;bottom:-22%;pointer-events:none;border:5px solid rgba(72,47,18,.9);border-left-width:2px;border-bottom:0;border-radius:60% 38% 0 0;transform:rotate(28deg)}
+
+/* STAGE3 戻れない祭主・ヨイマツリ「宵祭りの灯落とし」 */
+body.blue-lantern-active .equation-box,body.blue-lantern-active .choices button{transition:filter .24s ease,color .24s ease,text-shadow .24s ease,box-shadow .24s ease}
+body.blue-lantern-dark .math-problem{opacity:.045!important;filter:brightness(.12)!important;text-shadow:none!important}
+body.blue-lantern-dark .choices button{color:transparent!important;text-shadow:none!important;filter:brightness(.34) saturate(.42)!important;box-shadow:0 3px 8px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,219,139,.20)!important}
+body.blue-lantern-dark .choices button *{color:transparent!important;text-shadow:none!important}
+body.blue-lantern-dark .question-panel::after{content:"";position:absolute;z-index:40;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at 22% 13%,rgba(255,173,54,.07),transparent 12%),radial-gradient(circle at 78% 14%,rgba(255,141,45,.06),transparent 13%),rgba(2,7,15,.18)}
+
+/* STAGE4 逢魔の時守・ユウグレ「帰刻の鐘」 */
+.blue-fade-problem{display:inline;white-space:inherit}.blue-fade-fragment{display:inline;transition:opacity .28s ease,filter .28s ease}.blue-fade-fragment.blue-fragment-gone{opacity:.045;filter:blur(.6px)}
+.blue-clock-echo{position:absolute;z-index:45;right:10px;top:7px;padding:3px 7px;border-radius:7px;background:rgba(7,16,27,.88);border:1px solid rgba(116,202,239,.42);color:#d9f5ff;font:800 .68rem/1.1 Georgia,serif;letter-spacing:.05em;opacity:0;transform:translateY(-4px);pointer-events:none;text-shadow:0 0 8px rgba(96,213,255,.55)}
+.blue-clock-echo.active{animation:blueClockEcho 1.15s ease both}
+@keyframes blueClockEcho{0%{opacity:0;transform:translateY(-5px)}18%,70%{opacity:.88;transform:translateY(0)}100%{opacity:0;transform:translateY(2px)}}
+
+/* STAGE5 永夏の残像・トコナツ「終わらない夏休み」 */
+body.blue-endless-active .question-panel{border-color:rgba(95,202,244,.68);box-shadow:inset 0 0 28px rgba(63,177,231,.08),0 0 21px rgba(67,188,240,.18),0 15px 28px rgba(0,0,0,.38)}
+body.blue-endless-rewind .boss-strike-transition.impact{background:radial-gradient(circle at 74% 48%,rgba(205,248,255,.18),rgba(72,183,238,.13) 18%,rgba(21,71,122,.08) 40%,transparent 69%)}
+body.blue-endless-rewind .actor.enemy .actor-sprite{animation:blueEndlessWarp .82s cubic-bezier(.2,.72,.25,1) both}
+@keyframes blueEndlessWarp{0%{filter:none;transform:translateX(0) scale(1)}28%{filter:blur(2px) saturate(1.35);transform:translateX(-4px) scaleX(.96)}52%{filter:blur(.5px) brightness(1.18);transform:translateX(5px) scaleX(1.045)}100%{filter:none;transform:translateX(0) scale(1)}}
+
+@media (orientation:landscape) and (max-height:500px){
+  .blue-clock-echo{right:5px;top:4px;padding:2px 5px;font-size:.56rem}
+  body.blue-sumo-active .choices button::after{bottom:3px;height:3px}
+  body.blue-trail-block-active .choices button.blue-trail-blocked::after{height:18%;top:41%}
+}
+@media (orientation:portrait){
+  .blue-clock-echo{right:6px;top:5px;font-size:.62rem}
+}
