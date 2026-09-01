@@ -1184,3 +1184,124 @@ body[data-mode="silver"] .battlefield>.attack-effect.finisher-front-fx .claw-c{l
     left:auto!important;right:.5%!important;top:3.5%!important;bottom:auto!important;width:34%!important;height:31%!important
   }
 }
+
+
+/* ===== 2026-09-01 Monster Encyclopedia center-anchored edge crop =====
+   Restore the original showcase intent: monsters should nearly fill / slightly exceed
+   their visual frame, but their canvas center must stay anchored so enlargement never
+   pushes the subject toward the card bottom. The outer card remains the clipping mask. */
+.monster-book-cell{
+  --monster-book-art-scale:1.22;
+  --monster-book-art-y:-2%;
+}
+.monster-book-thumb{
+  position:relative;
+  overflow:visible;
+  place-items:center;
+}
+.monster-book-thumb img{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:translate(-50%,calc(-50% + var(--monster-book-art-y))) scale(var(--monster-book-art-scale))!important;
+  transform-origin:50% 50%!important;
+}
+/* The detail card uses the same center-first rule. It is intentionally just large
+   enough to clip at the art frame, never translated downward to create size. */
+.monster-card{
+  --monster-card-art-scale:1.20;
+  --monster-card-art-shift:-2%;
+}
+.monster-card-art img{
+  object-position:center center!important;
+  transform-origin:50% 50%!important;
+}
+@media (orientation:portrait){
+  .monster-book-cell{--monster-book-art-scale:1.20;--monster-book-art-y:-2%}
+  .monster-card{--monster-card-art-scale:1.17;--monster-card-art-shift:-3%}
+}
+@media (orientation:landscape) and (min-height:521px){
+  .monster-book-cell{--monster-book-art-scale:1.24;--monster-book-art-y:-2%}
+  .monster-card{--monster-card-art-scale:1.22;--monster-card-art-shift:-2%}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .monster-book-cell{--monster-book-art-scale:1.17;--monster-book-art-y:-1%}
+  .monster-card{--monster-card-art-scale:1.15;--monster-card-art-shift:-2%}
+}
+
+/* ===== 2026-09-01 Mimesis final-boss readable question layouts =====
+   Q3/Q5 use structured DOM instead of shrinking one long math string. The smallest
+   supported targets are 568x320 landscape and 320x568 portrait. Readability of the
+   question and answer buttons takes priority over decorative labels. */
+.question-panel.mimesis-circle-question .math-problem,
+.question-panel.mimesis-table-question .math-problem,
+.question-panel.mimesis-final-question .math-problem{
+  width:100%;max-width:100%;height:100%;display:block!important;white-space:normal!important;
+  font-family:"Hiragino Sans","Yu Gothic UI","BIZ UDPGothic",system-ui,sans-serif;
+  color:#181009;text-align:center;line-height:1.2
+}
+.mimesis-circle-view{height:100%;display:grid;grid-template-rows:auto auto auto auto;place-items:center;align-content:center;gap:1px;padding:3px 8px}
+.mimesis-circle-view strong{font-size:clamp(1rem,2vw,1.45rem);font-weight:900}.mimesis-circle-view b{font-size:clamp(1.05rem,2.2vw,1.55rem)}
+.mimesis-circle-view .mimesis-arrow{font-size:.9rem;line-height:.8}.mimesis-circle-view small{font-size:clamp(.68rem,1.1vw,.82rem);font-weight:800}
+.question-panel.mimesis-table-question .equation-box{height:112px}
+.mimesis-table-view{height:100%;display:grid;grid-template-rows:auto 1fr;align-items:center;gap:4px;padding:6px 12px}
+.mimesis-table-view>strong{font-size:clamp(.86rem,1.6vw,1.08rem);font-weight:900}
+.mimesis-table-view table{width:min(360px,96%);margin:auto;border-collapse:collapse;table-layout:fixed;font:900 clamp(1rem,2vw,1.32rem)/1.05 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
+.mimesis-table-view th,.mimesis-table-view td{height:31px;padding:2px 7px;border:1px solid rgba(98,69,27,.38);text-align:center}.mimesis-table-view th{width:18%;background:rgba(135,97,42,.13)}
+.question-panel.mimesis-table-question .choices button{min-height:50px;height:50px;font-family:"Hiragino Sans","Yu Gothic UI","BIZ UDPGothic",system-ui,sans-serif;font-size:clamp(.92rem,1.65vw,1.14rem);font-weight:900;line-height:1.12;white-space:normal}
+.question-panel.mimesis-final-question .equation-box{height:156px}
+.mimesis-final-view{height:100%;display:grid;grid-template-rows:auto 1fr;gap:5px;padding:5px 8px;text-align:left}
+.mimesis-final-head{display:flex;align-items:baseline;justify-content:center;gap:10px;min-width:0}.mimesis-final-head strong{font-size:clamp(.84rem,1.45vw,1.02rem);font-weight:900}.mimesis-final-head small{font-size:clamp(.58rem,1vw,.72rem);font-weight:800;white-space:nowrap}
+.mimesis-final-list{display:grid;grid-template-rows:repeat(3,minmax(0,1fr));gap:4px;min-height:0}
+.mimesis-final-row{display:grid;grid-template-columns:26px 52px minmax(0,1fr);align-items:center;gap:5px;min-width:0;padding:3px 7px;border:1px solid rgba(103,72,27,.28);border-radius:7px;background:rgba(255,255,255,.20)}
+.mimesis-row-letter{font:900 1rem/1 Georgia,serif;text-align:center}.mimesis-row-field{font-size:clamp(.66rem,1.08vw,.78rem);font-weight:900;text-align:center;white-space:nowrap}.mimesis-row-text{min-width:0;font:900 clamp(.78rem,1.35vw,.96rem)/1.12 Georgia,"Yu Gothic UI",sans-serif;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:normal;word-break:keep-all}
+.question-panel.mimesis-final-question .choices button{min-height:50px;height:50px;font-size:clamp(1.35rem,2.8vw,2.05rem)}
+
+/* Small landscape: spend height on the actual task. Decorations disappear before
+   mathematical text or tap targets are reduced. */
+@media (orientation:landscape) and (max-height:500px){
+  .question-panel.mimesis-circle-question .equation-box{height:82px}
+  .question-panel.mimesis-table-question .equation-box{height:90px}
+  .question-panel.mimesis-final-question .equation-box{height:112px}
+  .question-panel.mimesis-table-question .question-cap,.question-panel.mimesis-final-question .question-cap,
+  .question-panel.mimesis-table-question .choice-caption,.question-panel.mimesis-final-question .choice-caption{display:none}
+  .question-panel.mimesis-table-question .feedback,.question-panel.mimesis-final-question .feedback{height:8px}
+  .question-panel.mimesis-table-question,.question-panel.mimesis-final-question{top:2.5%;padding:4px 6px 6px}
+  .mimesis-table-view{padding:3px 8px;gap:2px}.mimesis-table-view>strong{font-size:13px}.mimesis-table-view table{font-size:15px}.mimesis-table-view th,.mimesis-table-view td{height:24px;padding:1px 4px}
+  .question-panel.mimesis-table-question .choices button{height:46px;min-height:46px;font-size:14px;line-height:1.05;padding:3px 4px}
+  .mimesis-final-view{padding:3px 5px;gap:3px}.mimesis-final-head{gap:6px}.mimesis-final-head strong{font-size:13px}.mimesis-final-head small{font-size:10px}
+  .mimesis-final-list{gap:3px}.mimesis-final-row{grid-template-columns:22px 44px minmax(0,1fr);gap:3px;padding:2px 5px}.mimesis-row-letter{font-size:14px}.mimesis-row-field{font-size:11px}.mimesis-row-text{font-size:13px;line-height:1.08}
+  .question-panel.mimesis-final-question .choices button{height:46px;min-height:46px;font-size:20px}
+}
+@media (orientation:landscape) and (max-height:340px){
+  .question-panel.mimesis-table-question .equation-box{height:86px}.question-panel.mimesis-final-question .equation-box{height:106px}
+  .question-panel.mimesis-table-question .feedback,.question-panel.mimesis-final-question .feedback{height:5px}
+  .question-panel.mimesis-table-question .choices button,.question-panel.mimesis-final-question .choices button{height:44px;min-height:44px}
+}
+
+/* Portrait uses vertical space rather than shrinking text. Q5 rows become two-line
+   entries: letter/field above, mathematical statement below. */
+@media (orientation:portrait){
+  .question-panel.mimesis-circle-question .equation-box{height:104px}
+  .question-panel.mimesis-table-question .equation-box{height:114px}
+  .question-panel.mimesis-final-question .equation-box{height:150px}
+  .question-panel.mimesis-table-question,.question-panel.mimesis-final-question{top:32%;left:4%;right:4%;padding:7px 8px 9px}
+  .mimesis-table-view{padding:7px 10px;gap:5px}.mimesis-table-view>strong{font-size:15px}.mimesis-table-view table{font-size:17px}.mimesis-table-view th,.mimesis-table-view td{height:29px}
+  .question-panel.mimesis-table-question .choices button{height:52px;min-height:52px;font-size:14px;line-height:1.05;padding:3px}
+  .mimesis-final-view{padding:5px 7px;gap:4px}.mimesis-final-head{gap:6px}.mimesis-final-head strong{font-size:15px}.mimesis-final-head small{font-size:10px}
+  .mimesis-final-row{grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto;gap:1px 5px;padding:3px 6px}.mimesis-row-letter{grid-column:1;grid-row:1 / span 2;font-size:15px}.mimesis-row-field{grid-column:2;grid-row:1;text-align:left;font-size:11px}.mimesis-row-text{grid-column:2;grid-row:2;font-size:13px;line-height:1.08}
+  .question-panel.mimesis-final-question .choices button{height:52px;min-height:52px;font-size:22px}
+}
+@media (orientation:portrait) and (max-width:340px){
+  .question-panel.mimesis-table-question,.question-panel.mimesis-final-question{left:3%;right:3%;top:31%}
+  .question-panel.mimesis-final-question .equation-box{height:146px}.mimesis-row-text{font-size:12.5px}.mimesis-row-field{font-size:10.5px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .question-panel.mimesis-boss-question .choices button{min-height:44px;height:44px}
+}

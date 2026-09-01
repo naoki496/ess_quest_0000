@@ -964,52 +964,115 @@ function markWorldVisited(world){
 
   function makeSilverFinalBossQuestion(step=bossQuestion){
     const phase=Math.max(0,Math.min(4,Number(step)||0));
+
+    // Mimesis is a five-form Grade 6 review. Difficulty comes from recognizing
+    // mathematical relationships and changing representations, not from long prose
+    // or oversized arithmetic. All generated choices are deliberately short enough
+    // for the smallest supported phone layouts.
     if(phase===0){
-      // Fixed total, but the surface story changes between replays.
-      for(let i=0;i<800;i++){
-        const a=rand(2,12),b=rand(4,15),total=a*b;
-        const options=[];for(let a2=2;a2<=20;a2++)if(a2!==a&&total%a2===0){const b2=total/a2;if(b2>=2&&b2<=20)options.push([a2,b2]);}
-        if(!options.length)continue;
-        const [a2,answer]=pick(options);
-        const scene=pick([
-          `1分に${a}Lずつで${b}分かかる水そう。同じ量を1分に${a2}Lずつ入れると何分？`,
-          `${total}個を1箱${a}個ずつ入れると${b}箱。1箱${a2}個ずつなら何箱？`,
-          `${total}mのロープを${a}mずつ切ると${b}本。${a2}mずつなら何本？`
-        ]);
-        return{expression:scene,displayExpression:scene,answer};
-      }
+      const bank=[
+        {expression:'6:10 と同じ比は？',answer:'9:15',choices:['9:15','9:12','12:15']},
+        {expression:'12:18 と同じ比は？',answer:'2:3',choices:['2:3','3:4','4:5']},
+        {expression:'8:12 と同じ比は？',answer:'10:15',choices:['10:15','12:15','8:10']},
+        {expression:'10:16 と同じ比は？',answer:'15:24',choices:['15:24','15:20','20:24']}
+      ];
+      const q=pick(bank);return{...q,displayExpression:q.expression};
     }
+
     if(phase===1){
-      const total=pick([48,60,72,84,96]);
-      const divisors=[];for(let n=2;n<=12;n++)if(total%n===0)divisors.push(n);
-      const groups=pick(divisors),answer=total/groups;
-      const scene=pick([
-        `${total}個のお菓子を${groups}人で同じ数ずつ分けます。1人分は何個？`,
-        `${total}枚のカードを${groups}組に同じ枚数ずつ分けます。1組は何枚？`
-      ]);
-      return{expression:scene,displayExpression:scene,answer};
+      if(Math.random()<.5){
+        const r=pick([2,3,4,5,6,7,8,9,10]);
+        const area=round2(r*r*3.14);
+        const wrong=[r*2,r===2?3:r-1,r===10?9:r+1].filter((v,i,a)=>v!==r&&a.indexOf(v)===i);
+        const choices=shuffle([r,...wrong]).slice(0,3);
+        if(!choices.includes(r))choices[0]=r;
+        return{
+          expression:`面積${area}cm²の円。半径は？（円周率は3.14）`,
+          answer:r,choices,
+          visualType:'mimesis-circle',circleKind:'area',circleValue:`${area}cm²`,circleAsk:'半径は？'
+        };
+      }
+      const d=pick([4,6,8,10,12,14,16,18,20]);
+      const circumference=round2(d*3.14);
+      const wrong=[d/2,d+2,d===4?6:d-2].filter((v,i,a)=>v!==d&&a.indexOf(v)===i);
+      const choices=shuffle([d,...wrong]).slice(0,3);
+      if(!choices.includes(d))choices[0]=d;
+      return{
+        expression:`円周${circumference}cmの円。直径は？（円周率は3.14）`,
+        answer:d,choices,
+        visualType:'mimesis-circle',circleKind:'circumference',circleValue:`${circumference}cm`,circleAsk:'直径は？'
+      };
     }
+
     if(phase===2){
-      const h=rand(3,12),w=rand(4,14),area=h*w;
-      const candidates=[];for(let h2=2;h2<=18;h2++)if(h2!==h&&area%h2===0&&area/h2<=24)candidates.push(h2);
-      const h2=candidates.length?pick(candidates):h;
-      const answer=area/h2;
-      const text=`面積${area}cm²の長方形。たてを${h2}cmにすると、横は何cm？`;
-      return{expression:text,displayExpression:text,answer};
+      const tableBank=[
+        {answer:'比例',x:[2,4,8],y:[6,12,24]},
+        {answer:'比例',x:[3,6,12],y:[12,24,48]},
+        {answer:'比例',x:[2,5,10],y:[8,20,40]},
+        {answer:'反比例',x:[2,4,8],y:[24,12,6]},
+        {answer:'反比例',x:[3,6,12],y:[24,12,6]},
+        {answer:'反比例',x:[2,5,10],y:[30,12,6]},
+        {answer:'どちらでもない',x:[2,4,8],y:[6,10,14]},
+        {answer:'どちらでもない',x:[3,6,12],y:[8,14,20]},
+        {answer:'どちらでもない',x:[2,5,10],y:[7,12,18]}
+      ];
+      const q=pick(tableBank);
+      return{
+        expression:'この関係は？',answer:q.answer,choices:['比例','反比例','どちらでもない'],
+        visualType:'mimesis-table',tableX:q.x,tableY:q.y
+      };
     }
+
     if(phase===3){
-      const m=pick([2,3,4]);const answer=`${m}分の1`;
-      const text=`xとyは反比例します。xを${m}倍にすると、yはどうなる？`;
-      return{expression:text,displayExpression:text,answer,choices:[`${m}倍`,answer,'変わらない']};
+      const relation=Math.random()<.5?'比例':'反比例';
+      const m=pick([2,3,4]);
+      const upward=Math.random()<.5;
+      const base=rand(2,6);
+      const from=upward?base:base*m;
+      const to=upward?base*m:base;
+      const xFactor=upward?m:1/m;
+      const yFactor=relation==='比例'?xFactor:1/xFactor;
+      const answer=yFactor>=1?`${m}倍`:`1/${m}倍`;
+      return{
+        expression:`xとyは${relation}。x：${from} → ${to}。yは？`,
+        displayExpression:`xとyは${relation}　x：${from} → ${to}　yは？`,
+        answer,choices:[`${m}倍`,`1/${m}倍`,'変わらない']
+      };
     }
-    const sets=[
-      ['分ける人数と1人分の個数','買う個数と代金','正方形の一辺と周りの長さ'],
-      ['一定の道のりを進む速さとかかる時間','1本の値段と買った本数','正方形の一辺と面積'],
-      ['一定面積の長方形の縦と横','歩いた時間と道のり','同じ速さで走る時間と道のり']
-    ];
-    const choices=pick(sets),answer=choices[0];
-    const text='次のうち、反比例する関係はどれ？';
-    return{expression:text,displayExpression:text,answer,choices};
+
+    const templates={
+      ratio:{label:'比',true:[
+        '3:5 = 9:15','2:3 = 8:12','4:7 = 12:21','5:8 = 15:24'
+      ],false:[
+        '3:5 = 9:12','2:3 = 8:10','4:7 = 12:18','5:8 = 15:20'
+      ]},
+      circle:{label:'円',true:[
+        '半径4cm → 面積50.24cm²','半径5cm → 面積78.5cm²','直径10cm → 円周31.4cm','直径8cm → 円周25.12cm'
+      ],false:[
+        '半径4cm → 面積25.12cm²','半径5cm → 面積31.4cm²','直径10cm → 円周15.7cm','直径8cm → 円周12.56cm'
+      ]},
+      direct:{label:'比例',true:[
+        'x 2→4 ｜ y 6→12','x 3→9 ｜ y 4→12','x 2→6 ｜ y 5→15','x 4→8 ｜ y 7→14'
+      ],false:[
+        'x 2→4 ｜ y 6→10','x 3→9 ｜ y 4→8','x 2→6 ｜ y 5→10','x 4→8 ｜ y 7→12'
+      ]},
+      inverse:{label:'反比例',true:[
+        'x 2→4 ｜ y 12→6','x 3→6 ｜ y 20→10','x 4→8 ｜ y 18→9','x 2→6 ｜ y 15→5'
+      ],false:[
+        'x 2→4 ｜ y 12→8','x 3→6 ｜ y 20→12','x 4→8 ｜ y 18→12','x 2→6 ｜ y 15→10'
+      ]}
+    };
+    const fields=shuffle(Object.keys(templates)).slice(0,3);
+    const falseField=pick(fields);
+    const rows=shuffle(fields.map(key=>{
+      const t=templates[key],isFalse=key===falseField;
+      return{label:t.label,text:pick(isFalse?t.false:t.true),isFalse};
+    })).map((row,i)=>({...row,letter:['A','B','C'][i]}));
+    const answer=rows.find(r=>r.isFalse).letter;
+    return{
+      expression:'まちがっているものは？',answer,choices:['A','B','C'],
+      visualType:'mimesis-final',mimesisRows:rows,showPi:rows.some(r=>r.label==='円')
+    };
   }
 
   function currentStage(){return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
@@ -1504,6 +1567,56 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const panel=els.mathProblem.closest('.question-panel');
     if(panel)panel.classList.toggle('fraction-question',!!active);
   }
+  function setMimesisQuestionLayout(type='',activeBoss=false){
+    const panel=els.mathProblem?.closest('.question-panel');
+    if(!panel)return;
+    panel.classList.remove('mimesis-boss-question','mimesis-circle-question','mimesis-table-question','mimesis-final-question');
+    if(activeBoss)panel.classList.add('mimesis-boss-question');
+    if(type==='mimesis-circle')panel.classList.add('mimesis-circle-question');
+    if(type==='mimesis-table')panel.classList.add('mimesis-table-question');
+    if(type==='mimesis-final')panel.classList.add('mimesis-final-question');
+  }
+  function renderMimesisVisual(q){
+    const el=els.mathProblem;
+    if(!el)return false;
+    if(q?.visualType==='mimesis-circle'){
+      el.innerHTML='';
+      const wrap=document.createElement('div');wrap.className='mimesis-circle-view';
+      const value=document.createElement('strong');value.textContent=`${q.circleKind==='area'?'面積':'円周'} ${q.circleValue}`;
+      const arrow=document.createElement('span');arrow.className='mimesis-arrow';arrow.textContent='↓';
+      const ask=document.createElement('b');ask.textContent=q.circleAsk;
+      const pi=document.createElement('small');pi.textContent='円周率は3.14';
+      wrap.append(value,arrow,ask,pi);el.appendChild(wrap);return true;
+    }
+    if(q?.visualType==='mimesis-table'){
+      el.innerHTML='';
+      const wrap=document.createElement('div');wrap.className='mimesis-table-view';
+      const ask=document.createElement('strong');ask.textContent='この関係は？';wrap.appendChild(ask);
+      const table=document.createElement('table');table.setAttribute('aria-label','xとyの関係を表す表');
+      [['x',q.tableX],['y',q.tableY]].forEach(([label,values])=>{
+        const tr=document.createElement('tr');const th=document.createElement('th');th.scope='row';th.textContent=label;tr.appendChild(th);
+        values.forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td);});table.appendChild(tr);
+      });
+      wrap.appendChild(table);el.appendChild(wrap);return true;
+    }
+    if(q?.visualType==='mimesis-final'){
+      el.innerHTML='';
+      const wrap=document.createElement('div');wrap.className='mimesis-final-view';
+      const head=document.createElement('div');head.className='mimesis-final-head';
+      const ask=document.createElement('strong');ask.textContent='まちがっているものは？';head.appendChild(ask);
+      if(q.showPi){const pi=document.createElement('small');pi.textContent='円周率は3.14';head.appendChild(pi);}wrap.appendChild(head);
+      const list=document.createElement('div');list.className='mimesis-final-list';
+      q.mimesisRows.forEach(row=>{
+        const item=document.createElement('div');item.className='mimesis-final-row';
+        const letter=document.createElement('b');letter.className='mimesis-row-letter';letter.textContent=row.letter;
+        const field=document.createElement('span');field.className='mimesis-row-field';field.textContent=row.label;
+        const text=document.createElement('strong');text.className='mimesis-row-text';text.textContent=row.text;
+        item.append(letter,field,text);list.appendChild(item);
+      });
+      wrap.appendChild(list);el.appendChild(wrap);return true;
+    }
+    return false;
+  }
   function resetMathProblemFit(){
     if(!els.mathProblem)return;
     for(const prop of ['font-size','max-width','width','white-space','line-height','overflow-wrap','word-break','display','text-align'])els.mathProblem.style.removeProperty(prop);
@@ -1512,7 +1625,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const el=els.mathProblem,box=el?.closest('.equation-box');
     if(!el||!box)return;
     resetMathProblemFit();
-    if(q?.fraction||mode!=='silver')return;
+    if(q?.fraction||q?.visualType||mode!=='silver')return;
     const maxWidth=Math.max(100,box.clientWidth-18);
     const maxHeight=Math.max(42,box.clientHeight-10);
     el.style.maxWidth=`${maxWidth}px`;
@@ -1536,14 +1649,15 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }
   }
   function renderQuestionContent(q){
-    setFractionQuestionLayout(!!q?.fraction);
+    setFractionQuestionLayout(!!q?.fraction);setMimesisQuestionLayout(q?.visualType||'',mode==='silver'&&bossPhase&&stageIndex===4);resetMathProblemFit();
+    if(renderMimesisVisual(q))return;
     if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=q?.displayExpression||`${q.expression}=?`;
     fitMathProblemToBox(q);
   }
   function renderChoiceButton(b,v,answer){
     b.dataset.answerValue=answerKey(v);
     const f=parseFractionKey(v);if(f)b.innerHTML=fractionHtml(f);else b.textContent=v;
-    if(typeof v==='string'&&!f&&!/^[-+]?\d+(?:\.\d+)?$/.test(v))b.classList.add('text-choice');
+    if(typeof v==='string'&&!f&&!/^[-+]?\d+(?:\.\d+)?$/.test(v)&&!/^\d+:\d+$/.test(v))b.classList.add('text-choice');
     applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);
   }
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
@@ -1555,7 +1669,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     locked=false;syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){setFractionQuestionLayout(false);resetMathProblemFit();els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
+  function clearQuestionUi(){setFractionQuestionLayout(false);setMimesisQuestionLayout('',false);resetMathProblemFit();els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -2507,15 +2621,15 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.enemyActor.classList.remove('boss-defeat','finisher-hit');
     els.heroActor.classList.remove('finisher-front','finisher-back');
     els.attackEffect.className='attack-effect';
-    if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',20);await finishRun();return;}
+    if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await finishRun();return;}
     await clearStage();
   }
 
   function currentStageClearGold(){
-    if(mode==='front')return stageIndex===4?20:5;
-    if(mode==='back')return stageIndex===4?20:7;
-    if(mode==='crimson')return stageIndex<=3?15:5;
-    if(mode==='silver')return stageIndex===4?20:15;
+    if(mode==='front')return stageIndex===4?10:3;
+    if(mode==='back')return stageIndex===4?15:5;
+    if(mode==='crimson')return 5;
+    if(mode==='silver')return stageIndex===4?20:5;
     return 5;
   }
   function grantStageClearGold(key,reward){
