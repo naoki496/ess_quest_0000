@@ -18,6 +18,7 @@ body[data-mode="back"] .panel-gold{border-color:rgba(101,234,255,.45);box-shadow
 .title-bg,.sub-bg{position:absolute;inset:0;background:url('./assets/bg_forest.png') center/cover no-repeat;transform:scale(1.025);animation:bgDrift 14s ease-in-out infinite alternate}
 .title-shade,.sub-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,12,25,.30),rgba(4,12,25,.12) 45%,rgba(4,12,25,.58)),linear-gradient(180deg,rgba(2,7,16,.08),rgba(2,7,16,.30))}
 body[data-mode="back"] .title-bg,body[data-mode="back"] .sub-bg{background-image:url('./assets/back_map.png');filter:saturate(1.18) brightness(.68)}
+body[data-mode="blue"] .title-bg,body[data-mode="blue"] .sub-bg{background-image:url('./assets/blue_stage1.png');filter:saturate(1.02) brightness(.72)}
 body[data-mode="back"] .title-shade{background:linear-gradient(90deg,rgba(3,5,18,.74),rgba(31,7,48,.26) 52%,rgba(3,8,21,.65)),linear-gradient(180deg,rgba(12,2,25,.08),rgba(4,6,18,.35))}
 .title-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}.title-stars i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff;animation:spark 2.8s ease-in-out infinite}.title-stars i:nth-child(1){left:11%;top:16%}.title-stars i:nth-child(2){left:35%;top:8%;animation-delay:.5s}.title-stars i:nth-child(3){left:72%;top:18%;animation-delay:1s}.title-stars i:nth-child(4){left:85%;top:48%;animation-delay:1.4s}.title-stars i:nth-child(5){left:26%;top:70%;animation-delay:1.8s}.title-stars i:nth-child(6){left:63%;top:78%;animation-delay:2.2s}
 .title-shell{z-index:1;width:min(1240px,calc(100vw - 16px));height:min(820px,calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px));min-height:0;border-radius:28px;overflow:hidden;display:grid;grid-template-rows:50px minmax(0,1fr) 76px;background:linear-gradient(180deg,rgba(6,18,38,.82),rgba(7,15,31,.94));color:#fff}
@@ -1367,3 +1368,63 @@ body.blue-endless-rewind .actor.enemy .actor-sprite{animation:blueEndlessWarp .8
 @media (orientation:portrait){
   .blue-clock-echo{right:6px;top:5px;font-size:.62rem}
 }
+
+
+/* ---------- world crossing: scalable world ring ---------- */
+.world-warp-shell{max-width:1180px;grid-template-rows:auto minmax(0,1fr) auto;gap:10px}
+.world-warp-list{min-height:0;overflow:hidden;padding:0}
+.world-gate-layout{height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,1.36fr) minmax(260px,.64fr);gap:clamp(10px,2vw,24px);align-items:stretch;padding:4px}
+.world-ring-stage{--portal-size:clamp(88px,10vw,132px);position:relative;min-width:0;min-height:0;overflow:hidden;border-radius:24px;background:radial-gradient(circle at 50% 50%,rgba(89,171,255,.13) 0 9%,rgba(62,99,157,.08) 25%,rgba(3,11,25,.76) 61%,rgba(2,7,17,.94) 100%),repeating-radial-gradient(ellipse at center,transparent 0 15%,rgba(235,208,139,.025) 15.5% 16%,transparent 16.5% 27%);border:1px solid rgba(236,207,139,.23);isolation:isolate}
+.world-ring-stage::before{content:"";position:absolute;inset:-28%;z-index:-1;background:conic-gradient(from 25deg,transparent,rgba(106,230,255,.07),transparent 22%,rgba(238,191,92,.08),transparent 46%,rgba(166,91,255,.08),transparent 72%);animation:worldGateMist 18s linear infinite}
+.world-ring-stage::after{content:"";position:absolute;inset:9%;border-radius:50%;border:1px dashed rgba(244,216,151,.13);box-shadow:0 0 38px rgba(74,209,255,.07);pointer-events:none}
+.world-ring-orbit{position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
+.orbit-outer{width:84%;height:80%;border:1px solid rgba(233,205,137,.18);box-shadow:inset 0 0 25px rgba(255,214,116,.04),0 0 22px rgba(83,224,255,.06)}
+.orbit-inner{width:54%;height:50%;border:1px solid rgba(109,222,255,.12);border-style:dotted;animation:worldOrbit 24s linear infinite}
+.world-gate-core{position:absolute;z-index:2;left:50%;top:50%;width:clamp(92px,16vw,158px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;text-align:center;color:#e9f8ff;font:800 clamp(.58rem,1.1vw,.82rem)/1.28 Georgia,serif;letter-spacing:.13em;text-shadow:0 0 12px #73e9ff;background:radial-gradient(circle,#e9fbff 0 3%,#5ac9e8 4% 6%,rgba(42,126,178,.72) 7% 18%,rgba(24,53,92,.83) 36%,rgba(5,13,29,.96) 68%);border:1px solid rgba(164,239,255,.58);box-shadow:0 0 20px rgba(82,224,255,.35),0 0 55px rgba(66,125,255,.18),inset 0 0 28px rgba(255,255,255,.12)}
+.world-gate-core i{position:absolute;inset:8%;border-radius:50%;border:1px dashed rgba(255,231,169,.45);animation:worldOrbit 10s linear infinite}
+.world-gate-core span{position:relative;z-index:1}
+.world-ring-nodes{position:absolute;inset:0}
+.world-ring-node{--node-x:50%;--node-y:10%;position:absolute;z-index:4;left:var(--node-x);top:var(--node-y);width:var(--portal-size);height:var(--portal-size);padding:0;border:0;border-radius:50%;transform:translate(-50%,-50%) scale(.86);background:#071528;color:#fff;cursor:pointer;transition:left .56s cubic-bezier(.2,.82,.22,1),top .56s cubic-bezier(.2,.82,.22,1),transform .32s ease,filter .25s,opacity .25s;box-shadow:0 10px 24px rgba(0,0,0,.44);isolation:isolate}
+.world-portal-art{position:absolute;inset:7%;border-radius:50%;background-image:linear-gradient(rgba(4,11,24,.08),rgba(3,9,21,.32)),var(--portal-image);background-position:center;background-size:cover;filter:saturate(.88) brightness(.78);transition:filter .25s,transform .3s}
+.world-portal-rim{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(238,207,135,.63);box-shadow:inset 0 0 0 4px rgba(2,10,22,.78),inset 0 0 19px rgba(0,0,0,.78),0 0 10px rgba(242,202,110,.14)}
+.world-ring-node b{position:absolute;z-index:3;left:50%;top:47%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font:900 1.3rem/1 Georgia,"Yu Mincho",serif;background:rgba(5,18,36,.78);border:1px solid rgba(255,225,155,.58);text-shadow:0 2px 5px #000,0 0 10px rgba(255,220,130,.42);box-shadow:0 3px 12px rgba(0,0,0,.40)}
+.world-ring-node em{position:absolute;z-index:4;left:50%;bottom:-19px;transform:translateX(-50%);min-width:max-content;max-width:145px;padding:3px 8px;border-radius:999px;background:rgba(3,12,27,.90);border:1px solid rgba(237,209,145,.32);font-style:normal;font-size:.67rem;font-weight:900;white-space:nowrap;text-shadow:0 1px 3px #000}
+.world-ring-node strong{position:absolute;z-index:5;right:-7px;top:5px;padding:3px 6px;border-radius:999px;background:#8b263f;border:1px solid #ffd675;color:#fff0b6;font-size:.48rem;letter-spacing:.06em;box-shadow:0 0 12px rgba(255,99,127,.45)}
+.world-ring-node:hover,.world-ring-node:focus-visible{transform:translate(-50%,-50%) scale(.96);outline:none}.world-ring-node:hover .world-portal-art,.world-ring-node:focus-visible .world-portal-art{filter:saturate(1.08) brightness(.94)}
+.world-ring-node.selected{z-index:7;transform:translate(-50%,-50%) scale(1.10)}.world-ring-node.selected .world-portal-art{filter:saturate(1.18) brightness(1.03)}.world-ring-node.selected .world-portal-rim{border-color:#fff0ad;box-shadow:inset 0 0 0 4px rgba(2,10,22,.72),inset 0 0 16px rgba(0,0,0,.55),0 0 17px rgba(255,220,113,.55),0 0 35px rgba(77,221,255,.24)}
+.world-ring-node.current b{background:rgba(108,75,12,.82)}.world-ring-node.current em::after{content:" · 現在地";color:#f6d77f}
+.world-ring-node.locked{filter:grayscale(1);opacity:.42}.world-ring-node.locked .world-portal-art{filter:grayscale(1) brightness(.25)}.world-ring-node.locked b{color:#8793a5}.world-ring-node.locked em{color:#9ba6b5}
+.world-ring-node.departing{animation:worldPortalDepart .46s ease-in forwards}
+.world-gate-warping .world-ring-node:not(.departing){opacity:.16;transform:translate(-50%,-50%) scale(.62)}
+.world-gate-detail{min-height:0;align-self:center;padding:clamp(16px,2.4vw,28px);border-radius:22px;background:linear-gradient(180deg,rgba(17,38,66,.90),rgba(7,20,41,.94));border:1px solid rgba(238,209,144,.27);box-shadow:inset 0 0 32px rgba(0,0,0,.20),0 12px 30px rgba(0,0,0,.20)}
+.world-gate-detail small{display:block;color:#e7c56f;font-size:.60rem;font-weight:900;letter-spacing:.20em}.world-gate-detail h3{margin:5px 0 8px;font:700 clamp(1.55rem,3vw,2.45rem)/1 Georgia,"Yu Mincho",serif;color:#fff1c8}.world-gate-detail p{min-height:3.4em;margin:0 0 15px;color:#dce7f4;font-size:clamp(.75rem,1.1vw,.92rem);line-height:1.7}.world-gate-travel{width:100%;min-height:48px;border-radius:12px;border:1px solid rgba(255,222,143,.62);background:linear-gradient(180deg,#236fc4,#153f7c);color:#fff;font-weight:900;letter-spacing:.05em;cursor:pointer;box-shadow:0 7px 18px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.14)}.world-gate-travel:disabled{cursor:default;opacity:.48;filter:grayscale(.5)}.world-gate-travel:not(:disabled):hover{filter:brightness(1.12)}
+.world-gate-hint{margin-top:9px;text-align:center;color:#90a5bd;font-size:.58rem;line-height:1.35}
+.dense-world-ring{--portal-size:clamp(68px,8.3vw,104px)}
+@keyframes worldOrbit{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes worldGateMist{to{transform:rotate(360deg)}}
+@keyframes worldPortalDepart{0%{transform:translate(-50%,-50%) scale(1.10);filter:brightness(1)}55%{transform:translate(-50%,-50%) scale(1.32);filter:brightness(1.7)}100%{transform:translate(-50%,-50%) scale(2.4);filter:brightness(3);opacity:0}}
+
+@media (orientation:landscape) and (max-height:700px){
+  .world-warp-shell{gap:6px}.world-gate-layout{grid-template-columns:minmax(0,1.45fr) minmax(225px,.55fr);gap:8px;padding:0}.world-ring-stage{--portal-size:clamp(72px,10.2vh,96px);border-radius:16px}.world-gate-core{width:clamp(70px,18vh,112px)}.world-ring-node b{width:34px;height:34px;font-size:1.05rem}.world-ring-node em{bottom:-15px;font-size:.56rem;padding:2px 6px}.world-gate-detail{padding:12px 14px;border-radius:15px}.world-gate-detail h3{font-size:1.35rem;margin:3px 0 5px}.world-gate-detail p{font-size:.68rem;line-height:1.45;margin-bottom:9px}.world-gate-travel{min-height:34px;font-size:.74rem}.world-gate-hint{font-size:.49rem;margin-top:5px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .world-warp-screen{overflow:hidden!important}.world-warp-shell{grid-template-rows:34px minmax(0,1fr) 29px;gap:3px}.world-gate-layout{grid-template-columns:minmax(0,1.55fr) minmax(190px,.45fr);gap:5px}.world-ring-stage{--portal-size:clamp(60px,22vh,74px);border-radius:11px}.world-ring-stage::after{inset:8%}.world-gate-core{width:clamp(54px,19vh,72px);font-size:.43rem}.world-ring-node b{width:27px;height:27px;font-size:.82rem}.world-ring-node em{bottom:-12px;font-size:.46rem;padding:1px 5px}.world-ring-node strong{font-size:.38rem;padding:2px 4px}.world-gate-detail{padding:7px 9px;border-radius:10px}.world-gate-detail small{font-size:.43rem}.world-gate-detail h3{font-size:1rem;margin:2px 0 4px}.world-gate-detail p{min-height:0;font-size:.56rem;line-height:1.32;margin-bottom:5px}.world-gate-travel{min-height:27px;border-radius:7px;font-size:.62rem}.world-gate-hint{display:none}
+}
+@media (orientation:portrait){
+  .world-warp-screen{overflow:hidden!important;align-items:center!important}.world-warp-shell{height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 8px)!important;min-height:0!important;grid-template-rows:auto minmax(0,1fr) auto}.world-gate-layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1.38fr) minmax(112px,.62fr);gap:7px;padding:0}.world-ring-stage{--portal-size:clamp(66px,21vw,100px);min-height:0;border-radius:17px}.world-gate-core{width:clamp(74px,24vw,118px)}.world-ring-node em{font-size:.55rem;bottom:-14px}.world-gate-detail{align-self:stretch;padding:10px 14px;text-align:center;border-radius:14px}.world-gate-detail h3{font-size:1.35rem;margin:3px 0 5px}.world-gate-detail p{min-height:0;margin:0 auto 8px;max-width:520px;font-size:.68rem;line-height:1.45}.world-gate-travel{width:min(360px,100%);min-height:36px}.world-gate-hint{display:none}
+}
+@media (orientation:portrait) and (max-width:420px){
+  .world-gate-layout{grid-template-rows:minmax(0,1.48fr) minmax(106px,.52fr)}.world-ring-stage{--portal-size:clamp(58px,20vw,78px)}.world-gate-core{width:clamp(65px,22vw,88px);font-size:.47rem}.world-ring-node b{width:29px;height:29px;font-size:.88rem}.world-ring-node em{bottom:-12px;font-size:.47rem;padding:2px 5px}.world-gate-detail{padding:8px 10px}.world-gate-detail small{font-size:.46rem}.world-gate-detail h3{font-size:1.08rem}.world-gate-detail p{font-size:.60rem;line-height:1.35;margin-bottom:6px}.world-gate-travel{min-height:31px;font-size:.68rem}
+}
+
+
+/* Grade target must remain visible on every title viewport. */
+@media (orientation:landscape) and (max-height:700px){.title-caption{display:flex!important;margin-top:6px}.title-caption p{font-size:.58rem}}
+@media (orientation:landscape) and (max-height:500px){.title-caption{display:flex!important;margin-top:3px;gap:5px}.title-caption p{font-size:.48rem}.title-caption span{display:block!important}}
+/* The ring itself must not become a focus-scroll container when a portal is selected. */
+.world-warp-list,.world-ring-stage{overflow:clip}
+/* Dense 7–8 world rings reserve extra separation on small screens. */
+@media (orientation:landscape) and (max-height:700px){.world-ring-stage.dense-world-ring{--portal-size:clamp(56px,8.5vh,72px)}}
+@media (orientation:landscape) and (max-height:500px){.world-ring-stage.dense-world-ring{--portal-size:clamp(44px,15vh,50px)}.dense-world-ring .world-ring-node b{width:22px;height:22px;font-size:.68rem}.dense-world-ring .world-ring-node em{font-size:.40rem;bottom:-10px}}
+@media (orientation:portrait){.world-ring-stage.dense-world-ring{--portal-size:clamp(54px,15vw,76px)}}
+@media (orientation:portrait) and (max-width:420px){.world-ring-stage.dense-world-ring{--portal-size:clamp(43px,14vw,50px)}.dense-world-ring .world-ring-node b{width:23px;height:23px;font-size:.70rem}.dense-world-ring .world-ring-node em{font-size:.39rem;bottom:-9px}}

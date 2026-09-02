@@ -66,7 +66,7 @@
 
   const BLUE_STAGES=[
     {name:'昔ながらの田舎町',key:'blue1',count:15,normalCount:10,bossCount:5,bgm:'ひと夏の冒険.mp3',bossBgm:'残夏.mp3',bg:'blue_stage1.png',boss:['夏草の甲王・オオカブト','boss_blue_1.png']},
-    {name:'山と秘密基地',key:'blue2',count:15,normalCount:10,bossCount:5,bgm:'あの頃の秘密基地.mp3',bossBgm:'残夏.mp3',bg:'blue_stage2.png',boss:['秘密基地の守護獣・ヤマヌシ','boss_blue_2.png']},
+    {name:'山と秘密基地',key:'blue2',count:15,normalCount:10,bossCount:5,bgm:'あの頃の秘密基地.mp3',bossBgm:'残夏.mp3',bg:'blue_stage2.png',boss:['秘密基地の蜂王・オオスズメ','boss_blue_2.png']},
     {name:'夏祭り',key:'blue3',count:15,normalCount:10,bossCount:5,bgm:'戻れない夏祭り.mp3',bossBgm:'残夏.mp3',bg:'blue_stage3.png',boss:['戻れない祭主・ヨイマツリ','boss_blue_3.png']},
     {name:'夕暮れの公園',key:'blue4',count:15,normalCount:10,bossCount:5,bgm:'みんな、どこへ行ったの？.mp3',bossBgm:'残夏.mp3',bg:'blue_stage4.png',boss:['逢魔の時守・ユウグレ','boss_blue_4.png']},
     {name:'かつて幸せだった家',key:'blue5',count:15,normalCount:10,bossCount:5,bgm:'遏･繧翫◆縺上↑縺.mp3',bossBgm:'対峙.mp3',bg:'blue_stage5_before.png',boss:['永夏の残像・トコナツ','boss_blue_5.png']}
@@ -103,11 +103,11 @@
     [['草履童',1],['襖小僧',1],['屏風の化生',2],['甲冑の付喪神',2],['落武者の霊',3],['影武者・朧',4],['修羅鎧',5]]
   ];
   const BLUE_MONSTER_NAMES=[
-    [['こがねカブリン',1],['おおあごクワガタ',1],['そうげんトビトンボ',2],['ぴょこんアマガエル',2],['せせらぎザリガニ',3],['すすきのバッタ将',4],['天翔けるオニヤンマ',5]],
-    [['ぶんぶんスズバチ',1],['じめりムカデラ',1],['いわかげアオヘビ',2],['からみ糸グモ',2],['鎌脚のカマギリ',3],['猪突の山牙',4],['深山毒王ムカオロチ',5]],
-    [['ふわり狐面',1],['ゆらぎ金魚灯',1],['さまよい提灯',2],['ぬけがら浴衣',2],['夜店のかげ売り',3],['花火くらい',4],['祭囃子の面神',5]],
-    [['カチコチ時計虫',1],['かえりの影ぼうし',1],['こくばん文字霊',2],['からんころん上ばき',2],['夕焼けチャイム',3],['置き去りランドセル',4],['黄昏の帰宅者',5]],
-    [['うすれた家族写真',1],['からっぽ麦茶びん',1],['ねむれぬ扇風機',2],['つみあげダンボル',2],['とざしたカーテン影',3],['ちらかった書類影',4],['もうひとりの夏少年',5]]
+    [['くろがねカブリン',1],['おおあごクワガタ',1],['そうげんトビトンボ',2],['ぴょこんアマガエル',2],['せせらぎザリガニ',3],['すすきのバッタ将',4],['天翔けるオニヤンマ',5]],
+    [['ぶんぶんスズバチ',1],['いわかげアオヘビ',1],['からみ糸グモ',2],['じめりムカデラ',2],['猪突の山牙',3],['鎌脚のカマギリ',4],['翠羽のヤママユ',5]],
+    [['きつね面こぞう',1],['ゆらぎ金魚灯',1],['提灯ぐも',2],['ぬけがら浴衣',2],['お面喰らい',3],['花火くらい',4],['祭囃子の面神',5]],
+    [['ひとりブランコ',1],['すべり台こぞう',1],['かえり道の影ぼうし',2],['こくばん文字霊',2],['カチコチ時計霊',3],['夕暮れ遊具の影',4],['黄昏の帰宅者',5]],
+    [['帰れない玄関',1],['だれもいない食卓',1],['ねむれぬ布団塚',2],['うすれた家族写真',2],['とざしたカーテン影',3],['終わらない宿題机',4],['散らかり部屋のヌシ',5]]
   ];
   const SILVER_MONSTER_NAMES=[
     [['ゆきころがし',1],['こおりツノウサギ',1],['しろがねオオカミ',2],['雪灯りの精',2],['氷牙トナカイ',3],['吹雪の白梟',4],['永久凍土の巨獣',5]],
@@ -479,7 +479,7 @@ function markWorldVisited(world){
     els.titleGold.textContent=`${effectiveGold()} G`;
     els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':'銀の世界';
     els.titleTrackName.textContent=titleTrackLabel();
-    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'学習のめやす｜小学校1〜2年生中心':mode==='back'?'学習のめやす｜小学校2〜3年生中心':mode==='crimson'?'学習のめやす｜小学校3〜4年生':mode==='blue'?'学習のめやす｜小学校5年生':'学習のめやす｜小学校6年生中心';
+    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':'小学6年生対象';
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
     const restartTotal=mode==='crimson'?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
@@ -502,22 +502,110 @@ function markWorldVisited(world){
 
   function renderWorldWarp(){
     if(!els.worldWarpList)return;
+    // The world crossing UI is data-driven. Adding 翠・終・白 later only requires
+    // appending their world records; angular placement and compact sizing adapt to N.
     const worlds=[
-      {key:'front',name:'光の世界',desc:'剣と魔法が息づく、冒険のはじまりの世界',unlocked:true},
-      {key:'back',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界',unlocked:isBackWorldUnlocked()},
-      {key:'crimson',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界',unlocked:isCrimsonWorldUnlocked()},
-      {key:'blue',name:'蒼の世界',desc:'あの日の影に隠された、夏の世界',unlocked:isBlueWorldUnlocked()},
-      {key:'silver',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',unlocked:isSilverWorldUnlocked()}
+      {key:'front',name:'光の世界',short:'光',desc:'剣と魔法が息づく、冒険のはじまりの世界',image:'bg_forest.png',unlocked:true},
+      {key:'back',name:'裏の世界',short:'裏',desc:'時空の裂け目に広がる、もうひとつの世界',image:'back_map.png',unlocked:isBackWorldUnlocked()},
+      {key:'crimson',name:'紅の世界',short:'紅',desc:'妖怪と剣客が息づく、晩秋に染まった世界',image:'crimson_stage1.png',unlocked:isCrimsonWorldUnlocked()},
+      {key:'blue',name:'蒼の世界',short:'蒼',desc:'あの日の影に隠された、夏の世界',image:'blue_stage1.png',unlocked:isBlueWorldUnlocked()},
+      {key:'silver',name:'銀の世界',short:'銀',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',image:'silver_stage1.png',unlocked:isSilverWorldUnlocked()}
     ];
-    els.worldWarpList.innerHTML='';
-    worlds.forEach(w=>{
+    let selectedIndex=Math.max(0,worlds.findIndex(w=>w.key===mode));
+    els.worldWarpList.innerHTML=`
+      <div class="world-gate-layout">
+        <div class="world-ring-stage" role="group" aria-label="世界環">
+          <div class="world-ring-orbit orbit-outer" aria-hidden="true"></div>
+          <div class="world-ring-orbit orbit-inner" aria-hidden="true"></div>
+          <div class="world-gate-core" aria-hidden="true"><i></i><span>WORLD<br>GATE</span></div>
+          <div class="world-ring-nodes"></div>
+        </div>
+        <section class="world-gate-detail" aria-live="polite">
+          <small id="worldGateStatus">CURRENT WORLD</small>
+          <h3 id="worldGateName">世界を選択</h3>
+          <p id="worldGateDesc"></p>
+          <button id="worldGateTravelBtn" class="world-gate-travel" type="button">この世界へ渡る</button>
+          <div class="world-gate-hint">世界を選ぶと、環がその世界へ回転します</div>
+        </section>
+      </div>`;
+    const stage=els.worldWarpList.querySelector('.world-ring-stage');
+    const nodeLayer=els.worldWarpList.querySelector('.world-ring-nodes');
+    const status=els.worldWarpList.querySelector('#worldGateStatus');
+    const name=els.worldWarpList.querySelector('#worldGateName');
+    const desc=els.worldWarpList.querySelector('#worldGateDesc');
+    const travel=els.worldWarpList.querySelector('#worldGateTravelBtn');
+    const nodes=[];
+    stage.style.setProperty('--world-count',String(worlds.length));
+    stage.classList.toggle('dense-world-ring',worlds.length>=7);
+
+    worlds.forEach((w,i)=>{
+      const b=document.createElement('button');
+      b.type='button';
       const isNew=isWorldMarkedNew(w.key);
-      const b=document.createElement('button');b.type='button';b.className=`world-warp-card${w.unlocked?'':' locked'}${mode===w.key?' current':''}${isNew?' new-world':''}`;
-      b.innerHTML=`<span><small>${w.unlocked?w.desc:'LOCKED'}</small><b>${w.unlocked?w.name:'？？？'}</b></span><strong>${w.unlocked?(mode===w.key?'現在地':(isNew?'NEW · この世界へ':'この世界へ')):'未解放'}</strong>`;
-      b.disabled=!w.unlocked||mode===w.key;
-      if(w.unlocked&&mode!==w.key)b.onclick=async()=>{markWorldVisited(w.key);mode=w.key;await transitionTo(()=>{renderTitle();showOnly(els.titleScreen);},mode==='back'?'back':'normal',1500);};
-      els.worldWarpList.appendChild(b);
+      b.className=`world-ring-node${w.unlocked?'':' locked'}${mode===w.key?' current':''}${isNew?' new-world':''}`;
+      b.dataset.world=w.key;
+      b.style.setProperty('--portal-image',`url('./assets/${w.image}')`);
+      b.innerHTML=`<span class="world-portal-art" aria-hidden="true"></span><span class="world-portal-rim" aria-hidden="true"></span><b>${w.unlocked?w.short:'?'}</b><em>${w.unlocked?w.name:'？？？'}</em>${isNew&&w.unlocked?'<strong>NEW</strong>':''}`;
+      b.setAttribute('aria-label',w.unlocked?`${w.name}${mode===w.key?'、現在地':''}`:'未解放の世界');
+      b.onclick=()=>{selectedIndex=i;updateSelection();};
+      nodeLayer.appendChild(b);nodes.push(b);
     });
+
+    const positionNodes=()=>{
+      const n=worlds.length;
+      const step=360/n;
+      const box=stage.getBoundingClientRect();
+      const portal=Math.max(0,...nodes.map(n=>n.getBoundingClientRect().width))||78;
+      const measurable=box.width>40&&box.height>40;
+      // Reserve room for the largest (selected) portal and its caption.
+      const rx=measurable?Math.max(28,box.width/2-portal/2-18):0;
+      const ry=measurable?Math.max(24,box.height/2-portal/2-12):0;
+      nodes.forEach((b,i)=>{
+        // Put the selected portal at 12 o'clock and rotate the rest around it.
+        const deg=-90+(i-selectedIndex)*step;
+        const rad=deg*Math.PI/180;
+        if(measurable){
+          b.style.setProperty('--node-x',`${(box.width/2+Math.cos(rad)*rx).toFixed(2)}px`);
+          b.style.setProperty('--node-y',`${(box.height/2+Math.sin(rad)*ry).toFixed(2)}px`);
+        }else{
+          b.style.setProperty('--node-x',`${(50+Math.cos(rad)*37).toFixed(4)}%`);
+          b.style.setProperty('--node-y',`${(50+Math.sin(rad)*28).toFixed(4)}%`);
+        }
+        b.style.setProperty('--node-angle',`${deg.toFixed(3)}deg`);
+      });
+    };
+    const updateSelection=()=>{
+      const w=worlds[selectedIndex];
+      const isCurrent=w.key===mode;
+      const isNew=isWorldMarkedNew(w.key);
+      nodes.forEach((b,i)=>b.classList.toggle('selected',i===selectedIndex));
+      positionNodes();
+      status.textContent=!w.unlocked?'LOCKED WORLD':isCurrent?'CURRENT WORLD':isNew?'NEW WORLD':'DESTINATION';
+      name.textContent=w.unlocked?w.name:'？？？';
+      desc.textContent=w.unlocked?w.desc:'この世界はまだ解放されていません。';
+      travel.hidden=!w.unlocked;
+      travel.disabled=!w.unlocked||isCurrent;
+      travel.textContent=isCurrent?'現在いる世界':isNew?'新しい世界へ渡る':'この世界へ渡る';
+      travel.onclick=async()=>{
+        if(!w.unlocked||w.key===mode)return;
+        travel.disabled=true;
+        stage.classList.add('world-gate-warping');
+        nodes[selectedIndex].classList.add('departing');
+        await sleep(430);
+        markWorldVisited(w.key);mode=w.key;
+        await transitionTo(()=>{renderTitle();showOnly(els.titleScreen);},mode==='back'?'back':'normal',1500);
+      };
+    };
+    els.worldWarpList.onkeydown=e=>{
+      if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
+      e.preventDefault();
+      const dir=(e.key==='ArrowLeft'||e.key==='ArrowUp')?-1:1;
+      selectedIndex=(selectedIndex+dir+worlds.length)%worlds.length;
+      updateSelection();nodes[selectedIndex].focus({preventScroll:true});
+    };
+    updateSelection();
+    requestAnimationFrame(positionNodes);
+    if(typeof ResizeObserver!=='undefined'){const ro=new ResizeObserver(()=>positionNodes());ro.observe(stage);}
   }
 
   function stopMusicPlayer(){
@@ -1764,7 +1852,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function prepareMapOverlay(initial=false){
     els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':'SILVER WORLD';
     els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':'銀の世界';
-    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.svg':'./assets/silver_map.png';
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.png':'./assets/silver_map.png';
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
     const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
     const mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'];
@@ -2159,7 +2247,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     ],
     blue:[
       {type:'blue-sumo',name:'甲王大相撲',time:60},
-      {type:'blue-trail-block',name:'獣道封鎖',time:60},
+      {type:'blue-trail-block',name:'巣道封鎖',time:60},
       {type:'blue-lantern-out',name:'宵祭りの灯落とし',time:60},
       {type:'blue-return-bell',name:'帰刻の鐘',time:60},
       {type:'blue-endless-summer',name:'終わらない夏休み',time:60}
