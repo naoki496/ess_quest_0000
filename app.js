@@ -493,7 +493,7 @@ function markWorldVisited(world){
     }else if(mode==='crimson'){
       els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }else if(mode==='blue'){
-      els.titleHero.src='./assets/blue_hero.png';els.titleEyebrow.textContent='BLUE SUMMER / FOURTH QUEST';els.titleSubtitle.innerHTML='青空の下、木の棒を手にひと夏の冒険へ。<br>田舎町から、夏の終わりへ進んでいく。';setMenuButton(els.playBtn,'☀','蒼の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
+      els.titleHero.src='./assets/blue_hero.png';els.titleEyebrow.textContent='BLUE SUMMER / FOURTH QUEST';els.titleSubtitle.innerHTML='青空の下、少年はひと夏の冒険へ。<br>ミステリーが潜む夏の終わりへ進んでいく。';setMenuButton(els.playBtn,'☀','蒼の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }else{
       els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FIFTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }
@@ -506,7 +506,7 @@ function markWorldVisited(world){
       {key:'front',name:'光の世界',desc:'剣と魔法が息づく、冒険のはじまりの世界',unlocked:true},
       {key:'back',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界',unlocked:isBackWorldUnlocked()},
       {key:'crimson',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界',unlocked:isCrimsonWorldUnlocked()},
-      {key:'blue',name:'蒼の世界',desc:'少年のひと夏をたどる、懐かしくも不思議な世界',unlocked:isBlueWorldUnlocked()},
+      {key:'blue',name:'蒼の世界',desc:'あの日の影に隠された、夏の世界',unlocked:isBlueWorldUnlocked()},
       {key:'silver',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',unlocked:isSilverWorldUnlocked()}
     ];
     els.worldWarpList.innerHTML='';
