@@ -130,20 +130,31 @@
       <div><small>BGM COLLECTION</small><h2 id="musicTitle">BGM鑑賞</h2></div>
       <button id="musicCloseBtn" class="music-close-btn" type="button" aria-label="閉じる">×</button>
     </header>
-    <div class="music-world-tabs" role="tablist" aria-label="世界を選択">
-      <button id="musicFrontTab" type="button" role="tab">光の世界</button>
-      <button id="musicBackTab" type="button" role="tab">裏の世界</button>
-      <button id="musicCrimsonTab" type="button" role="tab">紅の世界</button>
-      <button id="musicBlueTab" type="button" role="tab">蒼の世界</button>
-      <button id="musicSilverTab" type="button" role="tab">銀の世界</button>
-    </div>
+    <div id="musicWorldTabs" class="music-world-tabs" role="tablist" aria-label="世界を選択"></div>
+    <section class="music-world-summary" aria-live="polite">
+      <div class="music-world-summary-copy">
+        <small id="musicWorldStatus">WORLD LIBRARY</small>
+        <strong id="musicWorldTitle">光の世界</strong>
+      </div>
+      <div class="music-unlock-summary">
+        <span id="musicUnlockCount">0 / 7 TRACKS UNLOCKED</span>
+        <div class="music-unlock-meter" aria-hidden="true"><i id="musicUnlockFill"></i></div>
+      </div>
+    </section>
     <p class="music-note">一度到達したステージやボス戦のBGMが解禁されます。</p>
     <div id="musicTrackList" class="music-track-list"></div>
     <footer class="music-player-bar">
-      <div class="music-now">
-        <small>NOW PLAYING</small>
-        <strong id="musicNowTitle">曲を選んでください</strong>
-        <span id="musicNowWhere">解禁済みの曲をタップすると再生します。</span>
+      <div class="music-player-main">
+        <div class="music-now">
+          <small>NOW PLAYING</small>
+          <strong id="musicNowTitle">曲を選んでください</strong>
+          <span id="musicNowWhere">解禁済みの曲をタップすると再生します。</span>
+        </div>
+        <div class="music-seek-row">
+          <span id="musicElapsed">0:00</span>
+          <input id="musicSeek" type="range" min="0" max="1000" value="0" step="1" aria-label="再生位置" disabled>
+          <span id="musicDuration">--:--</span>
+        </div>
       </div>
       <div class="music-controls">
         <button id="musicPrevBtn" type="button" aria-label="前の曲">◀</button>

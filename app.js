@@ -131,7 +131,7 @@
     titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),titleGradeGuide:$('titleGradeGuide'),
     playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
-    musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicFrontTab:$('musicFrontTab'),musicBackTab:$('musicBackTab'),musicCrimsonTab:$('musicCrimsonTab'),musicBlueTab:$('musicBlueTab'),musicSilverTab:$('musicSilverTab'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
+    musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicWorldTabs:$('musicWorldTabs'),musicWorldStatus:$('musicWorldStatus'),musicWorldTitle:$('musicWorldTitle'),musicUnlockCount:$('musicUnlockCount'),musicUnlockFill:$('musicUnlockFill'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicElapsed:$('musicElapsed'),musicDuration:$('musicDuration'),musicSeek:$('musicSeek'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     worldWarpList:$('worldWarpList'),worldWarpBackBtn:$('worldWarpBackBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
@@ -157,7 +157,7 @@
   musicPlayer.loop=true;
   musicPlayer.preload='auto';
   musicPlayer.volume=.38;
-  let musicWorld='front',musicTrackIndex=-1;
+  let musicWorld='front',musicSelectedWorld='front',musicTrackIndex=-1;
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
@@ -608,36 +608,85 @@ function markWorldVisited(world){
     if(typeof ResizeObserver!=='undefined'){const ro=new ResizeObserver(()=>positionNodes());ro.observe(stage);}
   }
 
+  const MUSIC_WORLD_SLOTS=[
+    {key:'front',short:'光',name:'光の世界'},
+    {key:'back',short:'裏',name:'裏の世界'},
+    {key:'crimson',short:'紅',name:'紅の世界'},
+    {key:'blue',short:'蒼',name:'蒼の世界'},
+    {key:'silver',short:'銀',name:'銀の世界'},
+    {key:'future-1',short:'?',name:'？？？',future:true},
+    {key:'future-2',short:'?',name:'？？？',future:true},
+    {key:'future-3',short:'?',name:'？？？',future:true}
+  ];
+  function musicWorldSlot(key){return MUSIC_WORLD_SLOTS.find(w=>w.key===key)||MUSIC_WORLD_SLOTS[0];}
+  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver'].includes(key);}
+  function isMusicSlotUnlocked(key){return isKnownMusicWorld(key)&&isMusicWorldVisible(key);}
+  function formatMusicTime(seconds){
+    const n=Number(seconds);if(!Number.isFinite(n)||n<0)return'--:--';
+    const total=Math.floor(n),m=Math.floor(total/60),sec=total%60;return`${m}:${String(sec).padStart(2,'0')}`;
+  }
+  function updateMusicSeek(){
+    if(!els.musicSeek)return;
+    const duration=Number(musicPlayer.duration),current=Number(musicPlayer.currentTime);
+    const valid=Number.isFinite(duration)&&duration>0&&musicTrackIndex>=0;
+    els.musicSeek.disabled=!valid;
+    els.musicSeek.value=valid?String(Math.round(Math.max(0,Math.min(1,current/duration))*1000)):'0';
+    if(els.musicElapsed)els.musicElapsed.textContent=musicTrackIndex>=0&&Number.isFinite(current)?formatMusicTime(current):'0:00';
+    if(els.musicDuration)els.musicDuration.textContent=valid?formatMusicTime(duration):'--:--';
+  }
   function stopMusicPlayer(){
     musicPlayer.pause();
     try{musicPlayer.currentTime=0;}catch{}
     if(els.musicPlayBtn)els.musicPlayBtn.textContent='▶';
     document.querySelectorAll('.music-track-row.playing').forEach(x=>x.classList.remove('playing'));
+    updateMusicSeek();
+  }
+  function renderMusicWorldTabs(){
+    if(!els.musicWorldTabs)return;
+    els.musicWorldTabs.innerHTML='';
+    for(const slot of MUSIC_WORLD_SLOTS){
+      const unlocked=isMusicSlotUnlocked(slot.key);
+      const selected=musicSelectedWorld===slot.key;
+      const b=document.createElement('button');b.type='button';b.role='tab';b.dataset.musicWorld=slot.key;
+      b.className=`music-world-tab${selected?' active':''}${unlocked?'':' locked'}`;
+      b.textContent=unlocked?slot.short:'?';
+      b.setAttribute('aria-selected',selected?'true':'false');
+      b.setAttribute('aria-label',unlocked?slot.name:'未解放の世界');
+      b.title=unlocked?slot.name:'？？？';
+      b.onclick=()=>selectMusicWorldSlot(slot.key);
+      els.musicWorldTabs.appendChild(b);
+    }
   }
   function renderMusicPlayer(){
     if(!els.musicTrackList)return;
-    const tracks=musicTracks(musicWorld);
-    if(!isMusicWorldVisible(musicWorld)){musicWorld='front';musicTrackIndex=-1;stopMusicPlayer();}
-    els.musicFrontTab.hidden=false;
-    els.musicBackTab.hidden=!isMusicWorldVisible('back');
-    els.musicFrontTab.classList.toggle('active',musicWorld==='front');
-    els.musicBackTab.classList.toggle('active',musicWorld==='back');
-    if(els.musicCrimsonTab){els.musicCrimsonTab.hidden=!isMusicWorldVisible('crimson');els.musicCrimsonTab.classList.toggle('active',musicWorld==='crimson');}
-    if(els.musicBlueTab){els.musicBlueTab.hidden=!isMusicWorldVisible('blue');els.musicBlueTab.classList.toggle('active',musicWorld==='blue');}
-    if(els.musicSilverTab){els.musicSilverTab.hidden=!isMusicWorldVisible('silver');els.musicSilverTab.classList.toggle('active',musicWorld==='silver');}
-    els.musicFrontTab.setAttribute('aria-selected',musicWorld==='front'?'true':'false');
-    els.musicBackTab.setAttribute('aria-selected',musicWorld==='back'?'true':'false');
-    els.musicBackTab.setAttribute('aria-hidden',els.musicBackTab.hidden?'true':'false');
-    if(els.musicCrimsonTab){els.musicCrimsonTab.setAttribute('aria-selected',musicWorld==='crimson'?'true':'false');els.musicCrimsonTab.setAttribute('aria-hidden',els.musicCrimsonTab.hidden?'true':'false');}
-    if(els.musicBlueTab){els.musicBlueTab.setAttribute('aria-selected',musicWorld==='blue'?'true':'false');els.musicBlueTab.setAttribute('aria-hidden',els.musicBlueTab.hidden?'true':'false');}
-    if(els.musicSilverTab){els.musicSilverTab.setAttribute('aria-selected',musicWorld==='silver'?'true':'false');els.musicSilverTab.setAttribute('aria-hidden',els.musicSilverTab.hidden?'true':'false');}
+    if(!MUSIC_WORLD_SLOTS.some(w=>w.key===musicSelectedWorld))musicSelectedWorld='front';
+    const selected=musicWorldSlot(musicSelectedWorld);
+    const selectedUnlocked=isMusicSlotUnlocked(selected.key);
+    if(selectedUnlocked&&musicWorld!==selected.key){musicWorld=selected.key;musicTrackIndex=-1;stopMusicPlayer();}
+    if(!isMusicWorldVisible(musicWorld)){musicWorld='front';musicSelectedWorld='front';musicTrackIndex=-1;stopMusicPlayer();}
+    renderMusicWorldTabs();
+    const card=els.musicOverlay?.querySelector('.music-card');if(card)card.dataset.musicWorld=selectedUnlocked?selected.key:'locked';
+    if(els.musicWorldStatus)els.musicWorldStatus.textContent=selectedUnlocked?'WORLD LIBRARY':'LOCKED WORLD';
+    if(els.musicWorldTitle)els.musicWorldTitle.textContent=selectedUnlocked?selected.name:'？？？';
     els.musicTrackList.innerHTML='';
+    if(!selectedUnlocked){
+      if(els.musicUnlockCount)els.musicUnlockCount.textContent='この世界の音楽はまだ解放されていません。';
+      if(els.musicUnlockFill)els.musicUnlockFill.style.width='0%';
+      els.musicTrackList.innerHTML='<div class="music-locked-world-message"><strong>？？？</strong><span>冒険を進めると、この世界の音楽が姿を現します。</span></div>';
+      els.musicNowTitle.textContent='曲を選んでください';els.musicNowWhere.textContent='解放済みの世界からBGMを選択できます。';
+      els.musicPrevBtn.disabled=true;els.musicPlayBtn.disabled=true;els.musicNextBtn.disabled=true;els.musicStopBtn.disabled=true;updateMusicSeek();return;
+    }
+    const tracks=musicTracks(musicWorld);
+    const unlockedIndices=tracks.map((t,i)=>isMusicUnlocked(musicWorld,t.id)?i:-1).filter(i=>i>=0);
+    const unlockedCount=unlockedIndices.length;
+    if(els.musicUnlockCount)els.musicUnlockCount.textContent=`${unlockedCount} / ${tracks.length} TRACKS UNLOCKED`;
+    if(els.musicUnlockFill)els.musicUnlockFill.style.width=`${tracks.length?unlockedCount/tracks.length*100:0}%`;
     tracks.forEach((track,i)=>{
       const unlocked=isMusicUnlocked(musicWorld,track.id);
       const row=document.createElement('button');
       row.type='button';row.className=`music-track-row${unlocked?'':' locked'}${i===musicTrackIndex&&!musicPlayer.paused?' playing':''}`;
       row.disabled=!unlocked;
-      row.innerHTML=`<span class="music-order">${track.label}</span><span class="music-track-copy"><b>${unlocked?track.title:'？？？？？？'}</b><small>${track.where}</small></span><span class="music-track-state">${unlocked?'▶':'LOCK'}</span>`;
+      row.innerHTML=`<span class="music-order">${track.label}</span><span class="music-track-copy"><b>${unlocked?track.title:'？？？？？？'}</b><small>${unlocked?track.where:'未解放'}</small></span><span class="music-track-state">${unlocked?'▶':'LOCK'}</span>`;
       if(unlocked)row.onclick=()=>playMusicTrack(i,true);
       els.musicTrackList.appendChild(row);
     });
@@ -647,14 +696,15 @@ function markWorldVisited(world){
     }else{
       els.musicNowTitle.textContent='曲を選んでください';els.musicNowWhere.textContent='解禁済みの曲をタップすると再生します。';
     }
-    const unlockedIndices=tracks.map((t,i)=>isMusicUnlocked(musicWorld,t.id)?i:-1).filter(i=>i>=0);
     const has=unlockedIndices.length>0;
     els.musicPrevBtn.disabled=!has;els.musicPlayBtn.disabled=!has;els.musicNextBtn.disabled=!has;els.musicStopBtn.disabled=musicTrackIndex<0;
     els.musicPlayBtn.textContent=musicTrackIndex>=0&&!musicPlayer.paused?'Ⅱ':'▶';
+    updateMusicSeek();
   }
   async function playMusicTrack(index,restart=false){
     const tracks=musicTracks(musicWorld),track=tracks[index];
     if(!track||!isMusicUnlocked(musicWorld,track.id))return;
+    musicSelectedWorld=musicWorld;
     const src=`./assets/${track.file}`;
     try{
       const changed=musicTrackIndex!==index||!decodeURIComponent(musicPlayer.src||'').endsWith(`/assets/${track.file}`);
@@ -666,6 +716,7 @@ function markWorldVisited(world){
     renderMusicPlayer();
   }
   function moveMusicTrack(direction){
+    if(!isMusicSlotUnlocked(musicSelectedWorld))return;
     const tracks=musicTracks(musicWorld),allowed=tracks.map((t,i)=>isMusicUnlocked(musicWorld,t.id)?i:-1).filter(i=>i>=0);
     if(!allowed.length)return;
     let pos=allowed.indexOf(musicTrackIndex);
@@ -679,17 +730,20 @@ function markWorldVisited(world){
     curtain.hidden=false;curtain.className='scene-curtain entering';void curtain.offsetWidth;
     await sleep(260);curtain.className='scene-curtain covered';
     await transitionTo(()=>{
-      if(opening){musicWorld=isMusicWorldVisible(mode)?mode:'front';musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;}
-      else{stopMusicPlayer();musicTrackIndex=-1;els.musicOverlay.hidden=true;renderTitle();}
+      if(opening){musicWorld=isMusicWorldVisible(mode)?mode:'front';musicSelectedWorld=musicWorld;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;}
+      else{stopMusicPlayer();musicTrackIndex=-1;musicSelectedWorld=musicWorld;els.musicOverlay.hidden=true;renderTitle();}
     },mode==='back'?'back':'normal',1450);
     await sleep(70);curtain.className='scene-curtain leaving';await sleep(420);curtain.hidden=true;curtain.className='scene-curtain';
   }
   async function openMusicPlayer(){if(!els.musicOverlay.hidden)return;await transitionMusicOverlay(true);}
   async function closeMusicPlayer(){if(els.musicOverlay.hidden)return;await transitionMusicOverlay(false);}
-  function switchMusicWorld(world){
-    if(!isMusicWorldVisible(world)||musicWorld===world)return;
-    stopMusicPlayer();musicTrackIndex=-1;musicWorld=world;renderMusicPlayer();
+  function selectMusicWorldSlot(world){
+    if(musicSelectedWorld===world)return;
+    stopMusicPlayer();musicTrackIndex=-1;musicSelectedWorld=world;
+    if(isMusicSlotUnlocked(world))musicWorld=world;
+    renderMusicPlayer();
   }
+  function switchMusicWorld(world){if(isMusicSlotUnlocked(world))selectMusicWorldSlot(world);}
 
   function renderDebugPanel(){
     if(!els.debugOverlay)return;
@@ -3241,11 +3295,6 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.musicBtn.onclick=()=>openMusicPlayer();
   els.musicCloseBtn.onclick=()=>closeMusicPlayer();
   els.musicOverlay.onclick=e=>{if(e.target===els.musicOverlay){playSE(cancelSE);closeMusicPlayer();}};
-  els.musicFrontTab.onclick=()=>switchMusicWorld('front');
-  els.musicBackTab.onclick=()=>{if(isMusicWorldVisible('back'))switchMusicWorld('back');};
-  if(els.musicCrimsonTab)els.musicCrimsonTab.onclick=()=>{if(isCrimsonWorldUnlocked())switchMusicWorld('crimson');};
-  if(els.musicBlueTab)els.musicBlueTab.onclick=()=>{if(isBlueWorldUnlocked())switchMusicWorld('blue');};
-  if(els.musicSilverTab)els.musicSilverTab.onclick=()=>{if(isSilverWorldUnlocked())switchMusicWorld('silver');};
   els.musicPrevBtn.onclick=()=>moveMusicTrack(-1);
   els.musicNextBtn.onclick=()=>moveMusicTrack(1);
   els.musicStopBtn.onclick=()=>{stopMusicPlayer();renderMusicPlayer();};
@@ -3255,6 +3304,15 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   };
   musicPlayer.addEventListener('play',renderMusicPlayer);
   musicPlayer.addEventListener('pause',renderMusicPlayer);
+  musicPlayer.addEventListener('timeupdate',updateMusicSeek);
+  musicPlayer.addEventListener('loadedmetadata',updateMusicSeek);
+  musicPlayer.addEventListener('durationchange',updateMusicSeek);
+  if(els.musicSeek){
+    els.musicSeek.oninput=()=>{
+      const duration=Number(musicPlayer.duration);if(!Number.isFinite(duration)||duration<=0)return;
+      musicPlayer.currentTime=(Number(els.musicSeek.value)||0)/1000*duration;updateMusicSeek();
+    };
+  }
   if(els.debugToggleBtn)els.debugToggleBtn.onclick=()=>setDebugFullUnlock(!debugFullUnlock);
   if(els.debugCloseBtn)els.debugCloseBtn.onclick=closeDebugPanel;
   if(els.debugOverlay)els.debugOverlay.onclick=e=>{if(e.target===els.debugOverlay)closeDebugPanel();};
