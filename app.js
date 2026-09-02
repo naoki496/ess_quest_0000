@@ -730,8 +730,8 @@ function markWorldVisited(world){
     curtain.hidden=false;curtain.className='scene-curtain entering';void curtain.offsetWidth;
     await sleep(260);curtain.className='scene-curtain covered';
     await transitionTo(()=>{
-      if(opening){musicWorld=isMusicWorldVisible(mode)?mode:'front';musicSelectedWorld=musicWorld;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;}
-      else{stopMusicPlayer();musicTrackIndex=-1;musicSelectedWorld=musicWorld;els.musicOverlay.hidden=true;renderTitle();}
+      if(opening){musicWorld=isMusicWorldVisible(mode)?mode:'front';musicSelectedWorld=musicWorld;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;document.body.classList.add('music-overlay-open');}
+      else{stopMusicPlayer();musicTrackIndex=-1;musicSelectedWorld=musicWorld;els.musicOverlay.hidden=true;document.body.classList.remove('music-overlay-open');renderTitle();}
     },mode==='back'?'back':'normal',1450);
     await sleep(70);curtain.className='scene-curtain leaving';await sleep(420);curtain.hidden=true;curtain.className='scene-curtain';
   }
