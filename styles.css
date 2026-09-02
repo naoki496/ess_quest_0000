@@ -1314,6 +1314,13 @@ body[data-mode="blue"] .question-panel{border-color:rgba(104,194,235,.56);box-sh
 .blue-memory-dimmer{position:absolute;inset:0;z-index:15;background:#000;opacity:0;pointer-events:none;transition:opacity 1.5s ease;}
 .blue-memory-dimmer.no-transition{transition:none!important}
 .blue-memory-dimmer.full-black{z-index:25;transition:opacity 1.35s ease}
+.blue-memory-dimmer.blue-room-reveal{transition:opacity 1.9s ease!important}
+/* 蒼STAGE5ボス導入：ボスを黒画面の前面に残し、部屋→成人主人公の順に現す。 */
+body.blue-boss-intro-enemy-front .actor.enemy{z-index:30}
+body.blue-adult-hero-hidden .actor.hero{opacity:0!important}
+body.blue-adult-hero-silhouette .actor.hero{opacity:1!important}
+body.blue-adult-hero-silhouette .actor.hero>img{animation:none!important;filter:brightness(0) saturate(0) drop-shadow(0 8px 13px rgba(0,0,0,.55))!important;transition:filter 1.9s ease!important}
+body.blue-adult-hero-silhouette.blue-adult-hero-reveal .actor.hero>img{filter:brightness(1) saturate(1) drop-shadow(0 0 6px rgba(255,255,255,.8)) drop-shadow(0 8px 13px rgba(0,0,0,.45))!important}
 
 /* Q10：主人公の身体動作のみを遅くする。攻撃エフェクト・敵ヒット・SEは既存速度のまま。 */
 .actor.hero.blue-q10-slow.attack-front>img{animation-duration:1.55s!important;animation-timing-function:cubic-bezier(.18,.74,.24,1)!important}
@@ -1321,7 +1328,7 @@ body[data-mode="blue"] .question-panel{border-color:rgba(104,194,235,.56);box-sh
 .question-panel.blue-special-panel{overflow:visible}
 
 /* STAGE1 夏草の甲王・オオカブト「甲王大相撲」 */
-body.blue-sumo-active .choices button{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+body.blue-sumo-active .choices button{position:relative;box-sizing:border-box;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body.blue-sumo-active .choices button::after{content:"";position:absolute;left:8%;right:8%;bottom:5px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);transform-origin:left center;pointer-events:none}
 body.blue-sumo-active .choices button.blue-sumo-holding{transform:translateY(2px) scale(.985);box-shadow:0 2px 8px rgba(0,0,0,.38),inset 0 3px 13px rgba(0,0,0,.18)}
 body.blue-sumo-active .choices button.blue-sumo-holding::after{background:linear-gradient(90deg,#e5f8ff,#67d8ff,#fff2a2);animation:blueSumoHold .8s linear both;box-shadow:0 0 9px rgba(105,221,255,.8)}

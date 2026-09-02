@@ -783,7 +783,7 @@ function markWorldVisited(world){
 
   function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:SILVER_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
-  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();}
+  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();}
 
   function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:mode==='blue'?BLUE_MONSTERS:SILVER_MONSTERS;}
   function rarityRoll(r=Math.random()){
@@ -1179,6 +1179,15 @@ function markWorldVisited(world){
     if(r){const answer=`${r.rate}%`;return{expression:`${r.part}は${r.base}の何%？`,displayExpression:`${r.part}は${r.base}の何%？`,answer,choices:shuffle([answer,`${Math.max(5,r.rate-10)}%`,`${Math.min(90,r.rate+10)}%`])};}
     return percentageQuestion('rate');
   }
+  function makeBlueEndlessFinalQuestion(source=currentQuestion){
+    const r=source?.blueEndlessRatio||source?.blueRatio;
+    if(r){
+      const answer=r.base;
+      const text=`${r.part}は□の${r.rate}%です。□は？`;
+      return{expression:text,displayExpression:text,answer,choices:compactNumericChoices(answer,[r.part,r.base+r.part,Math.max(1,r.base-r.part)])};
+    }
+    return percentageQuestion('base');
+  }
 
   function fractionProductQuestion(op='×',integerSide=false,hard=false){
     for(let i=0;i<4000;i++){
@@ -1500,16 +1509,29 @@ function markWorldVisited(world){
     setBlueMemoryDim(1,{full:true});
     await sleep(1350);
   }
-  function revealBlueStage5BossWorld(){
+  function prepareBlueStage5BossReveal(){
     if(!isBlueStage5())return;
     blueAdultState=true;
     renderGame();
+    document.body.classList.add('blue-boss-intro-enemy-front','blue-adult-hero-hidden');
   }
-  async function releaseBlueStage5Blackout(){
+  async function revealBlueStage5BossRoomAndHero(){
     if(!isBlueStage5())return;
     const layer=ensureBlueMemoryDimmer();if(!layer)return;
-    layer.classList.add('full-black');layer.style.opacity='0';blueMemoryDim=0;
-    await sleep(1450);layer.classList.remove('full-black');
+    // First reveal only the apartment from the black screen. The boss remains visible above
+    // the blackout while the hero is kept hidden so the two reveals do not happen together.
+    layer.classList.add('full-black','blue-room-reveal');
+    layer.style.opacity='0';blueMemoryDim=0;
+    await sleep(1950);
+    layer.classList.remove('full-black','blue-room-reveal');
+    // Then introduce the adult protagonist as a pure silhouette and slowly restore the art.
+    document.body.classList.add('blue-adult-hero-silhouette');
+    document.body.classList.remove('blue-adult-hero-hidden');
+    void els.heroActor?.offsetWidth;
+    await sleep(420);
+    document.body.classList.add('blue-adult-hero-reveal');
+    await sleep(1900);
+    document.body.classList.remove('blue-adult-hero-silhouette','blue-adult-hero-reveal','blue-boss-intro-enemy-front');
   }
 
 
@@ -2095,10 +2117,12 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.enemyActor.style.opacity='0';
     if(!retry)await playStageBgm();
     await showBossName();
-    if(isBlueStage5()&&!retry){revealBlueStage5BossWorld();await sleep(180);}
+    if(isBlueStage5()&&!retry)prepareBlueStage5BossReveal();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
-    if(isBlueStage5()&&!retry)await Promise.all([sleep(1400),releaseBlueStage5Blackout()]);else await sleep(1400);
-    els.enemyActor.classList.remove('spawn-boss');clearMonsterAnnouncement();updateBossHpHud();
+    await sleep(1400);
+    els.enemyActor.classList.remove('spawn-boss');
+    if(isBlueStage5()&&!retry)await revealBlueStage5BossRoomAndHero();
+    clearMonsterAnnouncement();updateBossHpHud();
     if(bossQuestion===4){await runBossFifthAction();return;}
     prepareQuestion();startTimer(60);
   }
@@ -2615,6 +2639,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
 
   function startBlueSumo(){
     document.body.classList.add('blue-sumo-active');document.querySelector('.question-panel')?.classList.add('blue-special-panel');
+    if(els.feedbackText)els.feedbackText.textContent='こたえを 0.8秒 長押し！';
     const HOLD_MS=800;
     [...els.choices.children].forEach(b=>{
       let holdId=null;
@@ -2673,9 +2698,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     document.body.classList.add('blue-return-bell-active');document.querySelector('.question-panel')?.classList.add('blue-special-panel');ensureBlueClockEcho();
     trackCrimsonTimeout(setTimeout(()=>{pulseBlueReturnBell();trackCrimsonInterval(setInterval(()=>{pulseBlueReturnBell();},4300));},2800));
   }
-  async function showBlueEndlessReset(){
+  async function showBlueEndlessReset(message='まだ、おわらない',kicker='SUMMER REPEATS'){
     document.body.classList.add('blue-endless-rewind');
-    await showBossPhaseTransition('SUMMER REPEATS','まだ、おわらない','impact');
+    await showBossPhaseTransition(kicker,message,'impact');
     document.body.classList.remove('blue-endless-rewind');
   }
   function startBlueEndlessSummer(){
@@ -2915,9 +2940,21 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         bossQuestion=5;renderGame();updateBossHpHud();
         await sleep(460);
         bossQuestion=4;renderGame();updateBossHpHud();
-        await showBlueEndlessReset();
-        bossSpecialSequence={type:'blue-endless-summer',step:'echo',source:first};
+        await showBlueEndlessReset('まだ、おわらない','SUMMER REPEATS');
+        bossSpecialSequence={type:'blue-endless-summer',step:'echo1',source:first};
         populateSpecialQuestion(makeBlueEndlessEchoQuestion(first),{chip:'まだ、おわらない',step:2});
+        startTimer(60,{preserveCountCue:true});return;
+      }
+      if(seq.type==='blue-endless-summer'&&seq.step==='echo1'){
+        const first=seq.source||currentQuestion;
+        els.feedbackText.textContent='せいかい！';showAnswerMark(true);
+        runAttackMotion();await sleep(180);playSE(correctSE);await sleep(720);
+        bossQuestion=5;renderGame();updateBossHpHud();
+        await sleep(460);
+        bossQuestion=4;renderGame();updateBossHpHud();
+        await showBlueEndlessReset('まだ、おわらせない','SUMMER WILL NOT END');
+        bossSpecialSequence={type:'blue-endless-summer',step:'echo2',source:first};
+        populateSpecialQuestion(makeBlueEndlessFinalQuestion(first),{chip:'まだ、おわらせない',step:3});
         startTimer(60,{preserveCountCue:true});return;
       }
       if(seq.type==='crimson-steam'&&seq.step==='shield1'){
@@ -3180,7 +3217,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
