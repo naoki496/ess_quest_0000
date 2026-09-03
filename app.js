@@ -36,7 +36,7 @@
   const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
   let debugFullUnlock=false;
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
-  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
+  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
   let save=loadSave();
 
   const FRONT_STAGES=[
@@ -80,6 +80,16 @@
     {name:'世界の果て',key:'silver5',count:15,normalCount:10,bossCount:5,bgm:'chilblains.mp3',bossBgm:'SAVER.mp3',bg:'silver_stage5.png',boss:['終幕の写し身・ミメシス','boss_silver_5.png']}
   ];
 
+
+  // 翠の世界：BGMと銃撃SEを実装済み。ボス固有技は後続実装。
+  const MIDORI_STAGES=[
+    {name:'出航の港島',key:'midori1',count:15,normalCount:10,bossCount:5,bgm:'departure.mp3',bossBgm:'Hard a starboard..mp3',bg:'midori_stage1_departure_port.png',boss:['港砦総督・ガレオン','boss_midori_1.png']},
+    {name:'翠海の群島',key:'midori2',count:15,normalCount:10,bossCount:5,bgm:'Smooth sailing.mp3',bossBgm:'Hard a starboard..mp3',bg:'midori_stage2_emerald_archipelago.png',boss:['群島喰らい・アビスホエール','boss_midori_2.png']},
+    {name:'翠深の遺跡島',key:'midori3',count:15,normalCount:10,bossCount:5,bgm:'LostItem.mp3',bossBgm:'Hard a starboard..mp3',bg:'midori_stage3_deep_ruins_island.png',boss:['翠刻巨像・オルディア','boss_midori_3.png']},
+    {name:'黒帆大船団',key:'midori4',count:15,normalCount:10,bossCount:5,bgm:'fleet action.mp3',bossBgm:'Hard a starboard..mp3',bg:'midori_stage4_black_sail_fleet.png',boss:['黒帆大提督・ヴァルドレイク','boss_midori_4.png']},
+    {name:'大渦の秘宝島',key:'midori5',count:15,normalCount:10,bossCount:5,bgm:'Enigma.mp3',bossBgm:'Poseidon.mp3',bg:'midori_stage5_maelstrom_treasure_island.png',boss:['渦海王・ネレイディオン','boss_midori_5.png']}
+  ];
+
   const FRONT_MONSTER_NAMES=[
     [['ぷるるスライム',1],['きのこぞう',1],['リーフラット',2],['モリバット',2],['フラワーフェアリー',3],['白銀オオカミ',4],['虹羽ユニコーン',5]],
     [['いわムシ',1],['ケイブスライム',1],['クリスタルバット',2],['いわゴーレム',2],['宝石ミミック',3],['水晶騎士',4],['地底竜クリスタロス',5]],
@@ -116,6 +126,15 @@
     [['玉乗りペンギン',1],['ラッパ雪だるま',1],['ジャグリングモンキー',2],['一輪車ゴブリン',2],['双子の道化',3],['白獅子の曲芸王',4],['凍れる象王',5]],
     [['壊れたマリオネット',1],['忘却の仮面',1],['空席の影',2],['糸繰り人形',2],['捨てられた道化師',3],['銀糸の操者',4],['終幕の獣',5]]
   ];
+
+
+  const MIDORI_MONSTER_NAMES=[
+    [['ころころタルン',1],['ロープスネーク',1],['はまべヤドカリ',2],['カモメの略奪兵',2],['錨喰らい',3],['波止場の用心棒',4],['金貨袋の怪盗',5]],
+    [['ぷかぷかクラゲ',1],['とびうおランナー',1],['コーラルクラブ',2],['リーフマンタ',2],['渦巻きタコ兵',3],['岩礁の牙鮫',4],['翠潮の大海亀',5]],
+    [['苔石コロリン',1],['ツタツタ人形',1],['遺跡翼獣ガルーダ',2],['翠紋ゴーレム',2],['千年石猿',3],['翠晶の祭壇守',4],['石碑の番虫',5]],
+    [['黒帆甲板員',1],['砲撃手ガンナー',1],['火薬樽ボマー',2],['黒帆航海士',2],['双剣副長',3],['鉤爪水兵',4],['黒鉄砲撃長',5]],
+    [['うずしおミミック',1],['深翠ヒトデ',1],['海底鎧兵',2],['宝珠クラゲ',2],['沈没船の船首像',3],['深海宝物守',4],['七海の亡霊船長',5]]
+  ];
   function buildMonsterCatalog(raw,world){
     let id=0;return raw.flatMap((stageArr,stage)=>stageArr.map(([name,rarity])=>({id:`${world}-${++id}`,world,stage,rarity,name,img:`monster_${world}_${stage+1}_${rarity}_${id}.png`})));
   }
@@ -124,6 +143,7 @@
   const CRIMSON_MONSTERS=buildMonsterCatalog(CRIMSON_MONSTER_NAMES,'crimson');
   const BLUE_MONSTERS=buildMonsterCatalog(BLUE_MONSTER_NAMES,'blue');
   const SILVER_MONSTERS=buildMonsterCatalog(SILVER_MONSTER_NAMES,'silver');
+  const MIDORI_MONSTERS=buildMonsterCatalog(MIDORI_MONSTER_NAMES,'midori');
   const RARITY_WEIGHTS=[[1,.50],[2,.30],[3,.15],[4,.04],[5,.01]];
 
 
@@ -159,24 +179,25 @@
   musicPlayer.volume=.38;
   let musicWorld='front',musicSelectedWorld='front',musicTrackIndex=-1;
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
-  const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3');
+  const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3'),gunSE=new Audio('./assets/gun.mp3');
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
   const breakSE=new Audio('./assets/break.mp3');
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
   const countSE=new Audio('./assets/count.mp3'),buttonSE=new Audio('./assets/button.mp3');
   const cancelSE=new Audio('./assets/cancel.mp3'),start321SE=new Audio('./assets/start_321.mp3'),start0SE=new Audio('./assets/start_0.mp3'),clearSE=new Audio('./assets/clear.mp3');
+  gunSE.preload='auto';
   [sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(a=>a.preload='auto');
 
   // BGM collection: only tracks already used by the current game are listed.
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
   function musicTracks(world){
-    const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:SILVER_STAGES;
-    const worldLabel=world==='front'?'光の世界':world==='back'?'裏の世界':world==='crimson'?'紅の世界':world==='blue'?'蒼の世界':'銀の世界';
+    const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:world==='silver'?SILVER_STAGES:MIDORI_STAGES;
+    const worldLabel=world==='front'?'光の世界':world==='back'?'裏の世界':world==='crimson'?'紅の世界':world==='blue'?'蒼の世界':world==='silver'?'銀の世界':'翠の世界';
     const normal=stages.map((st,i)=>({
       id:`stage-${i+1}`,file:st.bgm,label:`STAGE ${i+1}`,title:st.bgm.replace(/\.mp3$/i,''),
       where:`${worldLabel} STAGE ${i+1}「${st.name}」の通常戦闘で流れるBGM。`
     }));
-    const bossWhere=world==='front'?'光の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='crimson'?'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。':world==='blue'?'蒼の世界 STAGE 1～4のボス戦で流れる共通BGM。':'銀の世界 STAGE 1～4のボス戦で流れる共通BGM。';
+    const bossWhere=world==='front'?'光の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='crimson'?'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。':world==='blue'?'蒼の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='silver'?'銀の世界 STAGE 1～4のボス戦で流れる共通BGM。':'翠の世界 STAGE 1～4のボス戦で流れる共通BGM。';
     const finalStage=stages[4];
     return [...normal,
       {id:'boss',file:stages[0].bossBgm,label:'BOSS',title:stages[0].bossBgm.replace(/\.mp3$/i,''),where:bossWhere},
@@ -184,8 +205,8 @@
     ];
   }
   function inferMusicUnlocksFromSave(target){
-    target.musicUnlocked=target.musicUnlocked||{front:[],back:[],crimson:[],blue:[],silver:[]};
-    for(const world of ['front','back','crimson','blue','silver']){
+    target.musicUnlocked=target.musicUnlocked||{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]};
+    for(const world of ['front','back','crimson','blue','silver','midori']){
       const list=Array.isArray(target.musicUnlocked[world])?target.musicUnlocked[world]:[];
       const set=new Set(list);
       const book=target.monsterBook?.[world]||[];
@@ -196,7 +217,7 @@
         if(boss){const stage=Number(boss[1]);set.add(`stage-${stage}`);set.add(world==='crimson'?'boss':(stage===5?'final':'boss'));}
         if(world==='crimson'&&id==='boss-crimson-last')set.add('final');
       }
-      if((world==='front'&&(target.frontClears>0||target.backUnlocked))||(world==='back'&&target.backClears>0)||(world==='crimson'&&target.crimsonClears>0)||(world==='blue'&&target.blueClears>0)||(world==='silver'&&target.silverClears>0)){
+      if((world==='front'&&(target.frontClears>0||target.backUnlocked))||(world==='back'&&target.backClears>0)||(world==='crimson'&&target.crimsonClears>0)||(world==='blue'&&target.blueClears>0)||(world==='silver'&&target.silverClears>0)||(world==='midori'&&target.midoriClears>0)){
         for(let i=1;i<=5;i++)set.add(`stage-${i}`);set.add('boss');set.add('final');
       }
       target.musicUnlocked[world]=[...set];
@@ -205,15 +226,15 @@
   function isMusicUnlocked(world,id){return debugFullUnlock||!!save.musicUnlocked?.[world]?.includes(id);}
   function unlockMusic(world,id){
     if(debugFullUnlock)return false;
-    if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[],crimson:[],blue:[],silver:[]};
+    if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[],crimson:[],blue:[],silver:[],midori:[]};
     if(!Array.isArray(save.musicUnlocked[world]))save.musicUnlocked[world]=[];
     if(save.musicUnlocked[world].includes(id))return false;
     save.musicUnlocked[world].push(id);
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
     return true;
   }
-  function unlockCurrentStageMusic(){unlockMusic(mode,`stage-${stageIndex+1}`);}
-  function unlockCurrentBossMusic(){unlockMusic(mode,mode==='crimson'?(crimsonLastPhase?'final':'boss'):(stageIndex===4?'final':'boss'));}
+  function unlockCurrentStageMusic(){return unlockMusic(mode,`stage-${stageIndex+1}`);}
+  function unlockCurrentBossMusic(){return unlockMusic(mode,mode==='crimson'?(crimsonLastPhase?'final':'boss'):(stageIndex===4?'final':'boss'));}
 
   // The hit effect belongs to the battlefield, not to the hero actor.  Keeping it
   // outside the hero's coordinate system lets sword/magic impacts land on the enemy.
@@ -225,9 +246,9 @@
       const raw=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
       const merged={...DEFAULT_SAVE,...raw};
       merged.owned=Array.isArray(raw.owned)?raw.owned:[100];
-      merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[]};
-      merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})}};
-      merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[]};
+      merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[],midori:Array.isArray(raw.monsterBook?.midori)?raw.monsterBook.midori:[]};
+      merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})},midori:{...(raw.monsterEncounters?.midori||{})}};
+      merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[],midori:Array.isArray(raw.musicUnlocked?.midori)?raw.musicUnlocked.midori:[]};
       merged.secretRelics=Array.isArray(raw.secretRelics)?raw.secretRelics:[];
       merged.secretRelicNotified=Array.isArray(raw.secretRelicNotified)?raw.secretRelicNotified:[];
       merged.secretRelicVersion=Number.isFinite(Number(raw.secretRelicVersion))?Number(raw.secretRelicVersion):0;
@@ -238,7 +259,7 @@
       merged.worldUnlockVersion=Math.max(0,Number(raw.worldUnlockVersion)||0);
       inferMusicUnlocksFromSave(merged);
       return merged;
-    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};inferMusicUnlocksFromSave(fallback);return fallback;}
+    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};inferMusicUnlocksFromSave(fallback);return fallback;}
   }
   function persist(){
     if(!debugFullUnlock)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
@@ -258,11 +279,13 @@
     if(world==='crimson')return isCrimsonWorldUnlocked();
     if(world==='blue')return isBlueWorldUnlocked();
     if(world==='silver')return isSilverWorldUnlocked();
+    if(world==='midori')return isMidoriWorldUnlocked();
     return false;
   }
   function isCrimsonWorldUnlocked(){return debugFullUnlock||hasSecretRelic('common_master');}
   function isBlueWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('front_sr_master')&&hasSecretRelic('world3_sr_master'));}
   function isSilverWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('uncommon_master')&&hasSecretRelic('front_ssr_master'));}
+  function isMidoriWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('back_sr_master')&&hasSecretRelic('world4_sr_master')&&hasSecretRelic('blue_sr_master'));}
   function isMonsterSeen(world,id){return debugFullUnlock||!!save.monsterBook?.[world]?.includes(id);}
   function effectiveEncounterCount(world,id){const n=save.monsterEncounters?.[world]?.[id]||0;return debugFullUnlock?Math.max(1,n):n;}
 
@@ -341,12 +364,13 @@ const SECRET_RELICS=[
   {id:'world4_ssr_master',name:'コランダムギア',icon:'⚙️',flavor:'銀の世界の SSRモンスターを すべて見つけた証。',notice:'銀の世界の SSRモンスターを すべて見つけた証。'}
 ];
 const SECRET_RELIC_VERSION=4;
-const WORLD_UNLOCK_VERSION=3;
+const WORLD_UNLOCK_VERSION=4;
 const WORLD_UNLOCKS=[
   {world:'back',sourceId:'item-100',sourceName:'時空の鍵',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界'},
   {world:'crimson',sourceId:'common_master',sourceName:'妖刀マサムネ',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界'},
   {world:'blue',sourceIds:['front_sr_master','world3_sr_master'],sourceName:'蒼穹の縁結びと黄泉の供物',name:'蒼の世界',desc:'ひと夏の記憶をたどる、蒼い夏の世界'},
-  {world:'silver',sourceIds:['uncommon_master','front_ssr_master'],sourceName:'白銀の首輪と時空羅針盤',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'}
+  {world:'silver',sourceIds:['uncommon_master','front_ssr_master'],sourceName:'白銀の首輪と時空羅針盤',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'},
+  {world:'midori',sourceIds:['back_sr_master','world4_sr_master','blue_sr_master'],sourceName:'クリプティック・コード、未来の結晶、鋼の黙示録',name:'翠の世界',desc:'島々と大船団を越えて進む、翠の海の世界'}
 ];
 const secretRelicById=id=>SECRET_RELICS.find(r=>r.id===id);
 function hasSecretRelic(id){return debugFullUnlock||!!save.secretRelics?.includes(id);}
@@ -356,6 +380,7 @@ function isWorldActuallyUnlocked(world){
   if(world==='crimson')return !!save.secretRelics?.includes('common_master');
   if(world==='blue')return !!save.secretRelics?.includes('front_sr_master')&&!!save.secretRelics?.includes('world3_sr_master');
   if(world==='silver')return !!save.secretRelics?.includes('uncommon_master')&&!!save.secretRelics?.includes('front_ssr_master');
+  if(world==='midori')return !!save.secretRelics?.includes('back_sr_master')&&!!save.secretRelics?.includes('world4_sr_master')&&!!save.secretRelics?.includes('blue_sr_master');
   return false;
 }
 function worldUnlockByKey(world){return WORLD_UNLOCKS.find(w=>w.world===world);}
@@ -407,7 +432,7 @@ function initializeWorldUnlockState(){
     // a strengthened requirement (notably Silver v2) must be allowed to notify again
     // after the missing relic is obtained. Existing genuinely-unlocked worlds remain silent.
     save.worldUnlockNotified=save.worldUnlockNotified.filter(world=>isWorldActuallyUnlocked(world));
-    for(const w of WORLD_UNLOCKS)if(w.world!=='blue'&&isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
+    for(const w of WORLD_UNLOCKS)if(!['blue','midori'].includes(w.world)&&isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
     save.worldUnlockNew=save.worldUnlockNew.filter(world=>isWorldActuallyUnlocked(world));
     save.worldUnlockVersion=WORLD_UNLOCK_VERSION;
     persistQuietly();
@@ -460,6 +485,7 @@ function markWorldVisited(world){
   function primeStageBgm(){
     if(!soundOn)return;
     const file=bossPhase?currentStage().bossBgm:currentStage().bgm;
+    if(!file){try{stageBgmPlayer.pause();}catch{}currentBgm=null;return;}
     try{
       stageBgmPlayer.pause();
       stageBgmPlayer.src=`./assets/${file}`;
@@ -477,13 +503,14 @@ function markWorldVisited(world){
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${effectiveGold()} G`;
-    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':'銀の世界';
+    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':'翠の世界';
     els.titleTrackName.textContent=titleTrackLabel();
-    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':'小学6年生対象';
+    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':'小学4年生以降・思考問題';
     if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
     const restartTotal=mode==='crimson'?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
     if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;
+    if(els.musicBtn)els.musicBtn.hidden=false;
     els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;
     if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
     if(mode==='front'){
@@ -494,8 +521,10 @@ function markWorldVisited(world){
       els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }else if(mode==='blue'){
       els.titleHero.src='./assets/blue_hero.png';els.titleEyebrow.textContent='BLUE SUMMER / FOURTH QUEST';els.titleSubtitle.innerHTML='青空の下、少年はひと夏の冒険へ。<br>ミステリーが潜む夏の終わりへ進んでいく。';setMenuButton(els.playBtn,'☀','蒼の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
-    }else{
+    }else if(mode==='silver'){
       els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FIFTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
+    }else{
+      els.titleHero.src='./assets/midori_hero_pirate_captain.png';els.titleEyebrow.textContent='EMERALD SEAS / SIXTH QUEST';els.titleSubtitle.innerHTML='島々を巡り、航路を切りひらけ。<br>知恵と判断で、翠の海の最深部へ。';setMenuButton(els.playBtn,'⚓','翠の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
     }
     if(els.worldWarpBtn){setMenuButton(els.worldWarpBtn,'∞','世界を渡る');els.worldWarpBtn.classList.toggle('has-new-world',hasNewWorldWaiting());els.worldWarpBtn.setAttribute('aria-label',hasNewWorldWaiting()?'世界を渡る・新しい世界があります':'世界を渡る');}
   }
@@ -509,7 +538,8 @@ function markWorldVisited(world){
       {key:'back',name:'裏の世界',short:'裏',desc:'時空の裂け目に広がる、もうひとつの世界',image:'back_map.png',unlocked:isBackWorldUnlocked()},
       {key:'crimson',name:'紅の世界',short:'紅',desc:'妖怪と剣客が息づく、晩秋に染まった世界',image:'crimson_stage1.png',unlocked:isCrimsonWorldUnlocked()},
       {key:'blue',name:'蒼の世界',short:'蒼',desc:'あの日の影に隠された、夏の世界',image:'blue_stage1.png',unlocked:isBlueWorldUnlocked()},
-      {key:'silver',name:'銀の世界',short:'銀',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',image:'silver_stage1.png',unlocked:isSilverWorldUnlocked()}
+      {key:'silver',name:'銀の世界',short:'銀',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',image:'silver_stage1.png',unlocked:isSilverWorldUnlocked()},
+      {key:'midori',name:'翠の世界',short:'翠',desc:'島々と大船団を越えて進む、翠の海の世界',image:'midori_stage1_departure_port.png',unlocked:isMidoriWorldUnlocked()}
     ];
     let selectedIndex=Math.max(0,worlds.findIndex(w=>w.key===mode));
     els.worldWarpList.innerHTML=`
@@ -614,12 +644,12 @@ function markWorldVisited(world){
     {key:'crimson',short:'紅',name:'紅の世界'},
     {key:'blue',short:'蒼',name:'蒼の世界'},
     {key:'silver',short:'銀',name:'銀の世界'},
+    {key:'midori',short:'翠',name:'翠の世界'},
     {key:'future-1',short:'?',name:'？？？',future:true},
-    {key:'future-2',short:'?',name:'？？？',future:true},
-    {key:'future-3',short:'?',name:'？？？',future:true}
+    {key:'future-2',short:'?',name:'？？？',future:true}
   ];
   function musicWorldSlot(key){return MUSIC_WORLD_SLOTS.find(w=>w.key===key)||MUSIC_WORLD_SLOTS[0];}
-  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver'].includes(key);}
+  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver','midori'].includes(key);}
   function isMusicSlotUnlocked(key){return isKnownMusicWorld(key)&&isMusicWorldVisible(key);}
   function formatMusicTime(seconds){
     const n=Number(seconds);if(!Number.isFinite(n)||n<0)return'--:--';
@@ -754,10 +784,10 @@ function markWorldVisited(world){
     els.debugStagePanel.hidden=!debugFullUnlock;
     if(els.debugStageGrid){
       els.debugStageGrid.innerHTML='';
-      for(const world of ['front','back','crimson','blue','silver']){
-        const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:SILVER_STAGES;
+      for(const world of ['front','back','crimson','blue','silver','midori']){
+        const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:world==='silver'?SILVER_STAGES:MIDORI_STAGES;
         stages.forEach((st,i)=>{
-          const prefix=world==='front'?'光':world==='back'?'裏':world==='crimson'?'紅':world==='blue'?'蒼':'銀';
+          const prefix=world==='front'?'光':world==='back'?'裏':world==='crimson'?'紅':world==='blue'?'蒼':world==='silver'?'銀':'翠';
           const start=document.createElement('button');start.type='button';start.className=`debug-stage-btn debug-stage-start debug-world-${world}`;
           start.textContent=`${prefix} S${i+1} 最初`;start.title=`${st.name}：ステージ最初から`;
           start.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(start);
@@ -785,6 +815,7 @@ function markWorldVisited(world){
       if(mode==='crimson'&&!isCrimsonWorldUnlocked())mode='front';
       if(mode==='blue'&&!isBlueWorldUnlocked())mode='front';
       if(mode==='silver'&&!isSilverWorldUnlocked())mode='front';
+      if(mode==='midori'&&!isMidoriWorldUnlocked())mode='front';
     }
     renderTitle();renderDebugPanel();
     if(els.collectionScreen&&!els.collectionScreen.hidden)renderCollection();
@@ -912,7 +943,7 @@ function markWorldVisited(world){
     els.monsterCardName.textContent=m.name;
     els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};
     els.monsterCardImage.src=`./assets/${m.img}`;
-    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':'銀の世界';
+    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':'翠の世界';
     els.monsterCardStage.textContent=m.lastBoss?'LAST BOSS':`STAGE ${m.stage+1}`;
     els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;
     els.monsterCardText.textContent=monsterFlavor(m);
@@ -923,11 +954,11 @@ function markWorldVisited(world){
   function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
 
 
-  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:SILVER_STAGES;}
+  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:mode==='silver'?SILVER_STAGES:MIDORI_STAGES;}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
   function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();}
 
-  function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:mode==='blue'?BLUE_MONSTERS:SILVER_MONSTERS;}
+  function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:mode==='blue'?BLUE_MONSTERS:mode==='silver'?SILVER_MONSTERS:MIDORI_MONSTERS;}
   function rarityRoll(r=Math.random()){
     let acc=0;for(const [rarity,w] of RARITY_WEIGHTS){acc+=w;if(r<acc)return rarity;}return 5;
   }
@@ -1000,6 +1031,7 @@ function markWorldVisited(world){
     if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true,bossQuestion);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false,bossQuestion);}
     if(mode==='blue')return makeBlueBossQuestion(idx,bossQuestion);
     if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion(bossQuestion);}
+    if(mode==='midori'){if(idx<4)return makeMidoriQuestion(idx+1);return makeMidoriFinalBossQuestion(bossQuestion);}
     if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);
     if(mode==='front')return makeFrontFinalBossQuestion();
     return makeBackFinalBossQuestion();
@@ -1397,6 +1429,82 @@ function markWorldVisited(world){
     for(let i=0;i<500;i++){const x1=rand(2,10),y1=rand(2,12),p=x1*y1,divs=[];for(let x=2;x<=18;x++)if(p%x===0&&x!==x1)divs.push(x);if(!divs.length)continue;const x2=pick(divs),text=`反比例　x:${x1}→${x2} / y:${y1}→□`;return{expression:text,displayExpression:text,answer:p/x2,choices:compactNumericChoices(p/x2,[y1,Math.max(1,p/x2-1),p/x2+1])};}
     return{expression:'反比例　x:3→6 / y:8→□',answer:4,choices:[3,4,8]};
   }
+
+  // ---------- 翠の世界：暫定問題構成 ----------
+  // 難しさを巨大数ではなく、換算・分割・規則発見・場合分け・条件整理で作る。
+  function midoriUnitQuestion(qn=0){
+    const k=((Number(qn)||0)%10+10)%10;
+    if(k===0){const km=pick([1.2,1.5,1.8,2.4,2.7,3.5]);return{expression:`${km}km = ?m`,answer:Math.round(km*1000)};}
+    if(k===1){const kg=pick([1.5,2.4,3.2,4.5,5.6]);return{expression:`${kg}kg = ?g`,answer:Math.round(kg*1000)};}
+    if(k===2){const l=pick([1.2,1.5,2.5,3.4]);return{expression:`${l}L = ?mL`,answer:Math.round(l*1000)};}
+    if(k===3){const m=pick([2,3,4,5,6]),cm=pick([15,25,40,60,75]);return{expression:`${m}m${cm}cm = ?cm`,answer:m*100+cm};}
+    if(k===4){const h=pick([1,2,3]),min=pick([15,20,30,45]);return{expression:`${h}時間${min}分 = ?分`,answer:h*60+min};}
+    if(k===5){const mins=pick([90,120,150,180,210]);return{expression:`${mins}分 = ?時間`,answer:mins/60,choices:makeDecimalChoices(mins/60)};}
+    if(k===6){const sqm=pick([1,2,3,4]);return{expression:`${sqm}m² = ?cm²`,answer:sqm*10000,choices:compactNumericChoices(sqm*10000,[sqm*100,sqm*1000,sqm*100000])};}
+    if(k===7){const cm2=pick([10000,20000,30000,50000]);return{expression:`${cm2}cm² = ?m²`,answer:cm2/10000,choices:compactNumericChoices(cm2/10000,[cm2/1000,cm2/100,Math.max(0,cm2/10000-1)])};}
+    if(k===8){const km=pick([1.5,1.8,2.2,2.4]),walk=pick([350,450,650,750]);const total=Math.round(km*1000);if(walk>=total)return midoriUnitQuestion(0);return{expression:`${km}kmの道を${walk}m進んだ。残りは？m`,answer:total-walk};}
+    const l=pick([2.4,3.2,4.5]),used=pick([450,600,750]);const ml=Math.round(l*1000);if(used>=ml)return midoriUnitQuestion(2);return{expression:`${l}Lから${used}mL使った。残りは？mL`,answer:ml-used};
+  }
+  function midoriAreaQuestion(qn=0){
+    const k=((Number(qn)||0)%10+10)%10;
+    if(k<=1){const a=rand(4,14),b=rand(3,10);return{expression:`たて${a}cm、よこ${b}cmの長方形の面積は？cm²`,answer:a*b,choices:compactNumericChoices(a*b,[a+b,2*(a+b),a*b+b])};}
+    if(k<=3){const base=pick([4,6,8,10,12]),h=pick([3,4,5,6,8]);const ans=base*h/2;return{expression:`底辺${base}cm、高さ${h}cmの三角形の面積は？cm²`,answer:ans,choices:compactNumericChoices(ans,[base*h,base+h,Math.max(1,ans-h)])};}
+    if(k===4){const base=pick([5,6,8,10,12]),h=pick([3,4,5,6,7]);return{expression:`底辺${base}cm、高さ${h}cmの平行四辺形の面積は？cm²`,answer:base*h,choices:compactNumericChoices(base*h,[base*h/2,base+h,2*(base+h)])};}
+    if(k===5){const a=pick([4,6,8]),b=pick([8,10,12]),h=pick([3,4,5,6]);const ans=(a+b)*h/2;return{expression:`上底${a}cm、下底${b}cm、高さ${h}cmの台形の面積は？cm²`,answer:ans,choices:compactNumericChoices(ans,[(a+b)*h,a*b*h/2,(b-a)*h])};}
+    if(k<=7){const a=pick([6,8,10]),b=pick([4,5,6]),c=pick([3,4,5]),d=pick([2,3,4]);const ans=a*b+c*d;return{expression:`長方形${a}×${b}cmと${c}×${d}cmを重ねずにつないだ。面積は？cm²`,answer:ans,choices:compactNumericChoices(ans,[a*b,c*d,a*b-c*d])};}
+    const bigW=pick([10,12,14]),bigH=pick([8,10,12]),cutW=pick([2,3,4]),cutH=pick([2,3,4]),ans=bigW*bigH-cutW*cutH;
+    return{expression:`${bigW}×${bigH}cmの長方形から${cutW}×${cutH}cmを切り取る。残りは？cm²`,answer:ans,choices:compactNumericChoices(ans,[bigW*bigH,cutW*cutH,bigW*bigH+cutW*cutH])};
+  }
+  function midoriPatternQuestion(qn=0){
+    const k=((Number(qn)||0)%10+10)%10;
+    if(k<=2){const start=rand(1,8),step=pick([2,3,4,5]),seq=[0,1,2,3].map(i=>start+i*step),ans=start+4*step;return{expression:`${seq.join('、')}、□　□は？`,answer:ans,choices:compactNumericChoices(ans,[ans-step,ans+step,ans+1])};}
+    if(k<=4){const start=pick([40,50,60,72]),step=pick([3,4,5,6]),seq=[0,1,2,3].map(i=>start-i*step),ans=start-4*step;return{expression:`${seq.join('、')}、□　□は？`,answer:ans,choices:compactNumericChoices(ans,[ans+step,Math.max(0,ans-step),ans+1])};}
+    if(k<=6){const cycle=pick([3,4,5]),n=pick([8,9,11,13,14,17]),ans=((n-1)%cycle)+1,wrong=shuffle([1,2,3,4,5].filter(v=>v<=cycle&&v!==ans)).slice(0,2);return{expression:`1から${cycle}をくり返して並べる。${n}番目の数は？`,answer:ans,choices:shuffle([ans,...wrong])};}
+    if(k===7){const n=pick([6,8,10,12]),ans=2*n-1;return{expression:`1番目1個、2番目3個、3番目5個… ${n}番目は何個？`,answer:ans,choices:compactNumericChoices(ans,[2*n,n+2,ans-2])};}
+    if(k===8){const target=pick([15,19,23,27]),ans=(target+1)/2;return{expression:`1,3,5,7… ${target}は何番目？`,answer:ans,choices:compactNumericChoices(ans,[ans-1,ans+1,target/2])};}
+    const n=pick([5,6,7,8]),ans=n*(n+1)/2;return{expression:`1番目1個、2番目は2個増える、3番目は3個増える… ${n}番目までの合計は？`,answer:ans,choices:compactNumericChoices(ans,[n*n,ans-n,ans+n])};
+  }
+  function midoriCountingQuestion(qn=0){
+    const k=((Number(qn)||0)%10+10)%10;
+    if(k<=2){const hats=pick([2,3,4]),shoes=pick([2,3]);const ans=hats*shoes;return{expression:`帽子${hats}種類と靴${shoes}種類。1つずつ選ぶ組合せは？通り`,answer:ans,choices:compactNumericChoices(ans,[hats+shoes,Math.max(hats,shoes),ans-1])};}
+    if(k<=4){const n=pick([3,4]);const ans=n===3?6:24;return{expression:`${n}人を1列に並べる。並び方は？通り`,answer:ans,choices:compactNumericChoices(ans,[n*n,n*(n-1),ans/2])};}
+    if(k<=6){const n=pick([4,5,6]),ans=n*(n-1)/2;return{expression:`${n}人から2人を選ぶ。選び方は？通り`,answer:ans,choices:compactNumericChoices(ans,[n*2,n*(n-1),ans+1])};}
+    if(k===7){return{expression:'右に2回、上に2回動く最短の道順は？通り',answer:6,choices:[4,6,8]};}
+    if(k===8){return{expression:'A・B・C・Dから2人選ぶ。AとBを同時に選ばない。何通り？',answer:5,choices:[4,5,6]};}
+    return{expression:'赤・青・緑の3色から2色を選ぶ。順番は考えない。何通り？',answer:3,choices:[3,6,9]};
+  }
+  function midoriLogicQuestion(qn=0){
+    const bank=[
+      {expression:'アキラはユウタより前。ミキはアキラより後でユウタより前。正しい順は？',answer:'アキラ→ミキ→ユウタ',choices:['アキラ→ミキ→ユウタ','ミキ→アキラ→ユウタ','ユウタ→ミキ→アキラ']},
+      {expression:'30より大きく50より小さい。4で割り切れ、6では割り切れない数は？',answer:40,choices:[36,40,48]},
+      {expression:'AはBより高い。CはAより高い。いちばん高いのは？',answer:'C',choices:['A','B','C']},
+      {expression:'箱Aは赤、箱Bは青ではない。赤は1箱だけ。箱Bの色は？',answer:'緑',choices:['赤','青','緑']},
+      {expression:'偶数で、20より大きく30より小さく、3の倍数。どれ？',answer:24,choices:[22,24,28]},
+      {expression:'A→Cより、A→B→Cの方が2km長い。A→Cが7kmならA→B→Cは？km',answer:9,choices:[5,7,9]},
+      {expression:'3つの箱。宝は「赤ではない」「青でもない」。宝の箱は？',answer:'緑',choices:['赤','青','緑']},
+      {expression:'月・火・水の3日。雨は火ではない。晴れは月。雨の日は？',answer:'水',choices:['月','火','水']},
+      {expression:'Aは3位ではない。BはAより後。Cが1位。Aは何位？',answer:'2位',choices:['1位','2位','3位']},
+      {expression:'ある数に5を足すと18。さらに2倍すると？',answer:36,choices:[26,31,36]}
+    ];
+    return {...bank[((Number(qn)||0)%bank.length+bank.length)%bank.length]};
+  }
+  function makeMidoriQuestion(idx){
+    const qn=bossPhase?bossQuestion:stageQuestion;
+    if(idx===0)return midoriUnitQuestion(qn);
+    if(idx===1)return midoriAreaQuestion(qn);
+    if(idx===2)return midoriPatternQuestion(qn);
+    if(idx===3)return midoriCountingQuestion(qn);
+    return midoriLogicQuestion(qn);
+  }
+  function makeMidoriFinalBossQuestion(step=bossQuestion){
+    const phase=Math.max(0,Math.min(4,Number(step)||0));
+    if(phase===0)return midoriUnitQuestion(8);
+    if(phase===1)return midoriAreaQuestion(9);
+    if(phase===2)return midoriPatternQuestion(8);
+    if(phase===3)return midoriCountingQuestion(8);
+    return midoriLogicQuestion(4);
+  }
+
   function makeSilverQuestion(idx){
     if(idx===0){
       const qn=bossPhase?bossQuestion:stageQuestion;
@@ -1532,7 +1640,7 @@ function markWorldVisited(world){
   };
   function applyEnemyFacing(en){
     if(!els.enemySprite)return;
-    const keepOriginal=!!en&&((en.world==='crimson'||en.world==='silver'||en.world==='blue')||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));
+    const keepOriginal=!!en&&((en.world==='crimson'||en.world==='silver'||en.world==='blue'||en.world==='midori')||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));
     els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);
     els.enemySprite.classList.toggle('bottom-safe-knight',!!en&&en.img==='monster_front_4_2_25.png');
     els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));
@@ -1685,7 +1793,7 @@ function markWorldVisited(world){
     if(mode==='crimson'&&crimsonLastPhase){els.progressText.textContent=`${Math.min(80,totalProgress)} / 80`;els.progressFill.style.width=`${Math.min(100,(totalProgress-75)/5*100)}%`;els.stageLabel.textContent='LAST BOSS';els.stageName.textContent=s.name;}else{els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
     fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
     const blueAdult=isBlueAdultPhase();const battleBgFile=isBlueStage5()?(blueAdult?'blue_stage5_after.png':'blue_stage5_before.png'):s.bg;
-    els.battleBg.style.backgroundImage=`url('./assets/${battleBgFile}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):'./assets/silver_hero.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):'銀狼の少女';
+    els.battleBg.style.backgroundImage=`url('./assets/${battleBgFile}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):mode==='silver'?'./assets/silver_hero.png':'./assets/midori_hero_pirate_captain.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):mode==='silver'?'銀狼の少女':'海賊船長';
     const en=bossPhase?currentBoss():currentMonster;
     if(en){
       applyEnemyFacing(en);
@@ -1726,7 +1834,7 @@ function markWorldVisited(world){
   function stopSE(a){try{a.pause();a.currentTime=0;}catch{}}
   function playAttackSE(){
     if(!soundOn)return;
-    const a=mode==='back'?magicSE:swordSE;
+    const a=mode==='midori'?gunSE:mode==='back'?magicSE:swordSE;
     try{a.currentTime=0;a.play().catch(()=>playSE(correctSE));}catch{playSE(correctSE);}
   }
   function clearBattleFx(){
@@ -1756,7 +1864,7 @@ function markWorldVisited(world){
   }
   function playFinisherSE(){
     if(!soundOn)return;
-    const a=mode==='back'?backFinisherSE:frontFinisherSE;
+    const a=mode==='midori'?gunSE:mode==='back'?backFinisherSE:frontFinisherSE;
     try{a.currentTime=0;a.play().catch(()=>playAttackSE());}catch{playAttackSE();}
   }
   function runFinisherMotion(){
@@ -1785,6 +1893,7 @@ function markWorldVisited(world){
   async function playStageBgm(){
     if(!soundOn)return;
     const file=bossPhase?currentStage().bossBgm:currentStage().bgm;
+    if(!file){try{stageBgmPlayer.pause();}catch{}currentBgm=null;return;}
     const wanted=`./assets/${file}`;
     const player=stageBgmPlayer;
     try{
@@ -1904,15 +2013,16 @@ function advanceMapFromInput(){
 function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdvanceResolve=resolve;});}
 
   function prepareMapOverlay(initial=false){
-    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':'SILVER WORLD';
-    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':'銀の世界';
-    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.png':'./assets/silver_map.png';
+    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':mode==='silver'?'SILVER WORLD':'EMERALD SEA';
+    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':'翠海航路（仮）';
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.png':mode==='silver'?'./assets/silver_map.png':'./assets/midori_stage1_departure_port.png';
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
     const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
     const mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'];
     const mapLinesBlue=['昔ながらの田舎町へ向かいます…','山の秘密基地へ進みます…','夏祭りの灯りへ向かいます…','夕暮れの公園へ進みます…','あの家へ帰ります…'];
     const mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'];
-    const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mode==='blue'?mapLinesBlue:mapLinesSilver;
+    const mapLinesMidori=['出航の港島へ向かいます…','翠海の群島へ船を進めます…','翠深の遺跡島へ上陸します…','黒帆大船団へ突入します…','大渦の秘宝島へ向かいます…'];
+    const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mode==='blue'?mapLinesBlue:mode==='silver'?mapLinesSilver:mapLinesMidori;
     els.mapMessage.textContent=lines[stageIndex] || (initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
     const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;
     if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}
@@ -1999,7 +2109,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     [...els.choices.children].forEach(b=>b.disabled=true);
     document.body.classList.add('special-assist-active');
     specialGauge=0;updateSpecialHud();
-    const heroFile=mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':'silver_hero.png';
+    const heroFile=mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='midori'?'midori_hero_pirate_captain.png':'silver_hero.png';
     await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
     const target=pick(wrongButtons);
     playFinisherSE();
@@ -2128,7 +2238,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
-    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):makeSilverQuestion(stageIndex));
+    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):makeMidoriQuestion(stageIndex));
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';
     choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});
     updateBlueStage5Dimming();locked=false;syncPauseButton();updateSpecialHud();
@@ -3202,7 +3312,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     // The large correct mark has already had a clear beat before the cut-in; hide it
     // so the cut-in itself remains visually clean even though answer marks are top-layer UI.
     els.answerMark.hidden=true;
-    await showActionCutin('hero',mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='blue'?(isBlueAdultPhase()?'blue_hero_adult.png':'blue_hero.png'):'silver_hero.png');
+    await showActionCutin('hero',mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='blue'?(isBlueAdultPhase()?'blue_hero_adult.png':'blue_hero.png'):mode==='silver'?'silver_hero.png':'midori_hero_pirate_captain.png');
     runFinisherMotion();
     await sleep(980);
     els.enemyActor.classList.add('boss-defeat');
@@ -3279,7 +3389,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       else if(mode==='back'){save.backClears++;reward=randomReward();}
       else if(mode==='crimson'){save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}
       else if(mode==='blue'){save.blueClears=(save.blueClears||0)+1;reward=randomReward();}
-      else{save.silverClears=(save.silverClears||0)+1;reward=randomReward();}
+      else if(mode==='silver'){save.silverClears=(save.silverClears||0)+1;reward=randomReward();}
+      else if(mode==='midori'){save.midoriClears=(save.midoriClears||0)+1;reward=randomReward();}
       persist();syncSecretRelics();
     }else renderTitle();
     renderResult();els.resultOverlay.hidden=false;
@@ -3330,7 +3441,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   if(els.worldWarpBackBtn)els.worldWarpBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1200);};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[gunSE,sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
   els.pauseBtn.onclick=pauseGame;
   if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
   els.pauseResumeBtn.onclick=resumeGame;
@@ -3363,7 +3474,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 

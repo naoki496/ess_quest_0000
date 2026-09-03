@@ -1445,6 +1445,7 @@ body.blue-endless-rewind .actor.enemy .actor-sprite{animation:blueEndlessWarp .8
 .music-card[data-music-world="crimson"]{--music-accent:#ef9b69;--music-accent-soft:rgba(239,155,105,.18)}
 .music-card[data-music-world="blue"]{--music-accent:#73c6ff;--music-accent-soft:rgba(115,198,255,.18)}
 .music-card[data-music-world="silver"]{--music-accent:#d7edf7;--music-accent-soft:rgba(215,237,247,.18)}
+.music-card[data-music-world="midori"]{--music-accent:#55e6ad;--music-accent-soft:rgba(85,230,173,.18)}
 .music-card[data-music-world="locked"]{--music-accent:#8794a6;--music-accent-soft:rgba(135,148,166,.12)}
 .music-world-tabs{grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
 .music-world-tabs button.music-world-tab{height:38px;min-width:0;padding:0;border-radius:9px;font-size:.76rem;transition:transform .16s ease,border-color .16s ease,background .16s ease,opacity .16s ease}
@@ -1482,3 +1483,56 @@ body.blue-endless-rewind .actor.enemy .actor-sprite{animation:blueEndlessWarp .8
 @media (orientation:portrait) and (max-width:360px){
   .music-card{padding:8px;gap:5px}.music-world-tabs{gap:4px}.music-world-tabs button.music-world-tab{height:30px;font-size:.64rem}.music-world-summary{padding:6px 8px}.music-world-summary-copy small{font-size:.43rem}.music-world-summary-copy strong{font-size:.8rem}.music-unlock-summary>span{font-size:.46rem}.music-track-row{min-height:52px}.music-track-copy small{font-size:.5rem}
 }
+
+/* ---------- 翠の世界 / provisional implementation ---------- */
+body[data-mode="midori"] .title-bg,
+body[data-mode="midori"] .sub-bg{background-image:url('./assets/midori_stage1_departure_port.png');filter:saturate(1.08) brightness(.70)}
+body[data-mode="midori"] .title-shade{background:linear-gradient(90deg,rgba(3,25,28,.76),rgba(5,70,63,.15) 52%,rgba(14,16,25,.68)),linear-gradient(180deg,rgba(30,124,111,.05),rgba(2,12,18,.40))}
+body[data-mode="midori"] .title-shell{background:linear-gradient(180deg,rgba(7,36,39,.90),rgba(5,19,27,.97))}
+body[data-mode="midori"] .mode-orb{background:#58e2ba;box-shadow:0 0 14px #63f1c8}
+body[data-mode="midori"] .title-mode-plate,
+body[data-mode="midori"] .title-track,
+body[data-mode="midori"] .title-wallet{border-color:rgba(89,225,190,.34);background:rgba(6,31,34,.84)}
+body[data-mode="midori"] .title-track span,
+body[data-mode="midori"] .title-wallet span{color:#9beed7}
+body[data-mode="midori"] .title-art img{object-fit:contain;object-position:center bottom}
+body[data-mode="midori"] .actor.hero>img{width:94%;height:90%;max-width:94%;max-height:90%;justify-self:center;align-self:end}
+body[data-mode="midori"] .question-panel{border-color:rgba(95,226,185,.54);box-shadow:0 0 20px rgba(57,190,151,.11),0 15px 28px rgba(0,0,0,.36),inset 0 0 0 3px rgba(37,122,101,.10)}
+body[data-mode="midori"] .choices button{border-color:rgba(90,213,179,.48)}
+.debug-stage-btn.debug-world-midori{border-color:rgba(89,220,181,.58);background:linear-gradient(180deg,rgba(28,105,88,.96),rgba(10,51,49,.98))}
+@media (orientation:portrait){body[data-mode="midori"] .title-art img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom}}
+@media (orientation:landscape){body[data-mode="midori"] .title-art img{height:106%;left:50%;max-width:106%}}
+
+/* 翠主人公：長銃用の暫定モーション。既存世界の斬撃表現は変更しない。 */
+body[data-mode="midori"] .actor.hero.attack-front img{animation:midoriGunRecoil .62s cubic-bezier(.18,.82,.22,1) both}
+body[data-mode="midori"] .actor.hero.finisher-front img{animation:midoriGunFinisher .96s cubic-bezier(.12,.78,.18,1) both}
+body[data-mode="midori"] .battlefield>.attack-effect.front-hit .silver-claw-stroke,
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-front-fx .silver-claw-stroke{display:none!important}
+body[data-mode="midori"] .battlefield>.attack-effect.front-hit::before{
+  left:-12%;top:43%;width:118%;height:4px;border-radius:999px;
+  background:linear-gradient(90deg,transparent 0 4%,rgba(255,245,190,.94) 18%,#fff 49%,rgba(255,205,91,.95) 72%,transparent 100%);
+  box-shadow:0 0 8px #fff,0 0 18px rgba(255,198,77,.95);filter:none;
+  transform:rotate(-4deg);animation:midoriBulletTrail .62s ease-out both
+}
+body[data-mode="midori"] .battlefield>.attack-effect.front-hit::after{
+  left:58%;top:27%;width:28%;aspect-ratio:1;height:auto;border-radius:50%;
+  background:radial-gradient(circle,#fff 0 7%,#ffe8a2 8% 17%,rgba(255,178,55,.7) 18% 35%,rgba(73,232,190,.22) 36% 51%,transparent 53%);
+  box-shadow:0 0 16px #fff,0 0 31px rgba(255,178,55,.72);transform:none;animation:midoriShotImpact .62s ease-out both
+}
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-front-fx::before{
+  left:-30%;top:38%;width:140%;height:9px;border-radius:999px;
+  background:linear-gradient(90deg,transparent,#85ffe0 12%,#fff 39%,#ffe8a0 58%,#ffad35 78%,transparent);
+  box-shadow:0 0 14px #fff,0 0 35px rgba(89,238,196,.9),0 0 58px rgba(255,173,53,.72);
+  filter:none;animation:midoriFinisherTrail .96s cubic-bezier(.1,.82,.18,1) both
+}
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-front-fx::after{
+  left:42%;top:12%;width:52%;aspect-ratio:1;height:auto;border-radius:50%;
+  background:radial-gradient(circle,#fff 0 5%,#ffefb4 6% 13%,rgba(92,244,201,.72) 14% 26%,rgba(255,161,42,.42) 27% 41%,transparent 62%);
+  filter:drop-shadow(0 0 28px #fff);animation:midoriFinisherImpact .96s ease-out both
+}
+@keyframes midoriGunRecoil{0%{transform:translate(0,0) rotate(0)}22%{transform:translate(-2.5%,-1%) rotate(-1.3deg)}45%{transform:translate(1%,.3%) rotate(.4deg)}100%{transform:translate(0,0) rotate(0)}}
+@keyframes midoriGunFinisher{0%{transform:translate(0,0) scale(1)}24%{transform:translate(-3%,-1%) rotate(-1.4deg) scale(1.02)}48%{transform:translate(3%,-.5%) rotate(.5deg) scale(1.04);filter:brightness(1.35)}100%{transform:translate(0,0) scale(1);filter:brightness(1)}}
+@keyframes midoriBulletTrail{0%{opacity:0;transform:translateX(-36%) rotate(-4deg) scaleX(.15)}25%{opacity:1;transform:translateX(-8%) rotate(-4deg) scaleX(.82)}62%{opacity:1;transform:translateX(4%) rotate(-4deg) scaleX(1.08)}100%{opacity:0;transform:translateX(18%) rotate(-4deg) scaleX(1.2)}}
+@keyframes midoriShotImpact{0%,22%{opacity:0;transform:scale(.18)}42%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.62)}}
+@keyframes midoriFinisherTrail{0%{opacity:0;transform:translateX(-52%) scaleX(.12)}28%{opacity:1;transform:translateX(-10%) scaleX(.88)}58%{opacity:1;transform:translateX(5%) scaleX(1.16)}100%{opacity:0;transform:translateX(22%) scaleX(1.42)}}
+@keyframes midoriFinisherImpact{0%,24%{opacity:0;transform:scale(.15)}48%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1.78)}}
