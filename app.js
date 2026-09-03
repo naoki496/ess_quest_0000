@@ -181,12 +181,15 @@
   let musicWorld='front',musicSelectedWorld='front',musicTrackIndex=-1;
   const correctSE=new Audio('./assets/correct.mp3'),wrongSE=new Audio('./assets/wrong.mp3');
   const swordSE=new Audio('./assets/sword_a.mp3'),magicSE=new Audio('./assets/mahou_a.mp3'),gunSE=new Audio('./assets/gun.mp3');
+  // 翠の通常射撃は gun.mp3、ボス最終撃破時だけ bom.mp3 を使用する。
+  // bom.mp3 は既存 GitHub assets を参照し、差分ZIPへ重複収録しない。
+  const midoriFinisherSE=new Audio('./assets/bom.mp3');
   const sirenSE=new Audio('./assets/siren.mp3'),cutinSE=new Audio('./assets/cutin.mp3');
   const breakSE=new Audio('./assets/break.mp3');
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
   const countSE=new Audio('./assets/count.mp3'),buttonSE=new Audio('./assets/button.mp3');
   const cancelSE=new Audio('./assets/cancel.mp3'),start321SE=new Audio('./assets/start_321.mp3'),start0SE=new Audio('./assets/start_0.mp3'),clearSE=new Audio('./assets/clear.mp3');
-  gunSE.preload='auto';
+  gunSE.preload='auto';midoriFinisherSE.preload='auto';
   [sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(a=>a.preload='auto');
 
   // BGM collection: only tracks already used by the current game are listed.
@@ -362,9 +365,12 @@ const SECRET_RELICS=[
   {id:'blue_sr_master',name:'鋼の黙示録',icon:'📘',flavor:'蒼の世界の SRモンスターを すべて見つけた証。',notice:'蒼の世界の SRモンスターを すべて見つけた証。'},
   {id:'blue_ssr_master',name:'トータルイクリプス',icon:'◉',flavor:'蒼の世界の SSRモンスターを すべて見つけた証。',notice:'蒼の世界の SSRモンスターを すべて見つけた証。'},
   {id:'world4_sr_master',name:'未来の結晶',icon:'❄️',flavor:'銀の世界の SRモンスターを すべて見つけた証。',notice:'銀の世界の SRモンスターを すべて見つけた証。'},
-  {id:'world4_ssr_master',name:'コランダムギア',icon:'⚙️',flavor:'銀の世界の SSRモンスターを すべて見つけた証。',notice:'銀の世界の SSRモンスターを すべて見つけた証。'}
+  {id:'world4_ssr_master',name:'コランダムギア',icon:'⚙️',flavor:'銀の世界の SSRモンスターを すべて見つけた証。',notice:'銀の世界の SSRモンスターを すべて見つけた証。'},
+  // 翠で新規に得る将来解放用SECRET。既存IDを流用・意味変更しない。
+  {id:'midori_sr_arcenciel',name:'アルカンシェル',icon:'🌈',flavor:'翠の世界の SRモンスターを すべて見つけた証。',notice:'翠の世界の SRモンスターを すべて見つけた証。'},
+  {id:'midori_ssr_singularity',name:'特異点座標',icon:'⌖',flavor:'翠の世界の SSRモンスターを すべて見つけた証。',notice:'翠の世界の SSRモンスターを すべて見つけた証。'}
 ];
-const SECRET_RELIC_VERSION=4;
+const SECRET_RELIC_VERSION=5;
 const WORLD_UNLOCK_VERSION=4;
 const WORLD_UNLOCKS=[
   {world:'back',sourceId:'item-100',sourceName:'時空の鍵',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界'},
@@ -387,7 +393,7 @@ function isWorldActuallyUnlocked(world){
 function worldUnlockByKey(world){return WORLD_UNLOCKS.find(w=>w.world===world);}
 function ownsItemRange(from,to){for(let id=from;id<=to;id++)if(!save.owned.includes(id))return false;return true;}
 function ownsMonsterRaritySet(world,rarity){
-  const catalog=world==='front'?FRONT_MONSTERS:world==='back'?BACK_MONSTERS:world==='crimson'?CRIMSON_MONSTERS:world==='blue'?BLUE_MONSTERS:SILVER_MONSTERS;
+  const catalog=world==='front'?FRONT_MONSTERS:world==='back'?BACK_MONSTERS:world==='crimson'?CRIMSON_MONSTERS:world==='blue'?BLUE_MONSTERS:world==='silver'?SILVER_MONSTERS:MIDORI_MONSTERS;
   const targets=catalog.filter(m=>m.rarity===rarity);
   const seen=new Set(save.monsterBook?.[world]||[]);
   return targets.length>0&&targets.every(m=>seen.has(m.id));
@@ -407,6 +413,8 @@ function eligibleSecretRelics(){
   if(ownsMonsterRaritySet('blue',5))ids.push('blue_ssr_master');
   if(ownsMonsterRaritySet('silver',4))ids.push('world4_sr_master');
   if(ownsMonsterRaritySet('silver',5))ids.push('world4_ssr_master');
+  if(ownsMonsterRaritySet('midori',4))ids.push('midori_sr_arcenciel');
+  if(ownsMonsterRaritySet('midori',5))ids.push('midori_ssr_singularity');
   return ids;
 }
 function syncSecretRelics({silent=false}={}){
@@ -1841,7 +1849,8 @@ function markWorldVisited(world){
   }
   function clearBattleFx(){
     els.heroActor.classList.remove('attack-front','attack-back','finisher-front','finisher-back');
-    els.enemyActor.classList.remove('hit','finisher-hit');
+    els.enemyActor.classList.remove('hit','finisher-hit','finisher-midori-hit');
+    document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');
     els.attackEffect.className='attack-effect';
     els.answerMark.hidden=true;
     els.answerMark.className='answer-mark';
@@ -1866,14 +1875,30 @@ function markWorldVisited(world){
   }
   function playFinisherSE(){
     if(!soundOn)return;
-    const a=mode==='midori'?gunSE:mode==='back'?backFinisherSE:frontFinisherSE;
-    try{a.currentTime=0;a.play().catch(()=>playAttackSE());}catch{playAttackSE();}
+    const a=mode==='midori'?midoriFinisherSE:mode==='back'?backFinisherSE:frontFinisherSE;
+    try{
+      a.currentTime=0;
+      const promise=a.play();
+      if(promise&&typeof promise.catch==='function')promise.catch(()=>{if(mode!=='midori')playAttackSE();});
+    }catch{if(mode!=='midori')playAttackSE();}
   }
   function runFinisherMotion(){
     els.heroActor.classList.remove('attack-front','attack-back','finisher-front','finisher-back');
-    els.enemyActor.classList.remove('hit','finisher-hit');
+    els.enemyActor.classList.remove('hit','finisher-hit','finisher-midori-hit');
+    const battlefield=document.querySelector('.battlefield');
+    battlefield?.classList.remove('midori-finisher-impact');
     els.attackEffect.className='attack-effect';
     void els.heroActor.offsetWidth;void els.attackEffect.offsetWidth;
+    if(mode==='midori'){
+      // 翠の最後の一撃は、白フラッシュではなく重い反動・衝撃輪・ノックバックで強調する。
+      // 通常攻撃の gun.mp3 は使わず、ここだけ bom.mp3 を鳴らす。
+      els.heroActor.classList.add('finisher-front');
+      els.attackEffect.classList.add('finisher-midori-fx');
+      els.enemyActor.classList.add('finisher-midori-hit');
+      battlefield?.classList.add('midori-finisher-impact');
+      playFinisherSE();
+      return;
+    }
     const magicVisual=mode==='back'||(mode==='blue'&&isBlueAdultPhase());
     els.heroActor.classList.add(magicVisual?'finisher-back':'finisher-front');
     els.attackEffect.classList.add(magicVisual?'finisher-back-fx':'finisher-front-fx');
@@ -3495,8 +3520,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.enemyActor.classList.add('boss-defeat');
     await sleep(2100);
     if(mode==='crimson'&&crimsonLastPhase){enemyVisualToken++;concealEnemyVisual(true);}
-    els.enemyActor.classList.remove('boss-defeat','finisher-hit');
+    els.enemyActor.classList.remove('boss-defeat','finisher-hit','finisher-midori-hit');
     els.heroActor.classList.remove('finisher-front','finisher-back');
+    document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');
     els.attackEffect.className='attack-effect';
     if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await finishRun();return;}
     await clearStage();
@@ -3507,6 +3533,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(mode==='back')return stageIndex===4?15:5;
     if(mode==='crimson')return 5;
     if(mode==='silver')return stageIndex===4?20:5;
+    if(mode==='midori')return stageIndex===4?20:5;
     return 5;
   }
   function grantStageClearGold(key,reward){
@@ -3618,7 +3645,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   if(els.worldWarpBackBtn)els.worldWarpBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1200);};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
   els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
-  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[gunSE,sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
+  els.soundBtn.onclick=()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[gunSE,midoriFinisherSE,sirenSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);if(currentBgm)currentBgm.play().catch(()=>{});}};
   els.pauseBtn.onclick=pauseGame;
   if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
   els.pauseResumeBtn.onclick=resumeGame;

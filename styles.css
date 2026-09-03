@@ -1505,7 +1505,7 @@ body[data-mode="midori"] .choices button{border-color:rgba(90,213,179,.48)}
 
 /* 翠主人公：長銃用の暫定モーション。既存世界の斬撃表現は変更しない。 */
 body[data-mode="midori"] .actor.hero.attack-front img{animation:midoriGunRecoil .62s cubic-bezier(.18,.82,.22,1) both}
-body[data-mode="midori"] .actor.hero.finisher-front img{animation:midoriGunFinisher .96s cubic-bezier(.12,.78,.18,1) both}
+body[data-mode="midori"] .actor.hero.finisher-front img{animation:midoriGunFinisher 1.18s cubic-bezier(.12,.78,.18,1) both}
 body[data-mode="midori"] .battlefield>.attack-effect.front-hit .silver-claw-stroke,
 body[data-mode="midori"] .battlefield>.attack-effect.finisher-front-fx .silver-claw-stroke{display:none!important}
 body[data-mode="midori"] .battlefield>.attack-effect.front-hit::before{
@@ -1531,11 +1531,41 @@ body[data-mode="midori"] .battlefield>.attack-effect.finisher-front-fx::after{
   filter:drop-shadow(0 0 28px #fff);animation:midoriFinisherImpact .96s ease-out both
 }
 @keyframes midoriGunRecoil{0%{transform:translate(0,0) rotate(0)}22%{transform:translate(-2.5%,-1%) rotate(-1.3deg)}45%{transform:translate(1%,.3%) rotate(.4deg)}100%{transform:translate(0,0) rotate(0)}}
-@keyframes midoriGunFinisher{0%{transform:translate(0,0) scale(1)}24%{transform:translate(-3%,-1%) rotate(-1.4deg) scale(1.02)}48%{transform:translate(3%,-.5%) rotate(.5deg) scale(1.04);filter:brightness(1.35)}100%{transform:translate(0,0) scale(1);filter:brightness(1)}}
+@keyframes midoriGunFinisher{0%{transform:translate(0,0) scale(1)}22%{transform:translate(-5%,-1.5%) rotate(-2deg) scale(1.015)}42%{transform:translate(2.5%,-.5%) rotate(.65deg) scale(1.03);filter:brightness(1.08)}64%{transform:translate(-1%,0) rotate(-.25deg) scale(1.015);filter:brightness(1.03)}100%{transform:translate(0,0) scale(1);filter:brightness(1)}}
 @keyframes midoriBulletTrail{0%{opacity:0;transform:translateX(-36%) rotate(-4deg) scaleX(.15)}25%{opacity:1;transform:translateX(-8%) rotate(-4deg) scaleX(.82)}62%{opacity:1;transform:translateX(4%) rotate(-4deg) scaleX(1.08)}100%{opacity:0;transform:translateX(18%) rotate(-4deg) scaleX(1.2)}}
 @keyframes midoriShotImpact{0%,22%{opacity:0;transform:scale(.18)}42%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.62)}}
 @keyframes midoriFinisherTrail{0%{opacity:0;transform:translateX(-52%) scaleX(.12)}28%{opacity:1;transform:translateX(-10%) scaleX(.88)}58%{opacity:1;transform:translateX(5%) scaleX(1.16)}100%{opacity:0;transform:translateX(22%) scaleX(1.42)}}
 @keyframes midoriFinisherImpact{0%,24%{opacity:0;transform:scale(.15)}48%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1.78)}}
+
+/* 翠ボス撃破フィニッシャー：光刺激を増やさず、重い反動・衝撃輪・ノックバックで差別化。 */
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx{
+  z-index:72;opacity:1;right:-4%;bottom:0;width:46%;height:90%;overflow:visible;pointer-events:none
+}
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx .silver-claw-stroke{display:none!important}
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx::before{
+  content:"";position:absolute;left:-34%;top:42%;width:145%;height:10px;border-radius:999px;
+  background:linear-gradient(90deg,transparent 0 4%,rgba(70,202,167,.18) 10%,rgba(92,222,185,.88) 30%,rgba(232,195,92,.88) 62%,rgba(213,128,48,.72) 78%,transparent 100%);
+  box-shadow:0 0 12px rgba(75,222,181,.42),0 0 28px rgba(206,153,55,.32);
+  transform-origin:left center;animation:midoriHeavyRound 1.18s cubic-bezier(.12,.78,.18,1) both
+}
+body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx::after{
+  content:"";position:absolute;left:48%;top:22%;width:42%;aspect-ratio:1;border-radius:50%;
+  border:clamp(5px,.8vw,9px) solid rgba(72,211,174,.74);
+  background:radial-gradient(circle,rgba(209,151,59,.18) 0 18%,rgba(63,176,151,.12) 19% 35%,transparent 36%);
+  box-shadow:0 0 18px rgba(77,214,178,.34),inset 0 0 14px rgba(202,145,51,.22);
+  animation:midoriHeavyShockRing 1.22s ease-out both
+}
+body[data-mode="midori"] .actor.enemy.finisher-midori-hit .actor-sprite{animation:midoriHeavyVictim 1.24s cubic-bezier(.16,.76,.22,1) both}
+body[data-mode="midori"] .battlefield.midori-finisher-impact{animation:midoriHeavyScreenKick 1.12s cubic-bezier(.18,.72,.22,1) both}
+@keyframes midoriHeavyRound{0%{opacity:0;transform:translateX(-42%) scaleX(.18)}24%{opacity:.92;transform:translateX(-7%) scaleX(.82)}48%{opacity:.82;transform:translateX(5%) scaleX(1.08)}78%{opacity:.24;transform:translateX(15%) scaleX(1.22)}100%{opacity:0;transform:translateX(23%) scaleX(1.32)}}
+@keyframes midoriHeavyShockRing{0%,30%{opacity:0;transform:scale(.38)}48%{opacity:.82;transform:scale(.82)}72%{opacity:.42;transform:scale(1.24)}100%{opacity:0;transform:scale(1.68)}}
+@keyframes midoriHeavyVictim{0%{transform:translate(0,0) rotate(0);filter:brightness(1)}32%{transform:translate(-7%,-1%) rotate(-2.2deg);filter:brightness(1.08)}48%{transform:translate(3%,.5%) rotate(1.1deg);filter:brightness(1.04)}66%{transform:translate(-2%,0) rotate(-.5deg);filter:brightness(1.02)}100%{transform:translate(0,0) rotate(0);filter:brightness(1)}}
+@keyframes midoriHeavyScreenKick{0%,26%{transform:translate(0,0)}36%{transform:translate(-6px,2px)}48%{transform:translate(4px,-1px)}60%{transform:translate(-2px,1px)}76%{transform:translate(1px,0)}100%{transform:translate(0,0)}}
+@media (prefers-reduced-motion:reduce){
+  body[data-mode="midori"] .battlefield.midori-finisher-impact{animation:none!important}
+  body[data-mode="midori"] .actor.enemy.finisher-midori-hit .actor-sprite{animation:midoriHeavyVictimReduced .8s ease-out both}
+  @keyframes midoriHeavyVictimReduced{0%{transform:translateX(0)}45%{transform:translateX(-3%)}100%{transform:translateX(0)}}
+}
 
 /* ===== 翠ボス特殊行動 / low-stimulation presentation ===== */
 /* 翠では全画面の白フラッシュと高速の斬光を使わない。既存カットインの構図だけを利用する。 */
@@ -1590,4 +1620,14 @@ body.midori-tide-active .choices button:disabled:not(.special-shattered){opacity
   .question-panel.midori-tide-question .equation-box{height:126px}
   .midori-tide-view{padding:6px}.midori-tide-tabs{gap:3px}.midori-tide-tab{min-height:44px;font-size:.62rem}.midori-tide-condition{font-size:.88rem}
   body.midori-sonar-active .choices button.midori-sonar-choice{font-size:.74rem;line-height:1.06}
+}
+
+/* 縦画面では敵が上段にいるため、翠フィニッシャーの弾道も敵領域へ限定する。
+   問題パネルを横切る全画面級の効果にはしない。 */
+@media (orientation:portrait){
+  body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx{
+    right:-1%;top:3%;bottom:auto;width:38%;height:31%
+  }
+  body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx::before{left:-36%;top:46%;width:145%;height:8px}
+  body[data-mode="midori"] .battlefield>.attack-effect.finisher-midori-fx::after{left:47%;top:7%;width:47%}
 }
