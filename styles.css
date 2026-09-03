@@ -1536,3 +1536,58 @@ body[data-mode="midori"] .battlefield>.attack-effect.finisher-front-fx::after{
 @keyframes midoriShotImpact{0%,22%{opacity:0;transform:scale(.18)}42%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.62)}}
 @keyframes midoriFinisherTrail{0%{opacity:0;transform:translateX(-52%) scaleX(.12)}28%{opacity:1;transform:translateX(-10%) scaleX(.88)}58%{opacity:1;transform:translateX(5%) scaleX(1.16)}100%{opacity:0;transform:translateX(22%) scaleX(1.42)}}
 @keyframes midoriFinisherImpact{0%,24%{opacity:0;transform:scale(.15)}48%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1.78)}}
+
+/* ===== 翠ボス特殊行動 / low-stimulation presentation ===== */
+/* 翠では全画面の白フラッシュと高速の斬光を使わない。既存カットインの構図だけを利用する。 */
+.boss-cutin.reduced-flash .cutin-white,
+.boss-cutin.reduced-flash .cutin-slash{display:none!important}
+.boss-cutin.reduced-flash .cutin-band{filter:saturate(.86) brightness(.9)}
+
+.question-panel.midori-special-panel{overflow:visible}
+body.midori-aim-active .choices button{position:relative;transition:transform .14s ease,outline-color .14s ease,box-shadow .14s ease,opacity .14s ease}
+body.midori-aim-active .choices button.midori-aim-selected{outline:3px solid rgba(255,222,109,.96);box-shadow:0 0 0 2px rgba(255,214,85,.18),0 6px 14px rgba(0,0,0,.32)!important;transform:translateY(-2px)}
+body.midori-aim-active .choices button.midori-aim-selected::after{content:"照準";position:absolute;right:6px;top:5px;padding:2px 5px;border-radius:999px;background:rgba(82,59,12,.84);color:#ffe88f;font:900 .52rem/1 "Yu Gothic UI",sans-serif;letter-spacing:.04em}
+
+body.midori-sonar-active .choices button.midori-sonar-choice{font-family:"Hiragino Sans","Yu Gothic UI","BIZ UDPGothic",system-ui,sans-serif;font-size:clamp(.86rem,1.8vw,1.18rem);font-weight:900;line-height:1.12;white-space:normal}
+body.midori-sonar-active .choices button.midori-sonar-rejected{opacity:.38;text-decoration:line-through;text-decoration-thickness:2px;filter:saturate(.4)}
+
+body.midori-rune-active .choices button.midori-rune-choice{font-family:"Hiragino Sans","Yu Gothic UI","BIZ UDPGothic",system-ui,sans-serif;font-size:clamp(1.2rem,2.7vw,2.2rem);font-weight:900;letter-spacing:.03em}
+
+body.midori-route-active .choices button{transition:opacity .16s ease,filter .16s ease,transform .16s ease,outline-color .16s ease}
+body.midori-route-active .choices button.midori-route-discarded{opacity:.42;filter:saturate(.35);text-decoration:line-through;text-decoration-thickness:3px;transform:scale(.97)}
+body.midori-route-active .choices button.midori-route-last{outline:3px solid rgba(86,228,183,.94);box-shadow:0 0 0 2px rgba(78,220,177,.18),0 6px 14px rgba(0,0,0,.32)!important;transform:translateY(-2px)}
+
+.question-panel.midori-tide-question .equation-box{height:122px}
+.question-panel.midori-tide-question .math-problem{display:block!important;width:100%!important;max-width:100%!important;height:100%;white-space:normal!important;font-family:"Hiragino Sans","Yu Gothic UI","BIZ UDPGothic",system-ui,sans-serif;font-size:1rem!important;line-height:1.15!important}
+.midori-tide-view{width:100%;height:100%;box-sizing:border-box;padding:9px 11px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:7px;color:#173e39}
+.midori-tide-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.midori-tide-tab{min-height:40px;border:1px solid rgba(35,111,100,.45);border-radius:8px;background:rgba(255,255,255,.46);color:#174640;font:900 .72rem/1.1 "Hiragino Sans","Yu Gothic UI",sans-serif;padding:4px;cursor:pointer}
+.midori-tide-tab.active{background:#d6f3e9;border-color:#3aa88c;box-shadow:inset 0 0 0 2px rgba(58,168,140,.14)}
+.midori-tide-tab:disabled{cursor:default;opacity:.7}
+.midori-tide-condition{min-width:0;display:grid;place-items:center;text-align:center;font:900 clamp(.92rem,1.8vw,1.28rem)/1.24 "Hiragino Sans","Yu Gothic UI",sans-serif;overflow-wrap:anywhere}
+body.midori-tide-active .choices button:disabled:not(.special-shattered){opacity:.58;cursor:default}
+
+@media (orientation:landscape) and (max-height:700px){
+  .question-panel.midori-tide-question .equation-box{height:104px}
+  .midori-tide-view{padding:6px 8px;gap:5px}.midori-tide-tab{min-height:34px;font-size:.62rem}.midori-tide-condition{font-size:.86rem}
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-mode="midori"] .choices button{height:44px;min-height:44px}
+  .question-panel.midori-tide-question{top:2.5%;padding:4px 6px 6px}
+  .question-panel.midori-tide-question .question-cap,.question-panel.midori-tide-question .choice-caption{display:none}
+  .question-panel.midori-tide-question .feedback{height:7px}
+  .question-panel.midori-tide-question .equation-box{height:88px;margin:2px 0}
+  .midori-tide-view{padding:4px 6px;gap:3px}.midori-tide-tabs{gap:3px}.midori-tide-tab{min-height:28px;font-size:.55rem;padding:2px}.midori-tide-condition{font-size:.76rem;line-height:1.12}
+  body.midori-sonar-active .choices button.midori-sonar-choice{font-size:.72rem;line-height:1.05}
+}
+@media (orientation:portrait){
+  .question-panel.midori-tide-question{top:32%;left:4%;right:4%}
+  .question-panel.midori-tide-question .equation-box{height:132px}
+  .midori-tide-tab{min-height:44px;font-size:.72rem}.midori-tide-condition{font-size:1rem}
+}
+@media (orientation:portrait) and (max-width:340px){
+  .question-panel.midori-tide-question{left:3%;right:3%;top:31%}
+  .question-panel.midori-tide-question .equation-box{height:126px}
+  .midori-tide-view{padding:6px}.midori-tide-tabs{gap:3px}.midori-tide-tab{min-height:44px;font-size:.62rem}.midori-tide-condition{font-size:.88rem}
+  body.midori-sonar-active .choices button.midori-sonar-choice{font-size:.74rem;line-height:1.06}
+}

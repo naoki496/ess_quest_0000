@@ -168,6 +168,7 @@
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
   let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false,blueSpecialBusy=false,silverSnowballCycleToken=0,silverBeastCycleToken=0,blueMemoryDim=0,blueAdultState=false;
+  let midoriSpecialState=null;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null;
   const stageBgmPlayer=new Audio();
@@ -1810,6 +1811,7 @@ function markWorldVisited(world){
     const playable=!els.gameScreen.hidden&&!paused&&!gameOverActive&&!locked&&!silverSpecialBusy&&!crimsonMoonShiftBusy&&!blueSpecialBusy&&!specialActive&&!!timerId&&!!currentQuestion;
     els.pauseBtn.disabled=!playable;
     els.pauseBtn.setAttribute('aria-disabled',playable?'false':'true');
+    syncMidoriSpecialControls();
   }
   function stopTimer(){clearInterval(timerId);timerId=null;syncPauseButton();}
   function updateTimerUrgency(){
@@ -2060,8 +2062,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const value=Math.max(0,Math.min(100,specialGauge));
     els.specialFill.style.width=`${value}%`;
     els.specialHud.classList.toggle('ready',value>=100);
-    const canUse=value>=100&&!specialActive&&!crimsonMoonShiftBusy&&!silverSpecialBusy&&!blueSpecialBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
-    els.specialBtn.hidden=value<100||!currentQuestion||!timerId||paused||gameOverActive||specialActive;
+    const midoriBlocked=midoriSpecialBlocksAssist();
+    const canUse=value>=100&&!midoriBlocked&&!specialActive&&!crimsonMoonShiftBusy&&!silverSpecialBusy&&!blueSpecialBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
+    els.specialBtn.hidden=value<100||midoriBlocked||!currentQuestion||!timerId||paused||gameOverActive||specialActive;
     els.specialBtn.disabled=!canUse;
     els.specialBtn.setAttribute('aria-disabled',canUse?'false':'true');
   }
@@ -2072,6 +2075,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(globallyLocked){buttons.forEach(b=>b.disabled=true);return;}
 
     const viable=b=>b.dataset.eliminated!=='true'&&!b.classList.contains('mirror-vanished');
+    if(midoriSpecialState?.type==='tide'&&!midoriSpecialState.ready){buttons.forEach(b=>b.disabled=true);syncMidoriSpecialControls();return;}
     if(document.body.classList.contains('silver-spotlight-active')){
       const active=buttons.filter(viable);
       // A choice removed by the hero special can still carry the old spotlight class.
@@ -2100,7 +2104,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   function resetSpecialGauge(){specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('special-assist-active');updateSpecialHud();}
   async function activateSpecialMove(){
-    if(specialActive||crimsonMoonShiftBusy||silverSpecialBusy||blueSpecialBusy||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
+    if(midoriSpecialBlocksAssist()||specialActive||crimsonMoonShiftBusy||silverSpecialBusy||blueSpecialBusy||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
     const wrongButtons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&b.dataset.mirrorFake!=='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
     if(!wrongButtons.length)return;
     specialActive=true;locked=true;
@@ -2125,7 +2129,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await sleep(260);
     document.body.classList.remove('special-assist-active');
     specialActive=false;locked=false;
-    restoreChoiceInteractivity();
+    syncMidoriAfterElimination();restoreChoiceInteractivity();
     updateSpecialHud();syncPauseButton();
     if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true});
   }
@@ -2188,31 +2192,50 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(!els.mathProblem)return;
     for(const prop of ['font-size','max-width','width','white-space','line-height','overflow-wrap','word-break','display','text-align'])els.mathProblem.style.removeProperty(prop);
   }
+  function expressionNeedsEqualsPrompt(expression=''){
+    const text=String(expression??'').trim();
+    if(!text||/[?？□=＝]/.test(text))return false;
+    // Natural-language prompts, labels, ratios and classifications are questions in their
+    // own right. Appending "=?" to them is semantically wrong (notably in ratio tasks).
+    if(/[ぁ-んァ-ヶ一-龯々]/.test(text)||text.includes(':')||text.includes('：'))return false;
+    // Only compact arithmetic expressions receive the traditional "=?" suffix.
+    return /^[0-9０-９\s.,．+＋\-−ー×÷*/()%％]+$/.test(text);
+  }
+  function questionDisplayText(q){
+    if(q?.displayExpression!=null)return String(q.displayExpression);
+    const expression=String(q?.expression??'');
+    return expressionNeedsEqualsPrompt(expression)?`${expression}=?`:expression;
+  }
   function fitMathProblemToBox(q=currentQuestion){
     const el=els.mathProblem,box=el?.closest('.equation-box');
     if(!el||!box)return;
     resetMathProblemFit();
-    if(q?.fraction||q?.visualType||(mode!=='silver'&&mode!=='blue'))return;
+    if(q?.fraction||q?.visualType)return;
     const maxWidth=Math.max(100,box.clientWidth-18);
     const maxHeight=Math.max(42,box.clientHeight-10);
-    el.style.maxWidth=`${maxWidth}px`;
-    el.style.whiteSpace='nowrap';
-    const base=parseFloat(getComputedStyle(el).fontSize)||32;
     const portrait=window.matchMedia?.('(orientation:portrait)').matches;
-    const minSingle=portrait?21:(window.innerHeight<=500?20:24);
-    let size=base;
+    const lowLandscape=!portrait&&window.innerHeight<=500;
+    const shown=String(q?.displayExpression??q?.expression??'');
+    const textual=/[ぁ-んァ-ヶ一-龯々]/.test(shown)||shown.length>=22;
+    const base=parseFloat(getComputedStyle(el).fontSize)||32;
+    const minSingle=portrait?20:(lowLandscape?17:22);
+    let size=textual?Math.min(base,portrait?27:(lowLandscape?20:30)):base;
+    el.style.maxWidth=`${maxWidth}px`;
+    el.style.fontSize=`${size}px`;
+    el.style.whiteSpace='nowrap';
     while(el.scrollWidth>maxWidth&&size>minSingle){size=Math.max(minSingle,size-1);el.style.fontSize=`${size}px`;}
-    if(el.scrollWidth>maxWidth){
+    if(textual||el.scrollWidth>maxWidth){
       el.style.width=`${maxWidth}px`;
       el.style.maxWidth=`${maxWidth}px`;
       el.style.whiteSpace='normal';
       el.style.display='block';
       el.style.textAlign='center';
-      el.style.lineHeight='1.15';
+      el.style.lineHeight=textual?'1.22':'1.15';
       el.style.overflowWrap='anywhere';
       el.style.wordBreak='normal';
-      size=minSingle;el.style.fontSize=`${size}px`;
-      while(el.scrollHeight>maxHeight&&size>16){size--;el.style.fontSize=`${size}px`;}
+      size=Math.min(size,minSingle);el.style.fontSize=`${size}px`;
+      const minWrap=lowLandscape?13:15;
+      while(el.scrollHeight>maxHeight&&size>minWrap){size--;el.style.fontSize=`${size}px`;}
     }
   }
   function renderBlueFadeParts(q){
@@ -2226,7 +2249,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     setFractionQuestionLayout(!!q?.fraction);setMimesisQuestionLayout(q?.visualType||'',mode==='silver'&&bossPhase&&stageIndex===4);resetMathProblemFit();
     if(renderMimesisVisual(q))return;
     if(renderBlueFadeParts(q)){fitMathProblemToBox(q);return;}
-    if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=q?.displayExpression||`${q.expression}=?`;
+    if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=questionDisplayText(q);
     fitMathProblemToBox(q);
   }
   function renderChoiceButton(b,v,answer){
@@ -2244,7 +2267,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     updateBlueStage5Dimming();locked=false;syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){setFractionQuestionLayout(false);setMimesisQuestionLayout('',false);resetMathProblemFit();els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
+  function clearQuestionUi(){setFractionQuestionLayout(false);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -2344,7 +2367,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       art.style.setProperty('--cutin-side',`${focus.side}%`);
       c.style.setProperty('--cutin-duration',`${duration}ms`);
       const originalFacing=side==='enemy'&&(imgFile.includes('_crimson_')||BATTLE_KEEP_ORIGINAL_FACING.has(imgFile));
-      c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'} ${variant==='assist'?'assist-cutin':'finisher-cutin'}${originalFacing?' cutin-original-facing':''}`;
+      const reducedFlash=mode==='midori';
+      c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'} ${variant==='assist'?'assist-cutin':'finisher-cutin'}${originalFacing?' cutin-original-facing':''}${reducedFlash?' reduced-flash':''}`;
       c.hidden=false;
       document.querySelector('.battlefield')?.classList.add('cutin-scene');
       playSE(cutinSE);
@@ -2422,6 +2446,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       {type:'silver-beast-ring',name:'驚獣大火輪',time:60},
       {type:'silver-spotlight',name:'白夜大演目',time:60},
       {type:'silver-mimesis',name:'逆相鏡界',time:60}
+    ],
+    midori:[
+      {type:'midori-aim',name:'総督砲令・照準装填',time:60},
+      {type:'midori-sonar',name:'深海探査・潮流同定',time:60},
+      {type:'midori-rune',name:'翠刻碑文・数式封印',time:60},
+      {type:'midori-route',name:'黒帆包囲・航路選別',time:60},
+      {type:'midori-tide',name:'三叉潮界・大渦審判',time:60}
     ]
   };
   const CRIMSON_LAST_SPECIAL={type:'crimson-genma',name:'無明の一閃',time:15};
@@ -2508,6 +2539,137 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(chip)setBossStepChip(chip,step);else{$('bossStrikeChip')?.remove();}
     locked=false;syncPauseButton();updateSpecialHud();
   }
+  function clearMidoriSpecialEffects(){
+    midoriSpecialState=null;
+    document.body.classList.remove('midori-aim-active','midori-sonar-active','midori-rune-active','midori-route-active','midori-tide-active');
+    const panel=document.querySelector('.question-panel');
+    if(panel)panel.classList.remove('midori-special-panel','midori-tide-question');
+    document.querySelectorAll('.midori-aim-selected,.midori-route-discarded,.midori-route-last,.midori-rune-choice').forEach(b=>b.classList.remove('midori-aim-selected','midori-route-discarded','midori-route-last','midori-rune-choice'));
+    $('midoriTideView')?.remove();
+  }
+  function midoriSpecialBlocksAssist(){
+    return !!(midoriSpecialState?.blockSpecial);
+  }
+  function syncMidoriSpecialControls(){
+    const state=midoriSpecialState;
+    if(!state)return;
+    const blocked=paused||specialActive||locked||gameOverActive;
+    document.querySelectorAll('.midori-tide-tab').forEach(b=>{b.disabled=blocked;});
+    if(state.type==='tide'&&!state.ready){[...els.choices.children].forEach(b=>b.disabled=true);}
+  }
+  function syncMidoriAfterElimination(){
+    const state=midoriSpecialState;if(!state)return;
+    if(state.type==='aim'&&state.selected){
+      const selected=[...els.choices.children].find(b=>b.dataset.answerValue===state.selected&&b.dataset.eliminated!=='true');
+      if(!selected){state.selected=null;els.feedbackText.textContent='照準を解除しました。もう一度答えを選ぼう。';}
+    }
+    if(state.type==='route')updateMidoriRouteState();
+  }
+  function startMidoriAim(){
+    midoriSpecialState={type:'aim',selected:null,blockSpecial:false};
+    document.body.classList.add('midori-aim-active');document.querySelector('.question-panel')?.classList.add('midori-special-panel');
+    els.feedbackText.textContent='答えを1回タップして照準。もう一度同じ答えで砲撃確定。';
+    [...els.choices.children].forEach(b=>{
+      const value=b.dataset.answerValue;
+      b.onclick=()=>{
+        if(locked||paused||specialActive||b.disabled)return;
+        if(midoriSpecialState?.selected===value){resolveAnswer(value,false);return;}
+        midoriSpecialState.selected=value;
+        [...els.choices.children].forEach(x=>x.classList.toggle('midori-aim-selected',x===b));
+        els.feedbackText.textContent=`照準：${b.textContent}　もう一度タップで砲撃！`;
+      };
+    });
+  }
+  function sonarRuleForQuestion(q){
+    const nums=String(q?.expression||'').match(/-?\d+(?:\.\d+)?/g)?.slice(0,4).map(Number)||[];
+    let step=nums.length>=2?nums[1]-nums[0]:0;
+    if(!step||nums.some((v,i)=>i&&Math.abs((v-nums[i-1])-step)>.0001))step=-6;
+    const amount=Math.abs(step),direction=step>0?'大きくなる':'小さくなる';
+    const correct=`${amount}ずつ${direction}`;
+    const opposite=`${amount}ずつ${step>0?'小さくなる':'大きくなる'}`;
+    const altAmount=amount===1?2:Math.max(1,amount-1);
+    const alternate=`${altAmount}ずつ${direction}`;
+    return{correct,choices:shuffle([correct,opposite,alternate])};
+  }
+  function renderMidoriSonarAnswer(source){
+    currentQuestion=source;renderQuestionContent(source);els.choices.innerHTML='';
+    choicesForQuestion(source).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,source.answer);els.choices.appendChild(b);});
+    midoriSpecialState={type:'sonar',phase:'answer',blockSpecial:false,source};
+    bossSpecialSequence={type:'midori-sonar',step:'answer'};
+    els.feedbackText.textContent='潮流を特定！ 規則を使って答えを選ぼう。';
+    restoreChoiceInteractivity();updateSpecialHud();syncPauseButton();
+  }
+  function startMidoriSonar(){
+    const source=currentQuestion,rule=sonarRuleForQuestion(source);
+    midoriSpecialState={type:'sonar',phase:'rule',blockSpecial:true,source,rule};
+    bossSpecialSequence={type:'midori-sonar',step:'rule'};
+    document.body.classList.add('midori-sonar-active');document.querySelector('.question-panel')?.classList.add('midori-special-panel');
+    els.mathProblem.textContent=`${questionDisplayText(source)}　変わり方を特定せよ`;
+    fitMathProblemToBox({...source,displayExpression:els.mathProblem.textContent});
+    els.choices.innerHTML='';
+    rule.choices.forEach(text=>{const b=document.createElement('button');b.textContent=text;b.className='text-choice midori-sonar-choice';b.dataset.answerValue=text;b.onclick=()=>{
+      if(locked||paused||specialActive||b.disabled)return;
+      if(text===rule.correct){b.classList.add('correct');renderMidoriSonarAnswer(source);return;}
+      b.classList.add('midori-sonar-rejected');b.disabled=true;els.feedbackText.textContent='その潮流ではない。差をもう一度比べよう。';
+    };els.choices.appendChild(b);});
+    els.feedbackText.textContent='SONAR：となり合う数の変わり方を選ぼう。';
+    updateSpecialHud();syncPauseButton();
+  }
+  function midoriRuneExpression(value,index=0){
+    const n=Number(value);if(!Number.isFinite(n))return String(value);
+    const abs=Math.abs(n),sign=n<0?'-':'';
+    const pairs=[];for(let a=2;a<=9;a++)if(Number.isInteger(abs/a)&&abs/a>=2&&abs/a<=12)pairs.push([a,abs/a]);
+    if(pairs.length){const [a,b]=pairs[index%pairs.length];return`${sign}${a} × ${b}`;}
+    const add=Math.min(9,Math.max(2,Math.floor(abs/3)||2));return`${sign}${Math.max(0,abs-add)} + ${add}`;
+  }
+  function startMidoriRune(){
+    midoriSpecialState={type:'rune',blockSpecial:false};
+    document.body.classList.add('midori-rune-active');document.querySelector('.question-panel')?.classList.add('midori-special-panel');
+    [...els.choices.children].forEach((b,i)=>{if(b.dataset.eliminated==='true')return;const value=b.dataset.answerValue;b.textContent=midoriRuneExpression(value,i);b.classList.add('midori-rune-choice');b.setAttribute('aria-label',`碑文 ${b.textContent}`);});
+    els.feedbackText.textContent='碑文の式が表す数を読み、答えを選ぼう。';
+  }
+  function updateMidoriRouteState(){
+    if(midoriSpecialState?.type!=='route')return;
+    const buttons=[...els.choices.children],removed=buttons.filter(b=>b.dataset.eliminated==='true'||b.classList.contains('midori-route-discarded'));
+    const remaining=buttons.filter(b=>b.dataset.eliminated!=='true'&&!b.classList.contains('midori-route-discarded'));
+    buttons.forEach(b=>b.classList.remove('midori-route-last'));
+    if(removed.length>=2&&remaining.length===1){remaining[0].classList.add('midori-route-last');els.feedbackText.textContent='最終航路を決定。残した答えをタップして確定！';}
+    else els.feedbackText.textContent='違うと思う航路を2つ消そう。もう一度タップで戻せる。';
+  }
+  function startMidoriRoute(){
+    midoriSpecialState={type:'route',blockSpecial:false};
+    document.body.classList.add('midori-route-active');document.querySelector('.question-panel')?.classList.add('midori-special-panel');
+    [...els.choices.children].forEach(b=>{
+      const value=b.dataset.answerValue;
+      b.onclick=()=>{
+        if(locked||paused||specialActive||b.disabled||b.dataset.eliminated==='true')return;
+        const all=[...els.choices.children],remaining=all.filter(x=>x.dataset.eliminated!=='true'&&!x.classList.contains('midori-route-discarded'));
+        if(b.classList.contains('midori-route-last')&&remaining.length===1){resolveAnswer(value,false);return;}
+        b.classList.toggle('midori-route-discarded');updateMidoriRouteState();
+      };
+    });updateMidoriRouteState();
+  }
+  function midoriTideConditions(q){
+    if(String(q?.expression||'').includes('偶数で'))return['偶数である','20より大きく30より小さい','3の倍数である'];
+    return['条件①を満たす','条件②を満たす','条件③も満たす'];
+  }
+  function startMidoriTide(){
+    const source=currentQuestion,conditions=midoriTideConditions(source),seen=new Set([0]);
+    midoriSpecialState={type:'tide',blockSpecial:true,source,conditions,seen,ready:false};
+    document.body.classList.add('midori-tide-active');const panel=document.querySelector('.question-panel');panel?.classList.add('midori-special-panel','midori-tide-question');
+    els.mathProblem.replaceChildren();
+    const view=document.createElement('div');view.id='midoriTideView';view.className='midori-tide-view';
+    const tabs=document.createElement('div');tabs.className='midori-tide-tabs';
+    const condition=document.createElement('div');condition.className='midori-tide-condition';condition.textContent=conditions[0];
+    conditions.forEach((text,i)=>{const b=document.createElement('button');b.type='button';b.className=`midori-tide-tab${i===0?' active':''}`;b.textContent=`潮流 ${['I','II','III'][i]}`;b.onclick=()=>{
+      if(paused||specialActive||locked)return;seen.add(i);condition.textContent=text;[...tabs.children].forEach((x,j)=>x.classList.toggle('active',j===i));
+      if(seen.size===3&&!midoriSpecialState.ready){midoriSpecialState.ready=true;midoriSpecialState.blockSpecial=false;els.feedbackText.textContent='三つの潮流を確認した。答えを選ぼう！';restoreChoiceInteractivity();updateSpecialHud();}
+    };tabs.appendChild(b);});
+    view.append(tabs,condition);els.mathProblem.appendChild(view);
+    els.feedbackText.textContent='三つの潮流条件をすべて確認しよう。';
+    [...els.choices.children].forEach(b=>b.disabled=true);syncMidoriSpecialControls();updateSpecialHud();
+  }
+
   async function showBossPhaseTransition(kicker='SECOND STRIKE',title='第二撃',variant='slash'){
     ensureBossSpecialFxLayer();const fx=$('bossStrikeTransition');if(!fx)return;
     clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
@@ -3053,13 +3215,28 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       case'blue-endless-summer':{
         bossSpecialSequence={type:'blue-endless-summer',step:'first',source:null};prepareQuestion();bossSpecialSequence.source=currentQuestion;setBossStepChip(spec.name,1);startBlueEndlessSummer();startTimer(60);break;
       }
+      case'midori-aim':{
+        bossSpecialSequence={type:'midori-aim',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startMidoriAim();startTimer(60);break;
+      }
+      case'midori-sonar':{
+        bossSpecialSequence={type:'midori-sonar',step:'rule'};prepareQuestion();setBossStepChip(spec.name,1);startMidoriSonar();startTimer(60);break;
+      }
+      case'midori-rune':{
+        bossSpecialSequence={type:'midori-rune',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startMidoriRune();startTimer(60);break;
+      }
+      case'midori-route':{
+        bossSpecialSequence={type:'midori-route',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startMidoriRoute();startTimer(60);break;
+      }
+      case'midori-tide':{
+        bossSpecialSequence={type:'midori-tide',step:'final'};prepareQuestion();setBossStepChip(spec.name,1);startMidoriTide();startTimer(60);break;
+      }
       case'crimson-genma':{
         bossSpecialSequence={type:'crimson-genma',step:'final'};await startCrimsonGenmaFinal();break;
       }
     }
   }
   function clearBossAction(){
-    clearCrimsonSpecialEffects();
+    clearCrimsonSpecialEffects();clearMidoriSpecialEffects();
     bossActionActive=false;bossSpecialSequence=null;clearBossTechniqueFx();
     document.body.classList.remove('boss-obscure-active','boss-time-pressure','vargas-double-strike','boss-technique-active','boss-shield-active');
     document.querySelectorAll('.boss-obscurer').forEach(star=>{star.hidden=true;});
@@ -3398,7 +3575,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     else enqueuePendingSecretRelicNotices({showNow:true});
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
-  function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${e.q}=?</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
+  function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${questionDisplayText({expression:e.q})}</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
 
   if(els.mapVisual)els.mapVisual.onclick=advanceMapFromInput;
   if(els.mapNextBtn)els.mapNextBtn.onclick=advanceMapFromInput;
@@ -3474,7 +3651,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearCrimsonSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
