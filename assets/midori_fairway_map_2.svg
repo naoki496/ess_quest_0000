@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941" role="img" aria-labelledby="title desc">
+  <title id="title">FAIRWAY - 翠の世界 航海図</title>
+  <desc id="desc">出航の港島から大渦の秘宝島へ進む5ステージの海図</desc>
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a4950"/>
+      <stop offset=".48" stop-color="#0a3440"/>
+      <stop offset="1" stop-color="#061723"/>
+    </linearGradient>
+    <radialGradient id="shallows"><stop offset="0" stop-color="#52c9a5" stop-opacity=".28"/><stop offset="1" stop-color="#52c9a5" stop-opacity="0"/></radialGradient>
+    <filter id="softGlow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="94" height="94" patternUnits="userSpaceOnUse"><path d="M94 0H0V94" fill="none" stroke="#86cbb7" stroke-opacity=".07" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1672" height="941" rx="28" fill="url(#sea)"/>
+  <rect x="18" y="18" width="1636" height="905" rx="23" fill="none" stroke="#b0dfc8" stroke-opacity=".24" stroke-width="2"/>
+  <rect width="1672" height="941" fill="url(#grid)"/>
+  <path d="M 0 145 C 320 95 430 190 680 132 C 940 74 1160 120 1672 38" fill="none" stroke="#b5e2d0" stroke-opacity=".06" stroke-width="3"/>
+  <path d="M 0 814 C 340 752 590 826 920 770 C 1190 725 1390 787 1672 714" fill="none" stroke="#b5e2d0" stroke-opacity=".06" stroke-width="3"/>
+
+  <!-- decorative unexplored regions -->
+  <g fill="#a9d7c6" fill-opacity=".08" stroke="#a9d7c6" stroke-opacity=".12">
+    <path d="M90 190 C150 120 250 118 304 170 C340 206 326 270 255 294 C180 320 86 274 90 190Z"/>
+    <path d="M1030 120 C1110 78 1196 90 1234 150 C1262 195 1225 236 1160 245 C1080 256 1001 209 1030 120Z"/>
+    <path d="M1334 255 C1420 205 1516 222 1565 287 C1605 342 1572 392 1494 404 C1408 417 1315 353 1334 255Z"/>
+  </g>
+
+  <!-- islands and reefs -->
+  <g stroke="#92d3bb" stroke-opacity=".38" stroke-width="3">
+    <path d="M190 650 C224 620 270 615 307 637 C331 652 330 686 303 707 C267 735 211 721 189 687 C181 674 181 662 190 650Z" fill="#28584c"/>
+    <circle cx="465" cy="490" r="19" fill="#2f6657"/><circle cx="505" cy="472" r="14" fill="#2f6657"/><circle cx="555" cy="450" r="23" fill="#2f6657"/><circle cx="592" cy="497" r="15" fill="#2f6657"/><circle cx="620" cy="542" r="11" fill="#2f6657"/>
+    <path d="M742 265 C778 222 853 220 897 260 C925 285 918 328 879 350 C830 378 759 355 734 315 C724 297 728 280 742 265Z" fill="#355f48"/>
+    <path d="M1380 662 C1412 625 1484 624 1524 664 C1551 692 1546 736 1511 762 C1461 798 1394 776 1371 731 C1358 705 1363 681 1380 662Z" fill="#30483d"/>
+  </g>
+  <g fill="#d3efe4" fill-opacity=".35">
+    <circle cx="390" cy="690" r="5"/><circle cx="414" cy="672" r="4"/><circle cx="437" cy="708" r="4"/><circle cx="973" cy="566" r="5"/><circle cx="997" cy="585" r="4"/><circle cx="1025" cy="563" r="4"/><circle cx="1280" cy="758" r="4"/><circle cx="1304" cy="742" r="5"/>
+  </g>
+
+  <!-- side routes: decorative only -->
+  <g fill="none" stroke="#98cab9" stroke-opacity=".22" stroke-width="3" stroke-dasharray="10 13">
+    <path d="M 535 520 C 455 390 370 320 300 230"/>
+    <path d="M 820 310 C 875 202 972 170 1080 176"/>
+    <path d="M 1120 500 C 1255 440 1366 390 1470 315"/>
+  </g>
+
+  <!-- main fairway -->
+  <path d="M 105 760 C 165 745 205 718 260 690 C 360 640 430 590 535 520 C 635 445 720 360 820 310 C 915 335 1005 415 1120 500 C 1240 585 1335 640 1430 700" fill="none" stroke="#0b1117" stroke-opacity=".62" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 105 760 C 165 745 205 718 260 690 C 360 640 430 590 535 520 C 635 445 720 360 820 310 C 915 335 1005 415 1120 500 C 1240 585 1335 640 1430 700" fill="none" stroke="#6f8f8b" stroke-opacity=".52" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 15"/>
+  <path d="M 105 760 C 165 745 205 718 260 690 C 360 640 430 590 535 520 C 635 445 720 360 820 310 C 915 335 1005 415 1120 500 C 1240 585 1335 640 1430 700" pathLength="1000" fill="none" stroke="#84f3c4" stroke-width="8" stroke-linecap="round" stroke-dasharray="360 640" filter="url(#softGlow)" opacity=".88"/>
+
+  <!-- compass rose -->
+  <g transform="translate(150 145)" opacity=".72">
+    <circle r="64" fill="#052531" fill-opacity=".75" stroke="#9ad8c3" stroke-opacity=".35"/>
+    <path d="M0 -53 L10 -10 L0 0 L-10 -10Z M0 53 L10 10 L0 0 L-10 10Z M53 0 L10 10 L0 0 L10 -10Z M-53 0 L-10 10 L0 0 L-10 -10Z" fill="#aee3cf" fill-opacity=".75"/>
+    <text x="0" y="-72" text-anchor="middle" font-size="19" font-weight="800" fill="#d9f4e9">N</text>
+  </g>
+
+  <!-- black sail fleet motif -->
+  <g transform="translate(1117 422)" opacity=".62" fill="#071019" stroke="#7fbbaa" stroke-opacity=".42">
+    <path d="M-48 26 H48 L31 43 H-28Z"/>
+    <path d="M0 -44 V26 M2 -38 C30 -25 35 -4 4 6Z M-3 -29 C-29 -17 -32 1 -5 9Z" stroke-width="3"/>
+  </g>
+
+  <!-- maelstrom -->
+  <g transform="translate(1430 700)" fill="none" stroke="#67d8b4" stroke-opacity=".34">
+    <ellipse rx="96" ry="55" stroke-width="6"/>
+    <ellipse rx="73" ry="41" stroke-width="5"/>
+    <ellipse rx="48" ry="27" stroke-width="4"/>
+  </g>
+
+  
+          <g transform="translate(260 690)">
+            
+            <circle r="33" fill="#103d3b" stroke="#7ed9b5" stroke-width="4"/>
+            <g><path d="M -13 2 L -2 13 L 17 -13" fill="none" stroke="#baffdf" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <rect x="-82" y="44" width="164" height="38" rx="19" fill="#071c27" fill-opacity=".84" stroke="#8fd9c2" stroke-opacity=".28"/>
+            <text x="0" y="69" text-anchor="middle" font-size="20" font-weight="800" fill="#dff8ef">STAGE 1</text>
+            <text x="0" y="105" text-anchor="middle" font-size="20" font-weight="700" fill="#c9e8df">出航の港島</text>
+          </g>
+          <g transform="translate(535 520)">
+            <circle cx="535" cy="520" r="56" fill="none" stroke="#7dffcb" stroke-width="5" opacity=".18"/>
+                <circle cx="535" cy="520" r="43" fill="none" stroke="#d7ffef" stroke-width="2" opacity=".72"/>
+            <circle r="33" fill="#103d3b" stroke="#b7ffe1" stroke-width="4"/>
+            <g><text x="0" y="10" text-anchor="middle" font-size="30" font-weight="900" fill="#e9fff5">2</text></g>
+            <rect x="-82" y="44" width="164" height="38" rx="19" fill="#071c27" fill-opacity=".84" stroke="#8fd9c2" stroke-opacity=".28"/>
+            <text x="0" y="69" text-anchor="middle" font-size="20" font-weight="800" fill="#dff8ef">STAGE 2</text>
+            <text x="0" y="105" text-anchor="middle" font-size="20" font-weight="700" fill="#c9e8df">翠海の群島</text>
+          </g>
+          <g transform="translate(820 310)">
+            
+            <circle r="33" fill="#172a33" stroke="#5b7781" stroke-width="4"/>
+            <g><text x="0" y="10" text-anchor="middle" font-size="30" font-weight="900" fill="#e9fff5">3</text></g>
+            <rect x="-82" y="44" width="164" height="38" rx="19" fill="#071c27" fill-opacity=".84" stroke="#8fd9c2" stroke-opacity=".28"/>
+            <text x="0" y="69" text-anchor="middle" font-size="20" font-weight="800" fill="#dff8ef">STAGE 3</text>
+            <text x="0" y="105" text-anchor="middle" font-size="20" font-weight="700" fill="#c9e8df">翠深の遺跡島</text>
+          </g>
+          <g transform="translate(1120 500)">
+            
+            <circle r="33" fill="#172a33" stroke="#5b7781" stroke-width="4"/>
+            <g><text x="0" y="10" text-anchor="middle" font-size="30" font-weight="900" fill="#e9fff5">4</text></g>
+            <rect x="-82" y="44" width="164" height="38" rx="19" fill="#071c27" fill-opacity=".84" stroke="#8fd9c2" stroke-opacity=".28"/>
+            <text x="0" y="69" text-anchor="middle" font-size="20" font-weight="800" fill="#dff8ef">STAGE 4</text>
+            <text x="0" y="105" text-anchor="middle" font-size="20" font-weight="700" fill="#c9e8df">黒帆大船団</text>
+          </g>
+          <g transform="translate(1430 700)">
+            
+            <circle r="33" fill="#172a33" stroke="#5b7781" stroke-width="4"/>
+            <g><text x="0" y="10" text-anchor="middle" font-size="30" font-weight="900" fill="#e9fff5">5</text></g>
+            <rect x="-82" y="44" width="164" height="38" rx="19" fill="#071c27" fill-opacity=".84" stroke="#8fd9c2" stroke-opacity=".28"/>
+            <text x="0" y="69" text-anchor="middle" font-size="20" font-weight="800" fill="#dff8ef">STAGE 5</text>
+            <text x="0" y="105" text-anchor="middle" font-size="20" font-weight="700" fill="#c9e8df">大渦の秘宝島</text>
+          </g>
+
+  <!-- chart legend -->
+  <g transform="translate(1215 94)">
+    <rect width="360" height="86" rx="16" fill="#041b27" fill-opacity=".78" stroke="#a2d7c4" stroke-opacity=".25"/>
+    <text x="22" y="31" font-size="18" font-weight="800" letter-spacing="3" fill="#9ad8c3">EMERALD SEA / ROUTE 06</text>
+    <text x="22" y="61" font-size="16" font-weight="700" fill="#c5e7dc">MAIN COURSE + UNCHARTED BRANCHES</text>
+  </g>
+</svg>
