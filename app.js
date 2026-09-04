@@ -1045,7 +1045,7 @@ function markWorldVisited(world){
     clearEndSpecialEffects();
     stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
-    document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.classList.remove('world-final-aura-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent');
+    document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent');
     if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();
   }
 
@@ -1918,7 +1918,7 @@ function markWorldVisited(world){
   function concealEnemyVisual(clearSource=true){
     els.enemyActor.style.opacity='0';
     els.enemyActor.style.transform='';
-    els.enemyActor.classList.remove('hit','finisher-hit','spawn-boss','boss-defeat','end-final-defeat','world-final-boss-aura','spawn-r1','spawn-r2','spawn-r3','spawn-r4','spawn-r5');
+    els.enemyActor.classList.remove('hit','finisher-hit','spawn-boss','boss-defeat','end-final-defeat','world-boss-aura','world-final-boss-aura','spawn-r1','spawn-r2','spawn-r3','spawn-r4','spawn-r5');
     if(els.enemySprite){els.enemySprite.classList.remove('flip-facing');els.enemySprite.style.setProperty('--enemy-scale','1');els.enemySprite.style.setProperty('--enemy-y','0%');}
     if(clearSource){
       els.enemyImage.onerror=null;
@@ -2051,16 +2051,30 @@ function markWorldVisited(world){
   function stageDisplayProgress(){
     return Math.max(0,Math.min(15,totalProgress-stageIndex*15));
   }
-  function isCurrentWorldFinalBoss(){
-    if(!bossPhase||mode==='end')return false;
-    if(mode==='crimson')return crimsonLastPhase;
-    return ['front','back','blue','silver','midori'].includes(mode)&&stageIndex===4;
+  function currentWorldBossAuraTier(){
+    // End-world road bosses intentionally carry no ordinary-world aura.  Their region
+    // bosses use the separate corruption system instead.  In Crimson, STAGE 1-5 are
+    // ordinary stage bosses and the independent Genma encounter is the true final boss.
+    if(!bossPhase||mode==='end')return '';
+    if(mode==='crimson')return crimsonLastPhase?'final':'regular';
+    if(!['front','back','blue','silver','midori'].includes(mode))return '';
+    return stageIndex===4?'final':'regular';
   }
-  function syncWorldFinalBossAura(){
-    const active=isCurrentWorldFinalBoss();
-    document.body.classList.toggle('world-final-aura-active',active);
-    els.enemyActor.classList.toggle('world-final-boss-aura',active);
-    if(active)document.body.dataset.finalBossWorld=mode;else document.body.removeAttribute('data-final-boss-world');
+  function syncWorldBossAura(){
+    const tier=currentWorldBossAuraTier(),active=!!tier;
+    document.body.classList.toggle('world-boss-aura-active',active);
+    document.body.classList.toggle('world-final-aura-active',tier==='final');
+    els.enemyActor.classList.toggle('world-boss-aura',active);
+    els.enemyActor.classList.toggle('world-final-boss-aura',tier==='final');
+    if(active){
+      document.body.dataset.bossAuraWorld=mode;
+      document.body.dataset.bossAuraTier=tier;
+    }else{
+      document.body.removeAttribute('data-boss-aura-world');
+      document.body.removeAttribute('data-boss-aura-tier');
+    }
+    // Keep the old final-world dataset only as a compatibility hook for any older CSS.
+    if(tier==='final')document.body.dataset.finalBossWorld=mode;else document.body.removeAttribute('data-final-boss-world');
   }
   function renderGame(){
     const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=(mode==='end'&&endFinalPhase)?'final':stageIndex;
@@ -2072,7 +2086,7 @@ function markWorldVisited(world){
     els.heroName.textContent=mode==='end'?END_HERO_NAMES[heroWorld]:mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):mode==='silver'?'銀狼の少女':'海賊船長';
     const en=bossPhase?currentBoss():currentMonster;if(en){applyEnemyFacing(en);setEnemyNameDisplay(en);fitSingleLineText(els.enemyName,{maxWidthRatio:.31,minPx:9});}else setEnemyNameDisplay(null);
     const endCorrupted=mode==='end'&&bossPhase&&!!en?.boss;if(endCorrupted){document.body.classList.add('end-boss-corruption-active');document.body.dataset.endBossWorld=en.sourceWorld||'front';els.enemyActor.classList.add('end-corrupted-boss');}else{document.body.classList.remove('end-boss-corruption-active');document.body.removeAttribute('data-end-boss-world');els.enemyActor.classList.remove('end-corrupted-boss');}
-    syncWorldFinalBossAura();
+    syncWorldBossAura();
     updateBossHpHud();
   }
 
@@ -3939,12 +3953,12 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   async function runEndFinalDefeatSequence(){
     const battlefield=document.querySelector('.battlefield');
     clearQuestionUi();updateBossHpHud(true);
-    document.body.classList.add('end-final-defeat-active');
+    document.body.classList.add('end-final-postclear-active','end-final-defeat-active');
     els.enemyActor.classList.add('end-final-defeat');
     let fx=$('endFinalCollapseFx');
     if(!fx){
       fx=document.createElement('div');fx.id='endFinalCollapseFx';fx.className='end-final-collapse-fx';fx.setAttribute('aria-hidden','true');
-      fx.innerHTML='<div class="collapse-ring ring-a"></div><div class="collapse-ring ring-b"></div><div class="collapse-crack"></div><div class="hero-lights"><i></i><i></i><i></i><i></i><i></i></div><strong>THE TIME RIVER FALLS SILENT</strong>';
+      fx.innerHTML='<div class="collapse-ring ring-a"></div><div class="collapse-ring ring-b"></div><div class="collapse-crack"></div><div class="hero-lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><strong>THE TIME RIVER FALLS SILENT</strong>';
       battlefield?.appendChild(fx);
     }
     fx.classList.remove('active','calm');void fx.offsetWidth;fx.classList.add('active');
@@ -3961,9 +3975,16 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
 
   async function defeatBoss(){
     stopTimer();clearBossAction();els.answerMark.hidden=true;
+    const terminalClear=mode==='end'&&endFinalPhase;
+    if(terminalClear){
+      // From the moment the final answer is settled, the battle-question GUI is finished.
+      // Keep it suppressed through the finisher, collapse scene and result hand-off.
+      document.body.classList.add('end-final-postclear-active');
+      clearQuestionUi();updateBossHpHud(true);
+    }
     const heroFile=mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='blue'?(isBlueAdultPhase()?'blue_hero_adult.png':'blue_hero.png'):mode==='silver'?'silver_hero.png':'midori_hero_pirate_captain.png';
     await showActionCutin('hero',heroFile);runFinisherMotion();await sleep(980);
-    if(mode==='end'&&endFinalPhase){
+    if(terminalClear){
       await runEndFinalDefeatSequence();
     }else{
       els.enemyActor.classList.add('boss-defeat');await sleep(2100);
@@ -3972,7 +3993,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }
     els.enemyActor.classList.remove('boss-defeat','end-final-defeat','finisher-hit','finisher-midori-hit');els.heroActor.classList.remove('finisher-front','finisher-back');document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');els.attackEffect.className='attack-effect';
     if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await finishRun();return;}
-    if(mode==='end'&&endFinalPhase){await sleep(450);await finishRun();return;}
+    if(terminalClear){await sleep(450);await finishRun();return;}
     if(mode==='end')await showEndRescue(currentEndSource());
     await clearStage();
   }
@@ -4062,7 +4083,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.gameOverRetryBtn.onclick=retryFromGameOver;
   els.gameOverTitleBtn.onclick=returnTitleFromGameOver;
   els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
-  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);enqueuePendingSecretRelicNotices({showNow:true});};
+  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{document.body.classList.remove('end-final-postclear-active');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);enqueuePendingSecretRelicNotices({showNow:true});};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;const next=rewardFollowupQueue.shift();if(next)setTimeout(()=>presentRewardNotice(next),180);};
 
   const CANCEL_BUTTON_IDS=new Set([
