@@ -36,7 +36,7 @@
   const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
   let debugFullUnlock=false;
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
-  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
+  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,endClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
   let save=loadSave();
 
   const FRONT_STAGES=[
@@ -89,6 +89,37 @@
     {name:'黒帆大船団',key:'midori4',count:15,normalCount:10,bossCount:5,bgm:'fleet action.mp3',bossBgm:'Hard a starboard..mp3',bg:'midori_stage4_black_sail_fleet.png',boss:['黒帆大提督・ヴァルドレイク','boss_midori_4.png']},
     {name:'大渦の秘宝島',key:'midori5',count:15,normalCount:10,bossCount:5,bgm:'Enigma.mp3',bossBgm:'Poseidon.mp3',bg:'midori_stage5_maelstrom_treasure_island.png',boss:['渦海王・ネレイディオン','boss_midori_5.png']}
   ];
+
+  // ---------- 終の世界：仮実装 ----------
+  // 正式背景・専用BGM・終版特殊技・ゆうしゃ専用素材は後続差し替え前提。
+  // 道中は各世界の既存ボス素材を通常敵として再利用し、本格特殊行動は発動しない。
+  const END_REGION_CONFIG={
+    midori:{name:'大時空支流',bg:'midori_stage5_maelstrom_treasure_island.png',bgm:'Hard a starboard..mp3',bossBgm:'Poseidon.mp3',boss:MIDORI_STAGES[4].boss,roadBosses:MIDORI_STAGES.slice(0,4).map(s=>s.boss)},
+    crimson:{name:'浮遊黒曜要塞',bg:'crimson_last.png',bgm:'乾坤一擲.mp3',bossBgm:'驚天動地.mp3',boss:CRIMSON_LAST.boss,roadBosses:CRIMSON_STAGES.map(s=>s.boss)},
+    silver:{name:'銀鏡極彩色舞台',bg:'silver_stage5.png',bgm:'CRAZY.mp3',bossBgm:'SAVER.mp3',boss:SILVER_STAGES[4].boss,roadBosses:SILVER_STAGES.slice(0,4).map(s=>s.boss)},
+    back:{name:'儀式祭殿裏東京',bg:'back_boss.png',bgm:'boss.mp3',bossBgm:'DUEL.mp3',boss:BACK_STAGES[4].boss,roadBosses:BACK_STAGES.slice(0,4).map(s=>s.boss)},
+    blue:{name:'永劫夏界大迷宮',bg:'blue_stage5_after.png',bgm:'残夏.mp3',bossBgm:'対峙.mp3',boss:BLUE_STAGES[4].boss,roadBosses:BLUE_STAGES.slice(0,4).map(s=>s.boss)}
+  };
+  const END_FINAL={name:'まおうの へや',key:'end-final',count:5,normalCount:0,bossCount:5,bgm:'MAOH.mp3',bossBgm:'MAOH.mp3',bg:'bg_boss.png',boss:['ゆうしゃ','hero.png'],sourceWorld:'front',final:true};
+  const END_HERO_FILES={front:'hero.png',back:'end_back_hero.png',crimson:'end_crimson_hero.png',blue:'end_blue_hero_adult.png',silver:'end_silver_hero.png',midori:'end_midori_hero.png'};
+  const END_HERO_NAMES={front:'ゆうしゃ',back:'魔法少女',crimson:'流浪の剣士',blue:'青年',silver:'銀狼の少女',midori:'海賊船長'};
+  const END_FINAL_HERO_ORDER=['back','crimson','blue','silver','midori'];
+  let endRunRoute=['midori','crimson','silver','back','blue'],endHeroWorld='midori',endFinalPhase=false;
+  function newEndRoute(){return ['midori',...shuffle(['crimson','silver','back','blue'])];}
+  function buildEndStages(route=endRunRoute){return route.map((sourceWorld,i)=>{const c=END_REGION_CONFIG[sourceWorld];return{name:c.name,key:`end-${sourceWorld}`,count:15,normalCount:10,bossCount:5,bgm:c.bgm,bossBgm:c.bossBgm,bg:c.bg,boss:c.boss,roadBosses:c.roadBosses,sourceWorld,endStage:i};});}
+  function currentEndSource(){return endFinalPhase?'front':(endRunRoute[stageIndex]||'midori');}
+  function currentEndHeroWorld(){return endFinalPhase?(END_FINAL_HERO_ORDER[Math.max(0,Math.min(4,bossQuestion))]||'midori'):endHeroWorld;}
+  function endRoadEntriesFor(sourceWorld,stage=0){const c=END_REGION_CONFIG[sourceWorld];return(c?.roadBosses||[]).map(([name,img],i)=>({id:`end-${sourceWorld}-road-${i+1}`,world:'end',sourceWorld,stage,rarity:5,name,img,boss:true,endPastBoss:true}));}
+  function allEndMonsterEntries(){
+    const entries=[];
+    for(const sourceWorld of ['midori','crimson','silver','back','blue']){
+      entries.push(...endRoadEntriesFor(sourceWorld,0));
+      const c=END_REGION_CONFIG[sourceWorld];entries.push({id:`boss-end-${sourceWorld}`,world:'end',sourceWorld,stage:0,rarity:5,name:c.boss[0],img:c.boss[1],boss:true,endRegionBoss:true});
+    }
+    entries.push({id:'boss-end-final',world:'end',sourceWorld:'front',stage:5,rarity:5,name:'ゆうしゃ',img:'hero.png',boss:true,lastBoss:true,endFinalBoss:true});
+    return entries;
+  }
+  const END_MONSTERS=allEndMonsterEntries();
 
   const FRONT_MONSTER_NAMES=[
     [['ぷるるスライム',1],['きのこぞう',1],['リーフラット',2],['モリバット',2],['フラワーフェアリー',3],['白銀オオカミ',4],['虹羽ユニコーン',5]],
@@ -195,25 +226,34 @@
   // BGM collection: only tracks already used by the current game are listed.
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
   function musicTracks(world){
+    if(world==='end'){
+      const defs=[
+        ['midori-normal','翠・通常ボス','Hard a starboard..mp3','大時空支流／翠系の道中旧ボス戦。'],['midori-boss','翠・ラスボス','Poseidon.mp3','大時空支流の領域ボス戦。'],
+        ['crimson-normal','紅・通常ボス','乾坤一擲.mp3','浮遊黒曜要塞／紅系の道中旧ボス戦。'],['crimson-boss','紅・ラスボス','驚天動地.mp3','浮遊黒曜要塞の領域ボス戦。'],
+        ['silver-normal','銀・通常ボス','CRAZY.mp3','銀鏡極彩色舞台／銀系の道中旧ボス戦。'],['silver-boss','銀・ラスボス','SAVER.mp3','銀鏡極彩色舞台の領域ボス戦。'],
+        ['back-normal','裏・通常ボス','boss.mp3','儀式祭殿裏東京／裏系の道中旧ボス戦。'],['back-boss','裏・ラスボス','DUEL.mp3','儀式祭殿裏東京の領域ボス戦。'],
+        ['blue-normal','蒼・通常ボス','残夏.mp3','永劫夏界大迷宮／蒼系の道中旧ボス戦。'],['blue-boss','蒼・ラスボス','対峙.mp3','永劫夏界大迷宮の領域ボス戦。'],
+        ['final','FINAL','MAOH.mp3','FINAL「まおうの へや」の暫定BGM。']
+      ];
+      return defs.map(([id,label,file,where])=>({id,file,label,title:file.replace(/\.mp3$/i,''),where:`終の世界 ${where}`}));
+    }
     const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:world==='silver'?SILVER_STAGES:MIDORI_STAGES;
     const worldLabel=world==='front'?'光の世界':world==='back'?'裏の世界':world==='crimson'?'紅の世界':world==='blue'?'蒼の世界':world==='silver'?'銀の世界':'翠の世界';
-    const normal=stages.map((st,i)=>({
-      id:`stage-${i+1}`,file:st.bgm,label:`STAGE ${i+1}`,title:st.bgm.replace(/\.mp3$/i,''),
-      where:`${worldLabel} STAGE ${i+1}「${st.name}」の通常戦闘で流れるBGM。`
-    }));
+    const normal=stages.map((st,i)=>({id:`stage-${i+1}`,file:st.bgm,label:`STAGE ${i+1}`,title:st.bgm.replace(/\.mp3$/i,''),where:`${worldLabel} STAGE ${i+1}「${st.name}」の通常戦闘で流れるBGM。`}));
     const bossWhere=world==='front'?'光の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='back'?'裏の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='crimson'?'紅の世界 STAGE 1～5のボス戦で流れる共通BGM。':world==='blue'?'蒼の世界 STAGE 1～4のボス戦で流れる共通BGM。':world==='silver'?'銀の世界 STAGE 1～4のボス戦で流れる共通BGM。':'翠の世界 STAGE 1～4のボス戦で流れる共通BGM。';
     const finalStage=stages[4];
-    return [...normal,
-      {id:'boss',file:stages[0].bossBgm,label:'BOSS',title:stages[0].bossBgm.replace(/\.mp3$/i,''),where:bossWhere},
-      {id:'final',file:world==='crimson'?CRIMSON_LAST.bossBgm:finalStage.bossBgm,label:'LAST BOSS',title:(world==='crimson'?CRIMSON_LAST.bossBgm:finalStage.bossBgm).replace(/\.mp3$/i,''),where:world==='crimson'?'紅の世界 LAST BOSS「秋尽の剣聖・玄真」で流れるBGM。':`${worldLabel} STAGE 5「${finalStage.name}」の最終ボス戦で流れるBGM。`}
-    ];
+    return [...normal,{id:'boss',file:stages[0].bossBgm,label:'BOSS',title:stages[0].bossBgm.replace(/\.mp3$/i,''),where:bossWhere},{id:'final',file:world==='crimson'?CRIMSON_LAST.bossBgm:finalStage.bossBgm,label:'LAST BOSS',title:(world==='crimson'?CRIMSON_LAST.bossBgm:finalStage.bossBgm).replace(/\.mp3$/i,''),where:world==='crimson'?'紅の世界 LAST BOSS「秋尽の剣聖・玄真」で流れるBGM。':`${worldLabel} STAGE 5「${finalStage.name}」の最終ボス戦で流れるBGM。`}];
   }
   function inferMusicUnlocksFromSave(target){
-    target.musicUnlocked=target.musicUnlocked||{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]};
-    for(const world of ['front','back','crimson','blue','silver','midori']){
+    target.musicUnlocked=target.musicUnlocked||{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]};
+    for(const world of ['front','back','crimson','blue','silver','midori','end']){
       const list=Array.isArray(target.musicUnlocked[world])?target.musicUnlocked[world]:[];
       const set=new Set(list);
       const book=target.monsterBook?.[world]||[];
+      if(world==='end'){
+        for(const id of book){const m=id.match(/^end-(midori|crimson|silver|back|blue)-road-/);if(m)set.add(`${m[1]}-normal`);const b=id.match(/^boss-end-(midori|crimson|silver|back|blue)$/);if(b)set.add(`${b[1]}-boss`);if(id==='boss-end-final')set.add('final');}
+        if((target.endClears||0)>0)for(const t of musicTracks('end'))set.add(t.id);target.musicUnlocked.end=[...set];continue;
+      }
       for(const id of book){
         const normal=id.match(new RegExp(`^${world}-(\\d+)$`));
         if(normal){const n=Number(normal[1]);const stage=Math.floor((n-1)/7)+1;if(stage>=1&&stage<=5)set.add(`stage-${stage}`);}
@@ -230,15 +270,15 @@
   function isMusicUnlocked(world,id){return debugFullUnlock||!!save.musicUnlocked?.[world]?.includes(id);}
   function unlockMusic(world,id){
     if(debugFullUnlock)return false;
-    if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[],crimson:[],blue:[],silver:[],midori:[]};
+    if(!save.musicUnlocked)save.musicUnlocked={front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]};
     if(!Array.isArray(save.musicUnlocked[world]))save.musicUnlocked[world]=[];
     if(save.musicUnlocked[world].includes(id))return false;
     save.musicUnlocked[world].push(id);
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
     return true;
   }
-  function unlockCurrentStageMusic(){return unlockMusic(mode,`stage-${stageIndex+1}`);}
-  function unlockCurrentBossMusic(){return unlockMusic(mode,mode==='crimson'?(crimsonLastPhase?'final':'boss'):(stageIndex===4?'final':'boss'));}
+  function unlockCurrentStageMusic(){return mode==='end'?unlockMusic('end',`${currentEndSource()}-normal`):unlockMusic(mode,`stage-${stageIndex+1}`);}
+  function unlockCurrentBossMusic(){if(mode==='end')return unlockMusic('end',endFinalPhase?'final':`${currentEndSource()}-boss`);return unlockMusic(mode,mode==='crimson'?(crimsonLastPhase?'final':'boss'):(stageIndex===4?'final':'boss'));}
 
   // The hit effect belongs to the battlefield, not to the hero actor.  Keeping it
   // outside the hero's coordinate system lets sword/magic impacts land on the enemy.
@@ -250,9 +290,9 @@
       const raw=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
       const merged={...DEFAULT_SAVE,...raw};
       merged.owned=Array.isArray(raw.owned)?raw.owned:[100];
-      merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[],midori:Array.isArray(raw.monsterBook?.midori)?raw.monsterBook.midori:[]};
-      merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})},midori:{...(raw.monsterEncounters?.midori||{})}};
-      merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[],midori:Array.isArray(raw.musicUnlocked?.midori)?raw.musicUnlocked.midori:[]};
+      merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[],midori:Array.isArray(raw.monsterBook?.midori)?raw.monsterBook.midori:[],end:Array.isArray(raw.monsterBook?.end)?raw.monsterBook.end:[]};
+      merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})},midori:{...(raw.monsterEncounters?.midori||{})},end:{...(raw.monsterEncounters?.end||{})}};
+      merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[],midori:Array.isArray(raw.musicUnlocked?.midori)?raw.musicUnlocked.midori:[],end:Array.isArray(raw.musicUnlocked?.end)?raw.musicUnlocked.end:[]};
       merged.secretRelics=Array.isArray(raw.secretRelics)?raw.secretRelics:[];
       merged.secretRelicNotified=Array.isArray(raw.secretRelicNotified)?raw.secretRelicNotified:[];
       merged.secretRelicVersion=Number.isFinite(Number(raw.secretRelicVersion))?Number(raw.secretRelicVersion):0;
@@ -263,7 +303,7 @@
       merged.worldUnlockVersion=Math.max(0,Number(raw.worldUnlockVersion)||0);
       inferMusicUnlocksFromSave(merged);
       return merged;
-    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};inferMusicUnlocksFromSave(fallback);return fallback;}
+    }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};inferMusicUnlocksFromSave(fallback);return fallback;}
   }
   function persist(){
     if(!debugFullUnlock)try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
@@ -284,12 +324,14 @@
     if(world==='blue')return isBlueWorldUnlocked();
     if(world==='silver')return isSilverWorldUnlocked();
     if(world==='midori')return isMidoriWorldUnlocked();
+    if(world==='end')return isEndWorldUnlocked();
     return false;
   }
   function isCrimsonWorldUnlocked(){return debugFullUnlock||hasSecretRelic('common_master');}
   function isBlueWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('front_sr_master')&&hasSecretRelic('world3_sr_master'));}
   function isSilverWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('uncommon_master')&&hasSecretRelic('front_ssr_master'));}
   function isMidoriWorldUnlocked(){return debugFullUnlock||(hasSecretRelic('back_sr_master')&&hasSecretRelic('world4_sr_master')&&hasSecretRelic('blue_sr_master'));}
+  function isEndWorldUnlocked(){return debugFullUnlock||(['rare_master','back_ssr_master','world3_ssr_master','midori_sr_arcenciel'].every(hasSecretRelic));}
   function isMonsterSeen(world,id){return debugFullUnlock||!!save.monsterBook?.[world]?.includes(id);}
   function effectiveEncounterCount(world,id){const n=save.monsterEncounters?.[world]?.[id]||0;return debugFullUnlock?Math.max(1,n):n;}
 
@@ -371,23 +413,26 @@ const SECRET_RELICS=[
   {id:'midori_ssr_singularity',name:'特異点座標',icon:'⌖',flavor:'翠の世界の SSRモンスターを すべて見つけた証。',notice:'翠の世界の SSRモンスターを すべて見つけた証。'}
 ];
 const SECRET_RELIC_VERSION=5;
-const WORLD_UNLOCK_VERSION=4;
+const WORLD_UNLOCK_VERSION=5;
 const WORLD_UNLOCKS=[
   {world:'back',sourceId:'item-100',sourceName:'時空の鍵',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界'},
   {world:'crimson',sourceId:'common_master',sourceName:'妖刀マサムネ',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界'},
   {world:'blue',sourceIds:['front_sr_master','world3_sr_master'],sourceName:'蒼穹の縁結びと黄泉の供物',name:'蒼の世界',desc:'ひと夏の記憶をたどる、蒼い夏の世界'},
   {world:'silver',sourceIds:['uncommon_master','front_ssr_master'],sourceName:'白銀の首輪と時空羅針盤',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'},
-  {world:'midori',sourceIds:['back_sr_master','world4_sr_master','blue_sr_master'],sourceName:'クリプティック・コード、未来の結晶、鋼の黙示録',name:'翠の世界',desc:'島々と大船団を越えて進む、翠の海の世界'}
+  {world:'midori',sourceIds:['back_sr_master','world4_sr_master','blue_sr_master'],sourceName:'クリプティック・コード、未来の結晶、鋼の黙示録',name:'翠の世界',desc:'島々と大船団を越えて進む、翠の海の世界'},
+  {world:'end',sourceIds:['rare_master','back_ssr_master','world3_ssr_master','midori_sr_arcenciel'],sourceName:'オブシディアンコア、旅立ちを祝すハルシオン、黒曜城、アルカンシェル',name:'終の世界',desc:'すべての支流が再び集まる、時空河の根源'}
 ];
 const secretRelicById=id=>SECRET_RELICS.find(r=>r.id===id);
 function hasSecretRelic(id){return debugFullUnlock||!!save.secretRelics?.includes(id);}
 function isWorldActuallyUnlocked(world){
+  if(debugFullUnlock)return true;
   if(world==='front')return true;
   if(world==='back')return !!save.backUnlocked;
   if(world==='crimson')return !!save.secretRelics?.includes('common_master');
   if(world==='blue')return !!save.secretRelics?.includes('front_sr_master')&&!!save.secretRelics?.includes('world3_sr_master');
   if(world==='silver')return !!save.secretRelics?.includes('uncommon_master')&&!!save.secretRelics?.includes('front_ssr_master');
   if(world==='midori')return !!save.secretRelics?.includes('back_sr_master')&&!!save.secretRelics?.includes('world4_sr_master')&&!!save.secretRelics?.includes('blue_sr_master');
+  if(world==='end')return ['rare_master','back_ssr_master','world3_ssr_master','midori_sr_arcenciel'].every(id=>!!save.secretRelics?.includes(id));
   return false;
 }
 function worldUnlockByKey(world){return WORLD_UNLOCKS.find(w=>w.world===world);}
@@ -441,7 +486,7 @@ function initializeWorldUnlockState(){
     // a strengthened requirement (notably Silver v2) must be allowed to notify again
     // after the missing relic is obtained. Existing genuinely-unlocked worlds remain silent.
     save.worldUnlockNotified=save.worldUnlockNotified.filter(world=>isWorldActuallyUnlocked(world));
-    for(const w of WORLD_UNLOCKS)if(!['blue','midori'].includes(w.world)&&isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
+    for(const w of WORLD_UNLOCKS)if(!['blue','midori','end'].includes(w.world)&&isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
     save.worldUnlockNew=save.worldUnlockNew.filter(world=>isWorldActuallyUnlocked(world));
     save.worldUnlockVersion=WORLD_UNLOCK_VERSION;
     persistQuietly();
@@ -512,29 +557,22 @@ function markWorldVisited(world){
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${effectiveGold()} G`;
-    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':'翠の世界';
+    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':'終の世界';
     els.titleTrackName.textContent=titleTrackLabel();
-    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':'小学4年生以降・思考問題';
-    if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='crimson'?'80':'75';
-    const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':'全5ステージ';
-    const restartTotal=mode==='crimson'?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
-    if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;
-    if(els.musicBtn)els.musicBtn.hidden=false;
-    els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;
-    if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
-    if(mode==='front'){
-      els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
-    }else if(mode==='back'){
-      els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='BACK WORLD / ANOTHER QUEST';els.titleSubtitle.innerHTML='裏の世界を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');
-    }else if(mode==='crimson'){
-      els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
-    }else if(mode==='blue'){
-      els.titleHero.src='./assets/blue_hero.png';els.titleEyebrow.textContent='BLUE SUMMER / FOURTH QUEST';els.titleSubtitle.innerHTML='青空の下、少年はひと夏の冒険へ。<br>ミステリーが潜む夏の終わりへ進んでいく。';setMenuButton(els.playBtn,'☀','蒼の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
-    }else if(mode==='silver'){
-      els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FIFTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
-    }else{
-      els.titleHero.src='./assets/midori_hero_pirate_captain.png';els.titleEyebrow.textContent='EMERALD SEAS / SIXTH QUEST';els.titleSubtitle.innerHTML='島々を巡り、航路を切りひらけ。<br>知恵と判断で、翠の海の最深部へ。';setMenuButton(els.playBtn,'⚓','翠の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');
-    }
+    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':mode==='midori'?'小学4年生以降・思考問題':'既習算数を統合した発展問題';
+    const longRun=mode==='crimson'||mode==='end';
+    if(els.titleQuestionCount)els.titleQuestionCount.textContent=longRun?'80':'75';
+    const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':mode==='end'?'5領域＋FINAL':'全5ステージ';
+    const restartTotal=longRun?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
+    if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;if(els.musicBtn)els.musicBtn.hidden=false;
+    els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
+    if(mode==='front'){els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else if(mode==='back'){els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='BACK WORLD / ANOTHER QUEST';els.titleSubtitle.innerHTML='裏の世界を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');}
+    else if(mode==='crimson'){els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else if(mode==='blue'){els.titleHero.src='./assets/blue_hero.png';els.titleEyebrow.textContent='BLUE SUMMER / FOURTH QUEST';els.titleSubtitle.innerHTML='青空の下、少年はひと夏の冒険へ。<br>ミステリーが潜む夏の終わりへ進んでいく。';setMenuButton(els.playBtn,'☀','蒼の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else if(mode==='silver'){els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FIFTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else if(mode==='midori'){els.titleHero.src='./assets/midori_hero_pirate_captain.png';els.titleEyebrow.textContent='EMERALD SEAS / SIXTH QUEST';els.titleSubtitle.innerHTML='島々を巡り、航路を切りひらけ。<br>知恵と判断で、翠の海の最深部へ。';setMenuButton(els.playBtn,'⚓','翠の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else{els.titleHero.src='./assets/end_title_party.png';els.titleEyebrow.textContent='TIME RIVER / SEVENTH QUEST';els.titleSubtitle.innerHTML='枝分かれした世界が、時空河へ還っていく。<br>過去の強敵を越え、すべての支流の最深部へ。';setMenuButton(els.playBtn,'∞','終の世界へ');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
     if(els.worldWarpBtn){setMenuButton(els.worldWarpBtn,'∞','世界を渡る');els.worldWarpBtn.classList.toggle('has-new-world',hasNewWorldWaiting());els.worldWarpBtn.setAttribute('aria-label',hasNewWorldWaiting()?'世界を渡る・新しい世界があります':'世界を渡る');}
   }
 
@@ -548,7 +586,9 @@ function markWorldVisited(world){
       {key:'crimson',name:'紅の世界',short:'紅',desc:'妖怪と剣客が息づく、晩秋に染まった世界',image:'crimson_stage1.png',unlocked:isCrimsonWorldUnlocked()},
       {key:'blue',name:'蒼の世界',short:'蒼',desc:'あの日の影に隠された、夏の世界',image:'blue_stage1.png',unlocked:isBlueWorldUnlocked()},
       {key:'silver',name:'銀の世界',short:'銀',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',image:'silver_stage1.png',unlocked:isSilverWorldUnlocked()},
-      {key:'midori',name:'翠の世界',short:'翠',desc:'島々と大船団を越えて進む、翠の海の世界',image:'midori_stage1_departure_port.png',unlocked:isMidoriWorldUnlocked()}
+      {key:'midori',name:'翠の世界',short:'翠',desc:'島々と大船団を越えて進む、翠の海の世界',image:'midori_stage1_departure_port.png',unlocked:isMidoriWorldUnlocked()},
+      {key:'end',name:'終の世界',short:'終',desc:'すべての支流が再び集まる、時空河の根源',image:'bg_boss.png',unlocked:isEndWorldUnlocked()},
+      {key:'white',name:'白の世界',short:'白',desc:'まだ見ぬ次の世界',image:'bg_boss.png',unlocked:false}
     ];
     let selectedIndex=Math.max(0,worlds.findIndex(w=>w.key===mode));
     els.worldWarpList.innerHTML=`
@@ -654,11 +694,11 @@ function markWorldVisited(world){
     {key:'blue',short:'蒼',name:'蒼の世界'},
     {key:'silver',short:'銀',name:'銀の世界'},
     {key:'midori',short:'翠',name:'翠の世界'},
-    {key:'future-1',short:'?',name:'？？？',future:true},
+    {key:'end',short:'終',name:'終の世界'},
     {key:'future-2',short:'?',name:'？？？',future:true}
   ];
   function musicWorldSlot(key){return MUSIC_WORLD_SLOTS.find(w=>w.key===key)||MUSIC_WORLD_SLOTS[0];}
-  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver','midori'].includes(key);}
+  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver','midori','end'].includes(key);}
   function isMusicSlotUnlocked(key){return isKnownMusicWorld(key)&&isMusicWorldVisible(key);}
   function formatMusicTime(seconds){
     const n=Number(seconds);if(!Number.isFinite(n)||n<0)return'--:--';
@@ -793,10 +833,10 @@ function markWorldVisited(world){
     els.debugStagePanel.hidden=!debugFullUnlock;
     if(els.debugStageGrid){
       els.debugStageGrid.innerHTML='';
-      for(const world of ['front','back','crimson','blue','silver','midori']){
-        const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:world==='silver'?SILVER_STAGES:MIDORI_STAGES;
+      for(const world of ['front','back','crimson','blue','silver','midori','end']){
+        const stages=world==='front'?FRONT_STAGES:world==='back'?BACK_STAGES:world==='crimson'?CRIMSON_STAGES:world==='blue'?BLUE_STAGES:world==='silver'?SILVER_STAGES:world==='midori'?MIDORI_STAGES:buildEndStages(['midori','crimson','silver','back','blue']);
         stages.forEach((st,i)=>{
-          const prefix=world==='front'?'光':world==='back'?'裏':world==='crimson'?'紅':world==='blue'?'蒼':world==='silver'?'銀':'翠';
+          const prefix=world==='front'?'光':world==='back'?'裏':world==='crimson'?'紅':world==='blue'?'蒼':world==='silver'?'銀':world==='midori'?'翠':'終';
           const start=document.createElement('button');start.type='button';start.className=`debug-stage-btn debug-stage-start debug-world-${world}`;
           start.textContent=`${prefix} S${i+1} 最初`;start.title=`${st.name}：ステージ最初から`;
           start.onclick=()=>debugJumpToStage(world,i);els.debugStageGrid.appendChild(start);
@@ -809,6 +849,10 @@ function markWorldVisited(world){
         if(world==='crimson'){
           const lastStart=document.createElement('button');lastStart.type='button';lastStart.className='debug-stage-btn debug-stage-start debug-world-crimson';lastStart.textContent='紅 LAST 最初';lastStart.onclick=()=>debugJumpToCrimsonLast(0);els.debugStageGrid.appendChild(lastStart);
           const last5=document.createElement('button');last5.type='button';last5.className='debug-stage-btn debug-boss5-btn debug-world-crimson';last5.textContent='紅 LAST ボス5';last5.onclick=()=>debugJumpToCrimsonLast(4);els.debugStageGrid.appendChild(last5);
+        }
+        if(world==='end'){
+          const lastStart=document.createElement('button');lastStart.type='button';lastStart.className='debug-stage-btn debug-stage-start debug-world-end';lastStart.textContent='終 FINAL 最初';lastStart.onclick=()=>debugJumpToEndFinal(0);els.debugStageGrid.appendChild(lastStart);
+          const last5=document.createElement('button');last5.type='button';last5.className='debug-stage-btn debug-boss5-btn debug-world-end';last5.textContent='終 FINAL ボス5';last5.onclick=()=>debugJumpToEndFinal(4);els.debugStageGrid.appendChild(last5);
         }
       }
     }
@@ -825,6 +869,7 @@ function markWorldVisited(world){
       if(mode==='blue'&&!isBlueWorldUnlocked())mode='front';
       if(mode==='silver'&&!isSilverWorldUnlocked())mode='front';
       if(mode==='midori'&&!isMidoriWorldUnlocked())mode='front';
+      if(mode==='end'&&!isEndWorldUnlocked())mode='front';
     }
     renderTitle();renderDebugPanel();
     if(els.collectionScreen&&!els.collectionScreen.hidden)renderCollection();
@@ -834,25 +879,15 @@ function markWorldVisited(world){
   }
   async function debugJumpToStage(world,index){
     if(!debugFullUnlock)return;
-    closeDebugPanel();resetRun();mode=world;crimsonLastPhase=false;stageIndex=Math.max(0,Math.min(4,index));totalProgress=stageIndex*15;
-    primeStageBgm();
-    await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);
-    await showMapSequence(true,true);
+    closeDebugPanel();mode=world;resetRun();if(world==='end')endRunRoute=['midori','crimson','silver','back','blue'];crimsonLastPhase=false;endFinalPhase=false;stageIndex=Math.max(0,Math.min(4,index));totalProgress=stageIndex*15;
+    primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);
   }
   async function debugJumpToBossFifth(world,index){
     if(!debugFullUnlock)return;
-    closeDebugPanel();resetRun();
-    mode=world;crimsonLastPhase=false;stageIndex=Math.max(0,Math.min(4,index));stageQuestion=10;bossPhase=true;bossQuestion=4;if(mode==='blue'&&stageIndex===4)blueAdultState=true;
-    totalProgress=stageIndex*15+14;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();
-    primeStageBgm();
-    await transitionTo(()=>{
-      showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
-      bossPhase=true;bossQuestion=4;currentMonster=null;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
-      document.querySelector('.battlefield')?.classList.remove('battle-base-enter');
-    },mode==='back'?'back':'normal',1250);
-    await playStageBgm();
-    await runBattleCountdown();
-    await showBossEntrance(true,4);
+    closeDebugPanel();mode=world;resetRun();if(world==='end')endRunRoute=['midori','crimson','silver','back','blue'];crimsonLastPhase=false;endFinalPhase=false;stageIndex=Math.max(0,Math.min(4,index));stageQuestion=10;bossPhase=true;bossQuestion=4;if(mode==='blue'&&stageIndex===4)blueAdultState=true;
+    totalProgress=stageIndex*15+14;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
+    await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;bossPhase=true;bossQuestion=4;currentMonster=null;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},mode==='back'?'back':'normal',1250);
+    await playStageBgm();await runBattleCountdown();await showBossEntrance(true,4);
   }
   async function debugJumpToCrimsonLast(question=0){
     if(!debugFullUnlock)return;
@@ -860,6 +895,13 @@ function markWorldVisited(world){
     await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},'normal',1250);
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,bossQuestion);
   }
+  async function debugJumpToEndFinal(question=0){
+    if(!debugFullUnlock)return;
+    closeDebugPanel();mode='end';resetRun();endFinalPhase=true;stageIndex=4;stageQuestion=10;bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(question)||0));totalProgress=75+bossQuestion;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
+    await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode='end';document.body.dataset.stage='final';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},'normal',1250);
+    await playStageBgm();await runBattleCountdown();await showBossEntrance(true,bossQuestion);
+  }
+
   function installDebugSecretGesture(){
     const target=document.querySelector('.title-logo-wrap h1');if(!target)return;
     let taps=[],armedUntil=0,holdTimer=null,downAt=0;
@@ -914,16 +956,21 @@ function markWorldVisited(world){
     els.collectionDetail.innerHTML=owned?`<div class="detail-no">No.${String(it.id).padStart(3,'0')}</div><div class="detail-icon rarity-frame-${it.rarity}">${it.icon}</div><h3>${it.name}</h3><p class="detail-rarity rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><div class="detail-divider"></div><p>${it.flavor}</p>`:`<div class="detail-no">UNKNOWN</div><div class="detail-icon">?</div><h3>？？？？？？</h3><div class="detail-divider"></div><p>まだ手に入れていないアイテムです。</p>`;
   }
   function monsterBookEntries(){
+    if(mode==='end')return END_MONSTERS;
     const normals=getMonsterCatalog();
     const bosses=getStages().map((_,i)=>{const [name,img]=getStages()[i].boss;return{id:`boss-${mode}-${i+1}`,world:mode,stage:i,rarity:5,name,img,boss:true};});
     if(mode==='crimson')bosses.push({id:'boss-crimson-last',world:'crimson',stage:5,rarity:5,name:CRIMSON_LAST.boss[0],img:CRIMSON_LAST.boss[1],boss:true,lastBoss:true});
     return [...normals,...bosses];
   }
   function monsterFlavor(m){
+    if(mode==='end'||m.world==='end'){
+      if(m.endFinalBoss)return '最初の世界から来た「ゆうしゃ」。終の世界 FINAL に立ちはだかる。';
+      if(m.endRegionBoss)return '時空河の領域最深部に立ちはだかる、過去世界のラスボス。現在は既存特殊行動を暫定流用する。';
+      return '時空河に現れた、過去世界のボス。終の世界では道中敵として戦い、本格特殊行動は発動しない。';
+    }
     if(m.lastBoss)return '紅の世界の最終決戦に立ちはだかる剣聖。小3〜4の総合5問を乗り越えよう。';
     if(m.boss)return `${getStages()[m.stage]?.name||'この地'}に立ちはだかるボスモンスター。5問の勝負を乗り越えよう。`;
-    const labels=['','身近な姿をしたモンスター。','少し珍しい力を持つモンスター。','めったに姿を見せないレアモンスター。','強い魔力を宿したスーパーレア。','遭遇そのものが特別なSSRモンスター。'];
-    return labels[m.rarity]||'未知のモンスター。';
+    const labels=['','身近な姿をしたモンスター。','少し珍しい力を持つモンスター。','めったに姿を見せないレアモンスター。','強い魔力を宿したスーパーレア。','遭遇そのものが特別なSSRモンスター。'];return labels[m.rarity]||'未知のモンスター。';
   }
   function renderMonsterBook(filter='all'){
     const entries=monsterBookEntries();
@@ -947,36 +994,36 @@ function markWorldVisited(world){
     if(els.monsterBookFilters)els.monsterBookFilters.scrollLeft=0;
   }
   function showMonsterCard(m){
-    const counts=save.monsterEncounters[mode]||{};
-    els.monsterCardRarity.textContent=m.boss?'BOSS':rarityLabelMonster(m.rarity);
-    els.monsterCardName.textContent=m.name;
-    els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};
-    els.monsterCardImage.src=`./assets/${m.img}`;
-    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':'翠の世界';
-    els.monsterCardStage.textContent=m.lastBoss?'LAST BOSS':`STAGE ${m.stage+1}`;
-    els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;
-    els.monsterCardText.textContent=monsterFlavor(m);
-    const slimeLike=!m.boss && m.name.includes('スライム');
-    els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}${slimeLike?' slime-card':''}`;
-    els.monsterCardOverlay.hidden=false;
+    els.monsterCardRarity.textContent=m.boss?'BOSS':rarityLabelMonster(m.rarity);els.monsterCardName.textContent=m.name;
+    els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};els.monsterCardImage.src=`./assets/${m.img}`;
+    els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':'終の世界';
+    els.monsterCardStage.textContent=m.endFinalBoss?'FINAL':m.lastBoss?'LAST BOSS':m.sourceWorld?`${END_REGION_CONFIG[m.sourceWorld]?.name||'終の領域'}`:`STAGE ${m.stage+1}`;
+    els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;els.monsterCardText.textContent=monsterFlavor(m);
+    const slimeLike=!m.boss&&m.name.includes('スライム');els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}${slimeLike?' slime-card':''}`;els.monsterCardOverlay.hidden=false;
   }
   function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
 
 
-  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:mode==='silver'?SILVER_STAGES:MIDORI_STAGES;}
+  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:mode==='silver'?SILVER_STAGES:mode==='midori'?MIDORI_STAGES:buildEndStages();}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
-  function resetRun(){stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal');if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();}
+  function resetRun(){
+    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
+    if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
+    document.body.removeAttribute('data-hero-world');document.body.classList.remove('game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active');
+    if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();
+  }
 
-  function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:mode==='blue'?BLUE_MONSTERS:mode==='silver'?SILVER_MONSTERS:MIDORI_MONSTERS;}
+  function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:mode==='blue'?BLUE_MONSTERS:mode==='silver'?SILVER_MONSTERS:mode==='midori'?MIDORI_MONSTERS:END_MONSTERS;}
   function rarityRoll(r=Math.random()){
     let acc=0;for(const [rarity,w] of RARITY_WEIGHTS){acc+=w;if(r<acc)return rarity;}return 5;
   }
   function unlockedMonsters(rarity){return getMonsterCatalog().filter(m=>m.stage<=stageIndex&&m.rarity===rarity);}
   function selectMonster(rng=Math.random){
-    const rarity=rarityRoll(rng());let pool=unlockedMonsters(rarity);if(!pool.length)pool=getMonsterCatalog().filter(m=>m.stage<=stageIndex);
-    const unowned=pool.filter(m=>!isMonsterSeen(mode,m.id));
-    const source=unowned.length&&rng()<.58?unowned:pool;
-    return source[Math.floor(rng()*source.length)]||pool[0];
+    if(mode==='end'){
+      const pool=endRoadEntriesFor(currentEndSource(),stageIndex);if(!pool.length)return END_MONSTERS[0];
+      const unseen=pool.filter(m=>!isMonsterSeen('end',m.id)),source=unseen.length&&rng()<.58?unseen:pool;return source[Math.floor(rng()*source.length)]||pool[0];
+    }
+    const rarity=rarityRoll(rng());let pool=unlockedMonsters(rarity);if(!pool.length)pool=getMonsterCatalog().filter(m=>m.stage<=stageIndex);const unowned=pool.filter(m=>!isMonsterSeen(mode,m.id));const source=unowned.length&&rng()<.58?unowned:pool;return source[Math.floor(rng()*source.length)]||pool[0];
   }
   function registerMonster(monster){
     if(!monster||debugFullUnlock)return;
@@ -1035,15 +1082,42 @@ function markWorldVisited(world){
     const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 620"><defs><radialGradient id="g"><stop stop-color="${palette[2]}"/><stop offset="1" stop-color="${palette[0]}"/></radialGradient></defs><ellipse cx="240" cy="315" rx="180" ry="220" fill="url(#g)" opacity=".28"/><path d="M240 80c90 0 150 90 145 190 55 40 55 135-10 172-42 72-228 72-270 0-65-37-65-132-10-172-5-100 55-190 145-190z" fill="${palette[1]}" stroke="${palette[2]}" stroke-width="12"/><circle cx="180" cy="280" r="26" fill="#080b14"/><circle cx="300" cy="280" r="26" fill="#080b14"/><path d="M175 365q65 55 130 0" fill="none" stroke="#080b14" stroke-width="16" stroke-linecap="round"/><text x="240" y="525" text-anchor="middle" font-size="36" font-family="sans-serif" fill="white">${label}</text><text x="240" y="575" text-anchor="middle" font-size="24" font-family="sans-serif" fill="white">${name}</text></svg>`;
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
   }
-  function currentBoss(){const [name,img]=currentStage().boss;return{id:(mode==='crimson'&&crimsonLastPhase)?'boss-crimson-last':`boss-${mode}-${stageIndex+1}`,world:mode,stage:(mode==='crimson'&&crimsonLastPhase)?5:stageIndex,rarity:5,name,img,boss:true,lastBoss:mode==='crimson'&&crimsonLastPhase};}
+  function currentBoss(){
+    if(mode==='end'){
+      if(endFinalPhase)return{id:'boss-end-final',world:'end',sourceWorld:'front',stage:5,rarity:5,name:'ゆうしゃ',img:'hero.png',boss:true,lastBoss:true,endFinalBoss:true};
+      const [name,img]=currentStage().boss;return{id:`boss-end-${currentEndSource()}`,world:'end',sourceWorld:currentEndSource(),stage:stageIndex,rarity:5,name,img,boss:true,endRegionBoss:true};
+    }
+    const [name,img]=currentStage().boss;return{id:(mode==='crimson'&&crimsonLastPhase)?'boss-crimson-last':`boss-${mode}-${stageIndex+1}`,world:mode,stage:(mode==='crimson'&&crimsonLastPhase)?5:stageIndex,rarity:5,name,img,boss:true,lastBoss:mode==='crimson'&&crimsonLastPhase};
+  }
+  function makeEndBackQuestion(){
+    const kind=rand(0,3);
+    if(kind===0){const a=rand(120,480),b=rand(8,24),c=rand(15,45),answer=a+b*c;return{expression:`${a} + ${b} × ${c}`,answer,choices:compactNumericChoices(answer,[answer+b,answer-c,answer+100])};}
+    if(kind===1){const divisor=pick([4,5,8,10,20,25]),q=rand(12,48),b=divisor*q,a=rand(200,900),answer=a+b/divisor;return{expression:`${a} + ${b} ÷ ${divisor}`,answer,choices:compactNumericChoices(answer,[a+q+divisor,answer+50,Math.max(1,answer-50)])};}
+    if(kind===2){const a=rand(1200,3600),b=rand(12,36),c=rand(20,60),answer=a-b*c;if(answer>100)return{expression:`${a} − ${b} × ${c}`,answer,choices:compactNumericChoices(answer,[answer+b,answer+c,answer+100])};return makeEndBackQuestion();}
+    const a=rand(20,80),b=rand(10,50),c=rand(3,9),d=rand(2,8),answer=(a+b)*c-d;return{expression:`(${a} + ${b}) × ${c} − ${d}`,answer,choices:compactNumericChoices(answer,[a+b*c-d,answer+c,answer-c])};
+  }
+  function makeEndQuestion(sourceWorld=currentEndSource(),step=(bossPhase?bossQuestion:stageQuestion)){
+    if(sourceWorld==='midori')return makeMidoriFinalBossQuestion(step%5);
+    if(sourceWorld==='silver')return makeSilverFinalBossQuestion(step%5);
+    if(sourceWorld==='blue')return makeBlueFinalBossQuestion(step%5);
+    if(sourceWorld==='crimson')return makeCrimsonFinalQuestion(true,step%5);
+    return makeEndBackQuestion();
+  }
+  function makeEndFinalQuestion(step=bossQuestion){
+    const bank=[
+      {text:'3600 − 2.4 × 750 + ',f:{n:3,d:5},tail:' × 1000',answer:2400},
+      {text:'4800 ÷ 1.2 − ',f:{n:7,d:8},tail:' × 1600',answer:2600},
+      {text:'1250 × 0.8 + ',f:{n:5,d:6},tail:' × 1800 − 725',answer:1775},
+      {text:'6400 − 1.5 × 2400 + ',f:{n:3,d:4},tail:' × 1600',answer:4000},
+      {text:'7200 − 1.25 × 2400 + ',f:{n:2,d:3},tail:' × 2700',answer:6000}
+    ];
+    const q=bank[Math.max(0,Math.min(4,Number(step)||0))];return{expression:`${q.text}${q.f.n}/${q.f.d}${q.tail}`,displayExpression:`${q.text}${q.f.n}/${q.f.d}${q.tail} = ?`,htmlExpression:`${q.text}${fractionHtml(q.f)}${q.tail} = ?`,answer:q.answer,choices:compactNumericChoices(q.answer,[q.answer+100,q.answer-100,q.answer+200]),endFinal:true};
+  }
+
   function makeBossQuestion(idx){
+    if(mode==='end')return endFinalPhase?makeEndFinalQuestion(bossQuestion):makeEndQuestion(currentEndSource(),bossQuestion);
     if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true,bossQuestion);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false,bossQuestion);}
-    if(mode==='blue')return makeBlueBossQuestion(idx,bossQuestion);
-    if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion(bossQuestion);}
-    if(mode==='midori'){if(idx<4)return makeMidoriQuestion(idx+1);return makeMidoriFinalBossQuestion(bossQuestion);}
-    if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);
-    if(mode==='front')return makeFrontFinalBossQuestion();
-    return makeBackFinalBossQuestion();
+    if(mode==='blue')return makeBlueBossQuestion(idx,bossQuestion);if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion(bossQuestion);}if(mode==='midori'){if(idx<4)return makeMidoriQuestion(idx+1);return makeMidoriFinalBossQuestion(bossQuestion);}if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);if(mode==='front')return makeFrontFinalBossQuestion();return makeBackFinalBossQuestion();
   }
   function makeFrontFinalBossQuestion(){
     for(let i=0;i<5000;i++){
@@ -1584,7 +1658,7 @@ function markWorldVisited(world){
     return{expression:'まちがっているものは？',answer,choices:['A','B','C'],visualType:'mimesis-final',mimesisRows:rows,showPi:rows.some(r=>r.label==='円')};
   }
 
-  function currentStage(){return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
+  function currentStage(){if(mode==='end'&&endFinalPhase)return END_FINAL;return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
   function sameDigitLength(a,b){return String(Math.abs(a)).length===String(Math.abs(b)).length;}
   function answerKey(v){return typeof v==='number'?String(v):String(v);}
   function answersEqual(a,b){return answerKey(a)===answerKey(b);}
@@ -1648,12 +1722,7 @@ function markWorldVisited(world){
     'boss_crimson_last.png':'11%'
   };
   function applyEnemyFacing(en){
-    if(!els.enemySprite)return;
-    const keepOriginal=!!en&&((en.world==='crimson'||en.world==='silver'||en.world==='blue'||en.world==='midori')||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));
-    els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);
-    els.enemySprite.classList.toggle('bottom-safe-knight',!!en&&en.img==='monster_front_4_2_25.png');
-    els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));
-    els.enemySprite.style.setProperty('--enemy-y',en?(BATTLE_SPRITE_OFFSET_Y[en.img]||'0%'):'0%');
+    if(!els.enemySprite)return;const facingWorld=en?.sourceWorld||en?.world;const keepOriginal=!!en&&((facingWorld==='crimson'||facingWorld==='silver'||facingWorld==='blue'||facingWorld==='midori')||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);els.enemySprite.classList.toggle('bottom-safe-knight',!!en&&en.img==='monster_front_4_2_25.png');els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));els.enemySprite.style.setProperty('--enemy-y',en?(BATTLE_SPRITE_OFFSET_Y[en.img]||'0%'):'0%');
   }
 
   // Enemy image lifecycle: never replace a visible enemy's src in place.  The old
@@ -1798,20 +1867,14 @@ function markWorldVisited(world){
     return Math.max(0,Math.min(15,totalProgress-stageIndex*15));
   }
   function renderGame(){
-    const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;
-    if(mode==='crimson'&&crimsonLastPhase){els.progressText.textContent=`${Math.min(80,totalProgress)} / 80`;els.progressFill.style.width=`${Math.min(100,(totalProgress-75)/5*100)}%`;els.stageLabel.textContent='LAST BOSS';els.stageName.textContent=s.name;}else{els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;
-    fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
-    const blueAdult=isBlueAdultPhase();const battleBgFile=isBlueStage5()?(blueAdult?'blue_stage5_after.png':'blue_stage5_before.png'):s.bg;
-    els.battleBg.style.backgroundImage=`url('./assets/${battleBgFile}')`;els.heroImage.src=mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):mode==='silver'?'./assets/silver_hero.png':'./assets/midori_hero_pirate_captain.png';els.heroName.textContent=mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):mode==='silver'?'銀狼の少女':'海賊船長';
-    const en=bossPhase?currentBoss():currentMonster;
-    if(en){
-      applyEnemyFacing(en);
-      setEnemyNameDisplay(en);
-      fitSingleLineText(els.enemyName,{maxWidthRatio:.31,minPx:9});
-      // src is deliberately not changed here. New sprites are committed only by
-      // stageEnemyVisual() after decode, while enemyActor remains hidden.
-    }else{setEnemyNameDisplay(null);}
-    updateBossHpHud();
+    const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=(mode==='end'&&endFinalPhase)?'final':stageIndex;
+    if((mode==='crimson'&&crimsonLastPhase)||(mode==='end'&&endFinalPhase)){els.progressText.textContent=`${Math.min(80,totalProgress)} / 80`;els.progressFill.style.width=`${Math.min(100,(totalProgress-75)/5*100)}%`;els.stageLabel.textContent=mode==='end'?'FINAL':'LAST BOSS';els.stageName.textContent=s.name;}else{els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}
+    els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
+    const blueAdult=isBlueAdultPhase();const battleBgFile=isBlueStage5()?(blueAdult?'blue_stage5_after.png':'blue_stage5_before.png'):s.bg;els.battleBg.style.backgroundImage=`url('./assets/${battleBgFile}')`;
+    let heroWorld=mode;if(mode==='end')heroWorld=currentEndHeroWorld();document.body.dataset.heroWorld=heroWorld;
+    els.heroImage.src=mode==='end'?`./assets/${END_HERO_FILES[heroWorld]}`:mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):mode==='silver'?'./assets/silver_hero.png':'./assets/midori_hero_pirate_captain.png';
+    els.heroName.textContent=mode==='end'?END_HERO_NAMES[heroWorld]:mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):mode==='silver'?'銀狼の少女':'海賊船長';
+    const en=bossPhase?currentBoss():currentMonster;if(en){applyEnemyFacing(en);setEnemyNameDisplay(en);fitSingleLineText(els.enemyName,{maxWidthRatio:.31,minPx:9});}else setEnemyNameDisplay(null);updateBossHpHud();
   }
 
   function syncPauseButton(){
@@ -1842,9 +1905,11 @@ function markWorldVisited(world){
   }
   function playSE(a){if(!soundOn)return;try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
   function stopSE(a){try{a.pause();a.currentTime=0;}catch{}}
+  function activeHeroWorld(){return mode==='end'?currentEndHeroWorld():mode;}
   function playAttackSE(){
     if(!soundOn)return;
-    const a=mode==='midori'?gunSE:mode==='back'?magicSE:swordSE;
+    const hw=activeHeroWorld();
+    const a=mode==='end'?(hw==='midori'?gunSE:hw==='back'?magicSE:swordSE):(mode==='midori'?gunSE:mode==='back'?magicSE:swordSE);
     try{a.currentTime=0;a.play().catch(()=>playSE(correctSE));}catch{playSE(correctSE);}
   }
   function clearBattleFx(){
@@ -1863,47 +1928,15 @@ function markWorldVisited(world){
     els.answerMark.classList.add('show');
   }
   function runAttackMotion(){
-    els.heroActor.classList.remove('attack-front','attack-back','finisher-front','finisher-back');
-    els.enemyActor.classList.remove('hit','finisher-hit');
-    els.attackEffect.className='attack-effect';
-    void els.heroActor.offsetWidth;void els.attackEffect.offsetWidth;
-    const magicVisual=mode==='back'||(mode==='blue'&&isBlueAdultPhase());
-    els.heroActor.classList.add(magicVisual?'attack-back':'attack-front');
-    els.attackEffect.classList.add(magicVisual?'back-hit':'front-hit');
-    els.enemyActor.classList.add('hit');
-    playAttackSE();
+    els.heroActor.classList.remove('attack-front','attack-back','finisher-front','finisher-back');els.enemyActor.classList.remove('hit','finisher-hit');els.attackEffect.className='attack-effect';void els.heroActor.offsetWidth;void els.attackEffect.offsetWidth;const hw=activeHeroWorld(),magicVisual=hw==='back'||hw==='blue';els.heroActor.classList.add(magicVisual?'attack-back':'attack-front');els.attackEffect.classList.add(magicVisual?'back-hit':'front-hit');els.enemyActor.classList.add('hit');playAttackSE();
   }
   function playFinisherSE(){
-    if(!soundOn)return;
-    const a=mode==='midori'?midoriFinisherSE:mode==='back'?backFinisherSE:frontFinisherSE;
-    try{
-      a.currentTime=0;
-      const promise=a.play();
-      if(promise&&typeof promise.catch==='function')promise.catch(()=>{if(mode!=='midori')playAttackSE();});
-    }catch{if(mode!=='midori')playAttackSE();}
+    if(!soundOn)return;const hw=activeHeroWorld();const a=hw==='midori'?midoriFinisherSE:hw==='back'?backFinisherSE:frontFinisherSE;try{a.currentTime=0;const promise=a.play();if(promise&&typeof promise.catch==='function')promise.catch(()=>{if(hw!=='midori')playAttackSE();});}catch{if(hw!=='midori')playAttackSE();}
   }
   function runFinisherMotion(){
-    els.heroActor.classList.remove('attack-front','attack-back','finisher-front','finisher-back');
-    els.enemyActor.classList.remove('hit','finisher-hit','finisher-midori-hit');
-    const battlefield=document.querySelector('.battlefield');
-    battlefield?.classList.remove('midori-finisher-impact');
-    els.attackEffect.className='attack-effect';
-    void els.heroActor.offsetWidth;void els.attackEffect.offsetWidth;
-    if(mode==='midori'){
-      // 翠の最後の一撃は、白フラッシュではなく重い反動・衝撃輪・ノックバックで強調する。
-      // 通常攻撃の gun.mp3 は使わず、ここだけ bom.mp3 を鳴らす。
-      els.heroActor.classList.add('finisher-front');
-      els.attackEffect.classList.add('finisher-midori-fx');
-      els.enemyActor.classList.add('finisher-midori-hit');
-      battlefield?.classList.add('midori-finisher-impact');
-      playFinisherSE();
-      return;
-    }
-    const magicVisual=mode==='back'||(mode==='blue'&&isBlueAdultPhase());
-    els.heroActor.classList.add(magicVisual?'finisher-back':'finisher-front');
-    els.attackEffect.classList.add(magicVisual?'finisher-back-fx':'finisher-front-fx');
-    els.enemyActor.classList.add('finisher-hit');
-    playFinisherSE();
+    els.heroActor.classList.remove('attack-front','attack-back','finisher-front','finisher-back');els.enemyActor.classList.remove('hit','finisher-hit','finisher-midori-hit');const battlefield=document.querySelector('.battlefield');battlefield?.classList.remove('midori-finisher-impact');els.attackEffect.className='attack-effect';void els.heroActor.offsetWidth;void els.attackEffect.offsetWidth;const hw=activeHeroWorld();
+    if(hw==='midori'){els.heroActor.classList.add('finisher-front');els.attackEffect.classList.add('finisher-midori-fx');els.enemyActor.classList.add('finisher-midori-hit');battlefield?.classList.add('midori-finisher-impact');playFinisherSE();return;}
+    const magicVisual=hw==='back'||hw==='blue';els.heroActor.classList.add(magicVisual?'finisher-back':'finisher-front');els.attackEffect.classList.add(magicVisual?'finisher-back-fx':'finisher-front-fx');els.enemyActor.classList.add('finisher-hit');playFinisherSE();
   }
   async function stopBgmFade(ms=1100){
     if(!currentBgm)return;
@@ -2040,31 +2073,18 @@ function advanceMapFromInput(){
 function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdvanceResolve=resolve;});}
 
   function prepareMapOverlay(initial=false){
-    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':mode==='silver'?'SILVER WORLD':'EMERALD SEA';
-    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':'FAIRWAY';
-    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.png':mode==='silver'?'./assets/silver_map.png':`./assets/midori_fairway_map_${Math.max(1,Math.min(5,stageIndex+1))}.png`;
-    els.mapImage.alt=mode==='midori'?`翠の世界 FAIRWAY 航海図・STAGE ${stageIndex+1}`:'ワールドマップ';
-    const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'];
-    const mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'];
-    const mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'];
-    const mapLinesBlue=['昔ながらの田舎町へ向かいます…','山の秘密基地へ進みます…','夏祭りの灯りへ向かいます…','夕暮れの公園へ進みます…','あの家へ帰ります…'];
-    const mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'];
-    const mapLinesMidori=['出航の港島へ向かいます…','翠海の群島へ船を進めます…','翠深の遺跡島へ上陸します…','黒帆大船団へ突入します…','大渦の秘宝島へ向かいます…'];
-    const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mode==='blue'?mapLinesBlue:mode==='silver'?mapLinesSilver:mapLinesMidori;
-    els.mapMessage.textContent=lines[stageIndex] || (initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
-    const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;
-    if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}
-    if(els.mapVisual)els.mapVisual.disabled=true;if(els.mapNextBtn)els.mapNextBtn.disabled=true;
-    els.mapOverlay.hidden=false;
+    els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':mode==='silver'?'SILVER WORLD':mode==='midori'?'EMERALD SEA':'TIME RIVER';
+    els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'FAIRWAY':'終の世界';
+    els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.png':mode==='silver'?'./assets/silver_map.png':mode==='midori'?`./assets/midori_fairway_map_${Math.max(1,Math.min(5,stageIndex+1))}.png`:'./assets/world_map_v3_clean.png';
+    els.mapImage.alt=mode==='midori'?`翠の世界 FAIRWAY 航海図・STAGE ${stageIndex+1}`:mode==='end'?'終の世界・暫定マップ':'ワールドマップ';
+    const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'],mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'],mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'],mapLinesBlue=['昔ながらの田舎町へ向かいます…','山の秘密基地へ進みます…','夏祭りの灯りへ向かいます…','夕暮れの公園へ進みます…','あの家へ帰ります…'],mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'],mapLinesMidori=['出航の港島へ向かいます…','翠海の群島へ船を進めます…','翠深の遺跡島へ上陸します…','黒帆大船団へ突入します…','大渦の秘宝島へ向かいます…'];
+    const mapLinesEnd=buildEndStages().map((st,i)=>i===0?'翠の海の先から、大時空支流へ入ります…':`${st.name}へ時空河を進みます…`);
+    const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mode==='blue'?mapLinesBlue:mode==='silver'?mapLinesSilver:mode==='midori'?mapLinesMidori:mapLinesEnd;els.mapMessage.textContent=lines[stageIndex]||(initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
+    const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}if(els.mapVisual)els.mapVisual.disabled=true;if(els.mapNextBtn)els.mapNextBtn.disabled=true;els.mapOverlay.hidden=false;
   }
 
   function prepareStageOverlay(){
-    const s=currentStage();
-    els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;
-    els.stageOverlayLabel.textContent=`STAGE ${stageIndex+1}`;
-    els.stageOverlayName.textContent=s.name;
-    els.stageOverlay.hidden=false;
-    requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
+    const s=currentStage();els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;els.stageOverlayLabel.textContent=mode==='end'&&endFinalPhase?'FINAL':`STAGE ${stageIndex+1}`;els.stageOverlayName.textContent=s.name;els.stageOverlay.hidden=false;requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
   }
 
   function clearMonsterAnnouncement(){
@@ -2139,7 +2159,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     [...els.choices.children].forEach(b=>b.disabled=true);
     document.body.classList.add('special-assist-active');
     specialGauge=0;updateSpecialHud();
-    const heroFile=mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='midori'?'midori_hero_pirate_captain.png':'silver_hero.png';
+    const heroFile=mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='midori'?'midori_hero_pirate_captain.png':'silver_hero.png';
     await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
     const target=pick(wrongButtons);
     playFinisherSE();
@@ -2272,11 +2292,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.mathProblem.appendChild(wrap);return true;
   }
   function renderQuestionContent(q){
-    setFractionQuestionLayout(!!q?.fraction);setMimesisQuestionLayout(q?.visualType||'',mode==='silver'&&bossPhase&&stageIndex===4);resetMathProblemFit();
-    if(renderMimesisVisual(q))return;
-    if(renderBlueFadeParts(q)){fitMathProblemToBox(q);return;}
-    if(q?.fraction){els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);}else els.mathProblem.textContent=questionDisplayText(q);
-    fitMathProblemToBox(q);
+    setFractionQuestionLayout(!!q?.fraction||!!q?.htmlExpression);setMimesisQuestionLayout(q?.visualType||'',(mode==='silver'&&bossPhase&&stageIndex===4)||(mode==='end'&&bossPhase&&!endFinalPhase&&currentEndSource()==='silver'));resetMathProblemFit();
+    if(renderMimesisVisual(q))return;if(renderBlueFadeParts(q)){fitMathProblemToBox(q);return;}
+    if(q?.htmlExpression)els.mathProblem.innerHTML=q.htmlExpression;else if(q?.fraction)els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);else els.mathProblem.textContent=questionDisplayText(q);fitMathProblemToBox(q);
   }
   function renderChoiceButton(b,v,answer){
     b.dataset.answerValue=answerKey(v);
@@ -2285,12 +2303,11 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);
   }
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
+  function battleQuestionTime(){return mode==='end'&&endFinalPhase?30:60;}
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
-    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):makeMidoriQuestion(stageIndex));
-    renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';
-    choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});
-    updateBlueStage5Dimming();locked=false;syncPauseButton();updateSpecialHud();
+    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
+    renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;syncPauseButton();updateSpecialHud();
   }
 
   function clearQuestionUi(){setFractionQuestionLayout(false);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
@@ -2316,22 +2333,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     document.querySelector('.battlefield').appendChild(layer);return layer;
   }
   async function showMonsterEntrance(monster){
-    const layer=ensureMonsterFx();clearMonsterAnnouncement();els.enemyActor.style.opacity='0';els.enemyActor.style.transform='translateY(12px) scale(.92)';
-    const w=$('rarityWarning');
-    const entranceLabel=monster.rarity===5?'★★★★★ SSR':monster.rarity===4?'★★★★ SR':monster.rarity===3?'★★★ RARE':'';
-    w.className=`rarity-warning rarity-${monster.rarity}${monster.rarity>=4?' rarity-high':''}`;
-    w.textContent=entranceLabel;
-    if(monster.rarity>=4)layer.classList.add(`rare-arrival-${monster.rarity}`);
-    if(monster.rarity>=3){
-      w.hidden=false;
-      await sleep(monster.rarity===5?760:monster.rarity===4?560:420);
-      w.hidden=true;w.textContent='';
-    }else{w.hidden=true;w.textContent='';}
-    els.enemyActor.classList.add(`spawn-r${monster.rarity}`);els.enemyActor.style.opacity='1';els.enemyActor.style.transform='';
-    await sleep([0,380,520,760,1050,1450][monster.rarity]);
-    els.enemyActor.classList.remove(`spawn-r${monster.rarity}`);
-    layer.classList.remove('rare-arrival-4','rare-arrival-5');
-    clearMonsterAnnouncement();
+    const layer=ensureMonsterFx();clearMonsterAnnouncement();els.enemyActor.style.opacity='0';els.enemyActor.style.transform='translateY(12px) scale(.92)';const w=$('rarityWarning');
+    if(mode==='end'&&monster?.endPastBoss){w.hidden=true;w.textContent='';els.enemyActor.classList.add('spawn-end-past-boss');els.enemyActor.style.opacity='1';els.enemyActor.style.transform='';await sleep(920);els.enemyActor.classList.remove('spawn-end-past-boss');clearMonsterAnnouncement();return;}
+    const entranceLabel=monster.rarity===5?'★★★★★ SSR':monster.rarity===4?'★★★★ SR':monster.rarity===3?'★★★ RARE':'';w.className=`rarity-warning rarity-${monster.rarity}${monster.rarity>=4?' rarity-high':''}`;w.textContent=entranceLabel;if(monster.rarity>=4)layer.classList.add(`rare-arrival-${monster.rarity}`);if(monster.rarity>=3){w.hidden=false;await sleep(monster.rarity===5?760:monster.rarity===4?560:420);w.hidden=true;w.textContent='';}else{w.hidden=true;w.textContent='';}els.enemyActor.classList.add(`spawn-r${monster.rarity}`);els.enemyActor.style.opacity='1';els.enemyActor.style.transform='';await sleep([0,380,520,760,1050,1450][monster.rarity]);els.enemyActor.classList.remove(`spawn-r${monster.rarity}`);layer.classList.remove('rare-arrival-4','rare-arrival-5');clearMonsterAnnouncement();
   }
 
   async function showBossWarning(){
@@ -2393,7 +2397,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       art.style.setProperty('--cutin-side',`${focus.side}%`);
       c.style.setProperty('--cutin-duration',`${duration}ms`);
       const originalFacing=side==='enemy'&&(imgFile.includes('_crimson_')||BATTLE_KEEP_ORIGINAL_FACING.has(imgFile));
-      const reducedFlash=mode==='midori';
+      const reducedFlash=mode==='midori'||mode==='end';
       c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'} ${variant==='assist'?'assist-cutin':'finisher-cutin'}${originalFacing?' cutin-original-facing':''}${reducedFlash?' reduced-flash':''}`;
       c.hidden=false;
       document.querySelector('.battlefield')?.classList.add('cutin-scene');
@@ -2426,7 +2430,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(isBlueStage5()&&!retry)await revealBlueStage5BossRoomAndHero();
     clearMonsterAnnouncement();updateBossHpHud();
     if(bossQuestion===4){await runBossFifthAction();return;}
-    prepareQuestion();startTimer(60);
+    prepareQuestion();startTimer(battleQuestionTime());
   }
 
   function bossObscurerCount(){
@@ -2483,8 +2487,11 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   };
   const CRIMSON_LAST_SPECIAL={type:'crimson-genma',name:'無明の一閃',time:15};
   function currentBossSpecial(){
-    if(mode==='crimson'&&crimsonLastPhase)return CRIMSON_LAST_SPECIAL;
-    return BOSS_SPECIALS[mode]?.[stageIndex]||null;
+    if(mode==='end'){
+      if(endFinalPhase)return null;
+      const source=currentEndSource();if(source==='crimson')return CRIMSON_LAST_SPECIAL;return BOSS_SPECIALS[source]?.[4]||null;
+    }
+    if(mode==='crimson'&&crimsonLastPhase)return CRIMSON_LAST_SPECIAL;return BOSS_SPECIALS[mode]?.[stageIndex]||null;
   }
   function ensureBossSpecialFxLayer(){
     let layer=$('bossSpecialFxLayer');
@@ -3150,7 +3157,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   async function runBossFifthAction(){
     const spec=currentBossSpecial();
     ensureMonsterFx();ensureBossSpecialFxLayer();clearBossAction();locked=true;stopTimer();clearQuestionUi();
-    if(!spec){await showActionCutin('enemy',currentBoss().img,{variant:'finisher',duration:1100});bossActionActive=false;bossSpecialSequence=null;prepareQuestion();startTimer(60);return;}
+    if(!spec){await showActionCutin('enemy',currentBoss().img,{variant:'finisher',duration:1100});bossActionActive=false;bossSpecialSequence=null;prepareQuestion();startTimer(battleQuestionTime());return;}
     // All boss techniques begin only after the existing enemy cut-in has fully finished.
     await showActionCutin('enemy',currentBoss().img,{variant:'finisher',duration:1480});
     bossActionActive=true;bossSpecialSequence={type:spec.type,step:'start'};
@@ -3273,7 +3280,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     enemyVisualToken++;concealEnemyVisual(true);
     currentMonster=selectMonster();registerMonster(currentMonster);renderGame();clearQuestionUi();
     if(!(await stageEnemyVisual(currentMonster)))return;
-    await showMonsterEntrance(currentMonster);prepareQuestion();startTimer(60);
+    await showMonsterEntrance(currentMonster);prepareQuestion();startTimer(battleQuestionTime());
   }
   async function showMapSequence(initial=false,mapAlreadyVisible=false){
     if(!mapAlreadyVisible)prepareMapOverlay(initial);
@@ -3474,10 +3481,10 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(blueQ10Slow)els.heroActor.classList.add('blue-q10-slow');
       runAttackMotion();await sleep(180);playSE(correctSE);await sleep(blueQ10Slow?1370:720);els.heroActor.classList.remove('blue-q10-slow');totalProgress++;
       if(bossPhase){
-        bossQuestion++;
+        bossQuestion++;renderGame();
         if(bossQuestion>=5){await defeatBoss();return;}
         if(bossQuestion===4){await runBossFifthAction();return;}
-        prepareQuestion();startTimer(60);return;
+        prepareQuestion();startTimer(battleQuestionTime());return;
       }
       stageQuestion++;
       if(stageQuestion>=10){await enterBossPhase();return;}
@@ -3491,8 +3498,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }
     if(bossPhase){
       if(bossQuestion===4){await runBossFifthAction();return;}
-      prepareQuestion();startTimer(60);
-    }else{prepareQuestion();startTimer(60);}
+      prepareQuestion();startTimer(battleQuestionTime());
+    }else{prepareQuestion();startTimer(battleQuestionTime());}
   }
 
   async function enterBossPhase(){
@@ -3501,7 +3508,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     bossPhase=true;bossQuestion=0;currentMonster=null;clearBossAction();unlockCurrentBossMusic();await showBossEntrance(false);
   }
   async function restartBossCheckpoint(){
-    stopTimer();await stopBgmFade(600);clearBossAction();lives=3;bossPhase=true;bossQuestion=0;if(isBlueStage5())blueAdultState=true;totalProgress=stageIndex*15+10;unlockCurrentBossMusic();
+    stopTimer();await stopBgmFade(600);clearBossAction();lives=3;bossPhase=true;bossQuestion=0;if(isBlueStage5())blueAdultState=true;totalProgress=(mode==='end'&&endFinalPhase)?75:stageIndex*15+10;unlockCurrentBossMusic();
     prepareMapOverlay(false);await sleep(1100);
     await sceneBlackout(async()=>{prepareStageOverlay();els.mapOverlay.hidden=true;},{fadeIn:250,hold:70,fadeOut:310});
     await sleep(760);
@@ -3510,32 +3517,31 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await runBattleCountdown();
     await showBossEntrance(true);
   }
+  async function showEndRescue(sourceWorld){
+    if(mode!=='end'||endFinalPhase||stageIndex===0)return;
+    const rescued=sourceWorld||currentEndSource(),file=END_HERO_FILES[rescued];if(!file)return;
+    document.body.classList.add('end-rescue-active');
+    const wrap=document.createElement('div');wrap.className='end-rescue-fx';wrap.innerHTML=`<div class="end-rescue-river"></div><img src="./assets/${file}" alt="${END_HERO_NAMES[rescued]||'主人公'}"><strong>RESCUED</strong>`;document.body.appendChild(wrap);await sleep(2300);wrap.remove();document.body.classList.remove('end-rescue-active');endHeroWorld=rescued;
+  }
+  async function beginEndFinalBoss(){
+    endFinalPhase=true;bossPhase=true;bossQuestion=0;currentMonster=null;currentQuestion=null;lives=3;clearBossAction();unlockCurrentBossMusic();
+    await sceneBlackout(async()=>{showOnly(els.gameScreen);document.body.dataset.mode='end';document.body.dataset.stage='final';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);},{fadeIn:520,hold:220,fadeOut:700});await playStageBgm();await runBattleCountdown();await showBossEntrance(true,0);
+  }
+
   async function defeatBoss(){
-    stopTimer();clearBossAction();
-    // The large correct mark has already had a clear beat before the cut-in; hide it
-    // so the cut-in itself remains visually clean even though answer marks are top-layer UI.
-    els.answerMark.hidden=true;
-    await showActionCutin('hero',mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='blue'?(isBlueAdultPhase()?'blue_hero_adult.png':'blue_hero.png'):mode==='silver'?'silver_hero.png':'midori_hero_pirate_captain.png');
-    runFinisherMotion();
-    await sleep(980);
-    els.enemyActor.classList.add('boss-defeat');
-    await sleep(2100);
-    if(mode==='crimson'&&crimsonLastPhase){enemyVisualToken++;concealEnemyVisual(true);}
-    els.enemyActor.classList.remove('boss-defeat','finisher-hit','finisher-midori-hit');
-    els.heroActor.classList.remove('finisher-front','finisher-back');
-    document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');
-    els.attackEffect.className='attack-effect';
+    stopTimer();clearBossAction();els.answerMark.hidden=true;
+    const heroFile=mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='blue'?(isBlueAdultPhase()?'blue_hero_adult.png':'blue_hero.png'):mode==='silver'?'silver_hero.png':'midori_hero_pirate_captain.png';
+    await showActionCutin('hero',heroFile);runFinisherMotion();await sleep(980);els.enemyActor.classList.add('boss-defeat');await sleep(2100);
+    if(mode==='crimson'&&crimsonLastPhase){enemyVisualToken++;concealEnemyVisual(true);}els.enemyActor.classList.remove('boss-defeat','finisher-hit','finisher-midori-hit');els.heroActor.classList.remove('finisher-front','finisher-back');document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');els.attackEffect.className='attack-effect';
     if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await finishRun();return;}
+    if(mode==='end'&&endFinalPhase){await finishRun();return;}
+    if(mode==='end')await showEndRescue(currentEndSource());
     await clearStage();
   }
 
   function currentStageClearGold(){
-    if(mode==='front')return stageIndex===4?10:3;
-    if(mode==='back')return stageIndex===4?15:5;
-    if(mode==='crimson')return 5;
-    if(mode==='silver')return stageIndex===4?20:5;
-    if(mode==='midori')return stageIndex===4?20:5;
-    return 5;
+    if(mode==='end')return 0;
+    if(mode==='front')return stageIndex===4?10:3;if(mode==='back')return stageIndex===4?15:5;if(mode==='crimson')return 5;if(mode==='silver')return stageIndex===4?20:5;if(mode==='midori')return stageIndex===4?20:5;return 5;
   }
   function grantStageClearGold(key,reward){
     const amount=Math.max(0,Number(reward)||0);
@@ -3546,40 +3552,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
 
   async function clearStage(){
-    resetSpecialGauge();
-    const stageGold=currentStageClearGold();
-    grantStageClearGold(stageIndex,stageGold);
-    const stageClearGold=$('stageClearGold');if(stageClearGold)stageClearGold.textContent=`＋${stageGold} G`;
-    els.stageClearName.textContent=currentStage().name;
-    requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));
-    els.stageClearOverlay.hidden=false;
-    playSE(clearSE);
-    enemyVisualToken++;concealEnemyVisual(true);
-    const fade=stopBgmFade(1500);
-    // Give the victory card a fuller reward beat before the existing fade-to-map transition.
-    await sleep(2750);
-
-    if(stageIndex>=getStages().length-1){
-      els.stageClearOverlay.hidden=true;
-      await fade;
-      if(mode==='crimson'){await beginCrimsonLastBoss();return;}
-      await finishRun();
-      return;
-    }
-
-    // Prepare the next map behind the clear screen, then reveal it through the same
-    // blackout/fade language used elsewhere. This avoids exposing the previous battle
-    // while keeping the existing transitionFx system intact.
-    stageIndex++;
-    stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;clearBossAction();
-    lives=3;
-    prepareMapOverlay(false);
-    await new Promise(requestAnimationFrame);
-    await sceneBlackout(async()=>{
-      els.stageClearOverlay.hidden=true;
-    },{fadeIn:650,hold:160,fadeOut:850});
-    await fade;
-    await showMapSequence(false,true);
+    resetSpecialGauge();const stageGold=currentStageClearGold();grantStageClearGold(stageIndex,stageGold);const stageClearGold=$('stageClearGold');if(stageClearGold)stageClearGold.textContent=mode==='end'?'＋0 G（仮）':`＋${stageGold} G`;els.stageClearName.textContent=currentStage().name;requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));els.stageClearOverlay.hidden=false;playSE(clearSE);enemyVisualToken++;concealEnemyVisual(true);const fade=stopBgmFade(1500);await sleep(2750);
+    if(stageIndex>=getStages().length-1){els.stageClearOverlay.hidden=true;await fade;if(mode==='crimson'){await beginCrimsonLastBoss();return;}if(mode==='end'){await beginEndFinalBoss();return;}await finishRun();return;}
+    stageIndex++;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;clearBossAction();lives=3;prepareMapOverlay(false);await new Promise(requestAnimationFrame);await sceneBlackout(async()=>{els.stageClearOverlay.hidden=true;},{fadeIn:650,hold:160,fadeOut:850});await fade;await showMapSequence(false,true);
   }
 
   async function beginCrimsonLastBoss(){
@@ -3591,16 +3566,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     stopTimer();await stopBgmFade(500);let reward=null;
     if(!debugFullUnlock){
       if(mode==='front'){save.frontClears++;if(!save.backUnlocked){save.backUnlocked=true;if(!save.owned.includes(100))save.owned.push(100);reward=ITEMS.find(i=>i.id===100);}else reward=randomReward();}
-      else if(mode==='back'){save.backClears++;reward=randomReward();}
-      else if(mode==='crimson'){save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}
-      else if(mode==='blue'){save.blueClears=(save.blueClears||0)+1;reward=randomReward();}
-      else if(mode==='silver'){save.silverClears=(save.silverClears||0)+1;reward=randomReward();}
-      else if(mode==='midori'){save.midoriClears=(save.midoriClears||0)+1;reward=randomReward();}
+      else if(mode==='back'){save.backClears++;reward=randomReward();}else if(mode==='crimson'){save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}else if(mode==='blue'){save.blueClears=(save.blueClears||0)+1;reward=randomReward();}else if(mode==='silver'){save.silverClears=(save.silverClears||0)+1;reward=randomReward();}else if(mode==='midori'){save.midoriClears=(save.midoriClears||0)+1;reward=randomReward();}else if(mode==='end'){save.endClears=(save.endClears||0)+1;}
       persist();syncSecretRelics();
-    }else renderTitle();
-    renderResult();els.resultOverlay.hidden=false;
-    if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'特別なアイテムを手に入れた！':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}
-    else enqueuePendingSecretRelicNotices({showNow:true});
+    }else renderTitle();renderResult();els.resultOverlay.hidden=false;if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'特別なアイテムを手に入れた！':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}else enqueuePendingSecretRelicNotices({showNow:true});
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
   function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;els.resultErrors.innerHTML=stats.errors.length?stats.errors.map(e=>`<div class="error-row"><b>${questionDisplayText({expression:e.q})}</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join(''):'<div class="error-row">ミスはありませんでした！</div>';}
@@ -3679,7 +3647,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalQuestion,newEndRoute,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 

@@ -1641,3 +1641,81 @@ body[data-mode="midori"] .map-tip-label span{background:#75d9b4;color:#082329;bo
 body[data-mode="midori"] .map-tip-label small{color:#a5ead0}
 body[data-mode="midori"] .map-next-btn{border-color:rgba(111,224,185,.56);background:linear-gradient(180deg,#18806c,#0b4e49);box-shadow:0 5px 13px rgba(0,0,0,.26),inset 0 1px rgba(255,255,255,.12)}
 body[data-mode="midori"] .map-message{border-color:rgba(111,224,185,.22);background:rgba(4,29,36,.9);color:#ecfff8}
+
+/* ========================================================================== */
+/* 終の世界 / provisional implementation                                     */
+/* Existing assets are reused until the dedicated End-world art is delivered. */
+/* ========================================================================== */
+body[data-mode="end"] .title-bg,
+body[data-mode="end"] .sub-bg{background-image:url('./assets/bg_boss.png');filter:saturate(.92) hue-rotate(245deg) brightness(.64)}
+body[data-mode="end"] .title-shade{background:linear-gradient(90deg,rgba(15,5,31,.80),rgba(84,30,119,.22) 50%,rgba(9,5,25,.72)),linear-gradient(180deg,rgba(54,18,90,.10),rgba(5,3,18,.46))}
+body[data-mode="end"] .title-shell{background:linear-gradient(180deg,rgba(31,13,55,.92),rgba(11,8,29,.98));border-color:rgba(200,139,255,.50);box-shadow:0 24px 70px rgba(0,0,0,.58),0 0 38px rgba(151,67,220,.16),inset 0 0 0 1px rgba(255,255,255,.05)}
+body[data-mode="end"] .title-mode-plate,
+body[data-mode="end"] .title-track,
+body[data-mode="end"] .title-wallet{border-color:rgba(204,144,255,.35);background:rgba(26,12,47,.84)}
+body[data-mode="end"] .title-mode-plate span:not(.mode-orb),
+body[data-mode="end"] .title-track span,
+body[data-mode="end"] .title-wallet span{color:#d9adff}
+body[data-mode="end"] .mode-orb{background:#c47aff;box-shadow:0 0 12px #a855f7}
+body[data-mode="end"] .title-copy h1{color:#d79aff;text-shadow:0 3px 0 rgba(42,8,67,.82),0 0 26px rgba(181,88,255,.30)}
+body[data-mode="end"] .title-copy h1 span{color:#f7eaff}
+body[data-mode="end"] .eyebrow,
+body[data-mode="end"] .title-caption{color:#d8b1f4}
+body[data-mode="end"] .title-logo-gem,
+body[data-mode="end"] .menu-glyph{color:#d392ff;text-shadow:0 0 11px rgba(196,122,255,.55)}
+body[data-mode="end"] .title-divider i{background:linear-gradient(90deg,transparent,#b876e8)}
+body[data-mode="end"] .title-divider i:last-child{background:linear-gradient(90deg,#b876e8,transparent)}
+body[data-mode="end"] .title-divider b{color:#d89aff}
+body[data-mode="end"] .menu-btn{border-color:rgba(207,151,255,.38);background:linear-gradient(180deg,#56347d,#30204c)}
+body[data-mode="end"] .menu-btn.primary{background:linear-gradient(180deg,#8245b6,#512a7b)}
+body[data-mode="end"] .hero-aura{background:radial-gradient(circle,rgba(189,113,255,.27),rgba(108,46,158,.10) 48%,transparent 72%)}
+body[data-mode="end"] .title-art{padding:4px 4px 0;display:flex;align-items:center;justify-content:center;overflow:visible}
+body[data-mode="end"] .title-art img{left:50%;top:50%;bottom:auto;width:118%;height:auto;max-width:118%;max-height:96%;object-fit:contain;object-position:center center;transform:translate(-50%,-50%);transform-origin:center center;filter:drop-shadow(0 16px 24px rgba(0,0,0,.42)) drop-shadow(0 0 16px rgba(210,145,255,.18))}
+@media (orientation:portrait){body[data-mode="end"] .title-art img{width:108%;max-width:108%;max-height:92%}}
+@media (orientation:landscape) and (max-height:700px){body[data-mode="end"] .title-art img{width:112%;max-width:112%;max-height:94%}}
+@media (orientation:landscape) and (max-height:500px){body[data-mode="end"] .title-art img{width:106%;max-width:106%;max-height:92%}}
+body[data-mode="end"] .rule-grid>div{border-color:rgba(203,145,255,.22)}
+body[data-mode="end"] .rule-icon,
+body[data-mode="end"] .rule-grid strong{color:#d9a4ff}
+body[data-mode="end"] .panel-gold{border-color:rgba(201,143,255,.44)}
+body[data-mode="end"] .map-head small{color:#cc9aff}
+body[data-mode="end"] .map-head h2{color:#f0ddff;text-shadow:0 0 15px rgba(173,95,232,.22)}
+body[data-mode="end"] .map-visual{background:linear-gradient(145deg,#21102f,#0c0717);border-color:rgba(197,139,242,.32)}
+body[data-mode="end"] .map-tip-card{border-color:rgba(194,130,241,.26);background:linear-gradient(180deg,rgba(39,18,58,.95),rgba(16,8,27,.97))}
+body[data-mode="end"] .map-tip-label span{background:#a767d2;color:#170820}
+body[data-mode="end"] .map-tip-label small{color:#d8abf3}
+body[data-mode="end"] .map-next-btn{border-color:rgba(203,144,247,.54);background:linear-gradient(180deg,#75429d,#482965)}
+body[data-mode="end"] .map-message{border-color:rgba(191,128,234,.24);background:rgba(23,10,36,.92);color:#f4e9ff}
+
+/* The active actor changes during the relay. Keep the existing standing-art safe box. */
+body[data-mode="end"] .actor.hero>img{width:96%;height:90%;max-width:96%;max-height:90%;justify-self:center;align-self:end}
+body[data-mode="end"][data-hero-world="midori"] .actor.hero>img{width:94%;max-width:94%}
+body[data-mode="end"][data-hero-world="silver"] .actor.hero>img{height:91%;max-height:91%}
+
+/* Past bosses are normal encounters here: boss weight, but no rarity announcement. */
+body[data-mode="end"] .actor.enemy.spawn-end-past-boss .actor-sprite{animation:endPastBossArrival .90s cubic-bezier(.16,.78,.24,1) both}
+@keyframes endPastBossArrival{0%{opacity:0;transform:translateY(5%) scale(.92);filter:brightness(.55) saturate(.65)}48%{opacity:1;transform:translateY(0) scale(1.025);filter:brightness(.9) saturate(.9)}100%{opacity:1;transform:translateY(0) scale(1);filter:none}}
+
+/* Rescue sequence: deliberately low-luminance, with no full-screen white flash. */
+.end-rescue-fx{position:fixed;inset:0;z-index:1300;display:block;pointer-events:none;overflow:hidden;background:radial-gradient(circle at 50% 52%,rgba(105,49,145,.28),rgba(6,4,17,.78) 68%);animation:endRescueFade 2.3s ease both}
+.end-rescue-fx .end-rescue-river{position:absolute;left:-15%;right:-15%;top:44%;height:20%;transform:rotate(-7deg);background:linear-gradient(90deg,transparent,rgba(113,61,162,.22),rgba(176,111,224,.35),rgba(92,47,134,.22),transparent);filter:blur(10px);animation:endRiverDrift 2.3s ease-out both}
+.end-rescue-fx img{position:absolute;z-index:2;right:3%;bottom:4%;width:auto;height:min(67vh,700px);max-width:28vw;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 14px 26px rgba(0,0,0,.62)) drop-shadow(0 0 18px rgba(179,111,229,.25));animation:endRescuedHero 2.3s cubic-bezier(.2,.72,.22,1) both}
+.end-rescue-fx strong{position:absolute;z-index:3;bottom:10%;font:900 clamp(1.05rem,3vw,2rem)/1 Georgia,serif;letter-spacing:.25em;color:#e8c9ff;text-shadow:0 0 16px rgba(177,103,226,.48);animation:endRescueLabel 2.3s ease both}
+@keyframes endRescueFade{0%{opacity:0}18%{opacity:1}78%{opacity:1}100%{opacity:0}}
+@keyframes endRiverDrift{0%{transform:translateX(-8%) rotate(-7deg);opacity:.2}45%{opacity:1}100%{transform:translateX(8%) rotate(-7deg);opacity:.15}}
+@keyframes endRescuedHero{0%{opacity:0;transform:translateY(5%) scale(.96);filter:brightness(.38) saturate(.55)}35%{opacity:1;transform:translateY(0) scale(1);filter:brightness(.82) saturate(.85)}76%{filter:brightness(1) saturate(1)}100%{opacity:0;transform:translateY(-1%) scale(1.01)}}
+@keyframes endRescueLabel{0%,25%{opacity:0;transform:translateY(8px)}42%,78%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-5px)}}
+
+/* End inherits the Midori firearm motion when the rescued captain is active. */
+body[data-mode="end"][data-hero-world="midori"] .actor.hero.attack-front img{animation:midoriGunRecoil .62s cubic-bezier(.18,.82,.22,1) both}
+body[data-mode="end"][data-hero-world="midori"] .actor.hero.finisher-front img{animation:midoriGunFinisher 1.18s cubic-bezier(.12,.78,.18,1) both}
+
+@media (prefers-reduced-motion:reduce){
+  body[data-mode="end"] .actor.enemy.spawn-end-past-boss .actor-sprite{animation:none!important}
+  .end-rescue-fx,.end-rescue-fx .end-rescue-river,.end-rescue-fx img,.end-rescue-fx strong{animation:none!important}
+  .end-rescue-fx{opacity:1}.end-rescue-fx img{opacity:1;filter:brightness(.92)}
+}
+@media (orientation:portrait){
+  .end-rescue-fx img{right:2%;top:5%;bottom:auto;height:28%;max-width:31vw;object-position:center bottom}
+  .end-rescue-fx strong{bottom:58%}
+}
