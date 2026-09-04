@@ -1866,3 +1866,85 @@ body[data-mode="end"][data-hero-world="midori"] .actor.hero.finisher-front img{a
 @media (orientation:landscape) and (max-height:500px){
   .end-tide-guide,.end-final-tide-guide{margin:2px 0 3px;padding:3px 5px}.end-tide-guide strong,.end-final-tide-guide strong{font-size:.55rem}.end-final-tide-guide button{min-height:22px;font-size:.48rem}
 }
+
+/* ========================================================================== */
+/* END WORLD — terminal presentation boost (2026-09-04 internal build)        */
+/* ========================================================================== */
+
+/* END WARNING: black-purple base + source-world accent, slower and heavier. */
+.boss-warning-fx.end-warning{--warn-a:#b46cff;--warn-b:#6d2cb3;--warn-glow:#d9a7ff;background:
+  radial-gradient(circle at 50% 46%,color-mix(in srgb,var(--warn-a) 18%,transparent),transparent 35%),
+  linear-gradient(180deg,rgba(4,1,10,.96),rgba(13,4,24,.96) 48%,rgba(2,1,8,.98));
+  box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--warn-a) 46%,transparent),inset 0 0 95px rgba(0,0,0,.88)}
+.boss-warning-fx.end-warning-midori{--warn-a:#56f0d2;--warn-b:#087d77;--warn-glow:#b1fff1}
+.boss-warning-fx.end-warning-crimson{--warn-a:#ef4669;--warn-b:#7f1530;--warn-glow:#ff9eb0}
+.boss-warning-fx.end-warning-silver{--warn-a:#d7e5ff;--warn-b:#6767d2;--warn-glow:#ffffff}
+.boss-warning-fx.end-warning-blue{--warn-a:#58a2ff;--warn-b:#244fca;--warn-glow:#b8d8ff}
+.boss-warning-fx.end-warning-back{--warn-a:#8e7dff;--warn-b:#4a2bb6;--warn-glow:#62e9ff}
+.boss-warning-fx.end-warning-front{--warn-a:#d0a0ff;--warn-b:#7840a8;--warn-glow:#ffd673}
+.boss-warning-fx.end-warning .warning-grid{background:
+  linear-gradient(color-mix(in srgb,var(--warn-a) 16%,transparent) 1px,transparent 1px),
+  linear-gradient(90deg,color-mix(in srgb,var(--warn-a) 16%,transparent) 1px,transparent 1px);background-size:36px 36px;opacity:.82;animation-duration:1.55s}
+.boss-warning-fx.end-warning .warning-band{height:9%;background:repeating-linear-gradient(135deg,var(--warn-a) 0 18px,#09070d 18px 38px);box-shadow:0 0 22px color-mix(in srgb,var(--warn-a) 78%,transparent),0 0 48px color-mix(in srgb,var(--warn-b) 50%,transparent);opacity:.86}
+.boss-warning-fx.end-warning .warning-scan{height:24%;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--warn-glow) 17%,transparent),transparent);animation-duration:1.25s}
+.boss-warning-fx.end-warning strong{font-size:clamp(3.3rem,12vw,9rem);letter-spacing:.08em;color:#fff;text-shadow:0 0 8px #fff,0 0 24px var(--warn-a),0 0 58px var(--warn-b),4px 3px 0 rgba(0,0,0,.9);animation:endWarningPower 3.2s cubic-bezier(.18,.75,.2,1) both}
+.boss-warning-fx.end-warning span{color:var(--warn-glow);font-weight:900;letter-spacing:.26em;text-shadow:0 0 10px var(--warn-a),0 2px 5px #000}
+@keyframes endWarningPower{0%{opacity:0;transform:scale(.74);filter:blur(4px) brightness(1.8)}18%{opacity:1;transform:scale(1.06);filter:blur(0) brightness(1.35)}40%,82%{opacity:1;transform:scale(1);filter:brightness(1.05)}100%{opacity:0;transform:scale(1.02);filter:brightness(.8)}}
+
+/* END boss-name cut-in: a dedicated terminal-entity presentation, not a recolor. */
+.boss-name-fx.end-boss-name{background:
+  radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--end-boss-a) 25%,transparent),transparent 31%),
+  radial-gradient(circle at 50% 50%,rgba(0,0,0,.04),rgba(0,0,0,.82) 72%),
+  linear-gradient(180deg,rgba(2,1,7,.97),rgba(12,4,23,.96) 50%,rgba(1,1,5,.98));overflow:hidden}
+.boss-name-fx.end-boss-name::before{content:"";position:absolute;z-index:1;left:50%;top:50%;width:min(90vw,920px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 14deg,transparent 0 9deg,var(--end-boss-accent) 10deg 31deg,transparent 32deg 52deg,var(--end-boss-a) 53deg 78deg,transparent 79deg 114deg,var(--end-boss-fringe) 115deg 139deg,transparent 140deg 184deg,var(--end-boss-accent) 185deg 211deg,transparent 212deg 245deg,var(--end-boss-a) 246deg 273deg,transparent 274deg 316deg,var(--end-boss-fringe) 317deg 338deg,transparent 339deg 360deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 56%,#000 57% 59.5%,transparent 60.5% 66%,#000 67% 69%,transparent 70%);mask:radial-gradient(circle,transparent 0 56%,#000 57% 59.5%,transparent 60.5% 66%,#000 67% 69%,transparent 70%);
+  opacity:.82;filter:drop-shadow(0 0 16px var(--end-boss-a)) drop-shadow(0 0 34px color-mix(in srgb,var(--end-boss-fringe) 55%,transparent));animation:endNameRingRotate 8.4s linear infinite}
+.boss-name-fx.end-boss-name::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(0deg,transparent 0 10px,rgba(255,255,255,.04) 11px 12px),
+  linear-gradient(112deg,transparent 0 39%,color-mix(in srgb,var(--end-boss-accent) 23%,transparent) 39.5% 40%,transparent 40.5% 63%,color-mix(in srgb,var(--end-boss-fringe) 19%,transparent) 63.5% 64%,transparent 64.5%);
+  mix-blend-mode:screen;opacity:.72}
+.boss-name-fx.end-boss-name .boss-name-rail{z-index:3;height:21%;background:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--end-boss-b) 85%,#000) 12%,rgba(4,3,10,.97) 22% 78%,color-mix(in srgb,var(--end-boss-a) 72%,#05020b) 88%,transparent 100%);border-color:var(--end-boss-accent);box-shadow:0 0 20px color-mix(in srgb,var(--end-boss-a) 48%,transparent),inset 0 0 22px rgba(0,0,0,.7)}
+.boss-name-fx.end-boss-name small{top:23%;z-index:7;font-size:clamp(.62rem,1.7vw,1.08rem);letter-spacing:.52em;color:var(--end-boss-accent);text-shadow:0 0 9px var(--end-boss-a),0 0 22px color-mix(in srgb,var(--end-boss-fringe) 50%,transparent)}
+.boss-name-fx.end-boss-name strong{z-index:8;max-width:94%;font-size:clamp(2.55rem,8vw,7.2rem);letter-spacing:.07em;color:#fff;text-shadow:5px 3px 0 color-mix(in srgb,var(--end-boss-b) 90%,#000),-3px -1px 0 color-mix(in srgb,var(--end-boss-fringe) 74%,#000),0 0 14px #fff,0 0 35px var(--end-boss-a),0 0 64px color-mix(in srgb,var(--end-boss-accent) 58%,transparent);animation:endBossNamePower 4.2s cubic-bezier(.14,.82,.18,1) both}
+.boss-name-fx.end-boss-name em{top:65%;z-index:9;font-size:clamp(.52rem,1.35vw,.92rem);letter-spacing:.22em;color:#f0e6ff;text-shadow:0 0 8px #fff,0 0 17px var(--end-boss-a);opacity:0;animation:none}
+.boss-name-fx.end-boss-name.end-name-corrupting strong{animation:endNameCorruptText 1.05s steps(6,end) both;filter:contrast(1.45);text-shadow:-6px 0 0 color-mix(in srgb,var(--end-boss-a) 63%,transparent),6px 0 0 color-mix(in srgb,var(--end-boss-fringe) 54%,transparent),0 0 30px #fff}
+.boss-name-fx.end-boss-name.end-name-corrupting .boss-name-glitch{opacity:1;animation:endNameNoiseSweep .32s steps(2,end) infinite}
+.boss-name-fx.end-boss-name.end-name-resolved em{animation:endBossEnglishResolve 1.75s ease-out both}
+@keyframes endNameRingRotate{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes endBossNamePower{0%{opacity:0;transform:scale(.78);filter:blur(5px)}12%{opacity:1;transform:scale(1.055);filter:none}34%,82%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.015)}}
+@keyframes endNameCorruptText{0%{transform:translateX(0) skewX(0);filter:blur(0)}18%{transform:translateX(-8px) skewX(-7deg);filter:blur(1.8px)}38%{transform:translateX(7px) skewX(5deg);filter:blur(.8px)}61%{transform:translateX(-4px) skewX(-3deg);filter:blur(1.2px)}82%{transform:translateX(3px) skewX(2deg);filter:blur(.5px)}100%{transform:none;filter:none}}
+@keyframes endNameNoiseSweep{0%{transform:translateY(-3%);opacity:.38}50%{transform:translateY(2%);opacity:.9}100%{transform:translateY(5%);opacity:.52}}
+@keyframes endBossEnglishResolve{0%{opacity:0;transform:translateY(12px);filter:blur(2px)}22%,78%{opacity:1;transform:none;filter:none}100%{opacity:0;transform:translateY(-3px)}}
+
+/* Make END corruption unmistakable even on visually busy backgrounds. */
+body.end-boss-corruption-active .battle-shade{background:
+  radial-gradient(ellipse at 82% 47%,rgba(0,0,0,.66) 0 21%,rgba(0,0,0,.38) 31%,transparent 54%),
+  radial-gradient(ellipse at 82% 47%,color-mix(in srgb,var(--end-boss-a) 31%,transparent) 0 26%,transparent 48%),
+  linear-gradient(180deg,rgba(2,1,8,.16),rgba(3,1,9,.28) 55%,rgba(1,1,5,.52))}
+body[data-mode="end"] .actor.enemy.end-corrupted-boss{isolation:isolate;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--end-boss-a) 46%,transparent))}
+body[data-mode="end"] .actor.enemy.end-corrupted-boss::before{width:174%;opacity:.82;filter:blur(.15px) drop-shadow(0 0 11px var(--end-boss-a)) drop-shadow(0 0 28px color-mix(in srgb,var(--end-boss-fringe) 58%,transparent));
+  -webkit-mask:radial-gradient(circle,transparent 0 48%,#000 49% 52%,transparent 53% 59%,#000 60% 64%,transparent 65% 100%);mask:radial-gradient(circle,transparent 0 48%,#000 49% 52%,transparent 53% 59%,#000 60% 64%,transparent 65% 100%);animation:endCorruptRing 8.5s linear infinite}
+body[data-mode="end"] .actor.enemy.end-corrupted-boss::after{inset:-18% -22% -12%;opacity:.84;background:
+  radial-gradient(circle at 12% 20%,var(--end-boss-accent) 0 1.8px,transparent 3px),radial-gradient(circle at 82% 13%,var(--end-boss-fringe) 0 2px,transparent 3.5px),radial-gradient(circle at 93% 58%,var(--end-boss-accent) 0 2.2px,transparent 3.7px),radial-gradient(circle at 18% 76%,var(--end-boss-a) 0 2.2px,transparent 3.8px),radial-gradient(circle at 56% 5%,var(--end-boss-fringe) 0 1.8px,transparent 3.2px),
+  linear-gradient(119deg,transparent 0 42%,color-mix(in srgb,var(--end-boss-accent) 68%,transparent) 42.35% 42.75%,transparent 43.1% 100%),
+  linear-gradient(61deg,transparent 0 67%,color-mix(in srgb,var(--end-boss-fringe) 55%,transparent) 67.2% 67.6%,transparent 68% 100%);
+  background-size:31px 37px,43px 49px,59px 67px,41px 53px,67px 61px,100% 100%,100% 100%;filter:drop-shadow(0 0 8px var(--end-boss-a));animation:endCorruptParticles 4.2s ease-in-out infinite alternate}
+body[data-mode="end"] .actor.enemy.end-corrupted-boss .actor-sprite{filter:brightness(1.08) saturate(1.11) drop-shadow(-3px 0 2px color-mix(in srgb,var(--end-boss-a) 68%,transparent)) drop-shadow(3px 0 2px color-mix(in srgb,var(--end-boss-fringe) 62%,transparent)) drop-shadow(0 0 14px color-mix(in srgb,var(--end-boss-accent) 42%,transparent));animation:endCorruptPulseStrong 3.8s ease-in-out infinite}
+@keyframes endCorruptPulseStrong{0%,100%{transform:translateZ(0) scale(1);filter:brightness(1.04) saturate(1.08) drop-shadow(-2px 0 2px color-mix(in srgb,var(--end-boss-a) 58%,transparent)) drop-shadow(2px 0 2px color-mix(in srgb,var(--end-boss-fringe) 53%,transparent))}45%{transform:translateZ(0) scale(1.012);filter:brightness(1.14) saturate(1.18) drop-shadow(-4px 0 3px color-mix(in srgb,var(--end-boss-a) 72%,transparent)) drop-shadow(4px 0 3px color-mix(in srgb,var(--end-boss-fringe) 68%,transparent)) drop-shadow(0 0 18px var(--end-boss-accent))}55%{transform:translate3d(2px,0,0) scale(1.008)}60%{transform:translate3d(-1px,0,0) scale(1.005)}}
+/* FINAL controls the distortion instead of being broken by it: complete concentric rings. */
+body[data-mode="end"][data-end-boss-world="front"] .actor.enemy.end-corrupted-boss::before{background:conic-gradient(from 0deg,var(--end-boss-accent),var(--end-boss-a) 28%,#2e163d 42%,var(--end-boss-fringe) 58%,var(--end-boss-a) 76%,var(--end-boss-accent));-webkit-mask:radial-gradient(circle,transparent 0 49%,#000 50% 53%,transparent 54% 60%,#000 61% 64%,transparent 65%);mask:radial-gradient(circle,transparent 0 49%,#000 50% 53%,transparent 54% 60%,#000 61% 64%,transparent 65%);opacity:.92}
+
+/* Two END barriers: world-colored and visibly distinct from ordinary shields. */
+body.end-double-barrier-active .boss-shield-fx{filter:drop-shadow(0 0 15px var(--end-boss-accent)) drop-shadow(0 0 38px color-mix(in srgb,var(--end-boss-a) 58%,transparent))}
+body.end-double-barrier-active .boss-shield-fx .shield-ring{border-color:var(--end-boss-accent);box-shadow:0 0 13px var(--end-boss-accent),0 0 32px color-mix(in srgb,var(--end-boss-a) 68%,transparent),inset 0 0 24px color-mix(in srgb,var(--end-boss-fringe) 22%,transparent)}
+body.end-double-barrier-active .boss-shield-fx .ring-b{border-color:color-mix(in srgb,var(--end-boss-fringe) 78%,#fff);box-shadow:0 0 16px color-mix(in srgb,var(--end-boss-fringe) 64%,transparent)}
+body.end-double-barrier-active .boss-shield-fx .shield-core{border-color:color-mix(in srgb,var(--end-boss-accent) 82%,#fff);background-color:color-mix(in srgb,var(--end-boss-b) 54%,transparent);box-shadow:0 0 24px color-mix(in srgb,var(--end-boss-accent) 70%,transparent),0 0 52px color-mix(in srgb,var(--end-boss-a) 42%,transparent),inset 0 0 34px rgba(0,0,0,.28)}
+body.end-double-barrier-active.end-barrier-second .boss-shield-fx{filter:drop-shadow(0 0 20px var(--end-boss-fringe)) drop-shadow(0 0 44px color-mix(in srgb,var(--end-boss-accent) 68%,transparent));transform:translateX(-50%) scale(1.035)}
+body.end-double-barrier-active.end-barrier-second .boss-shield-fx .shield-ring{border-style:dashed;animation-duration:.82s}
+
+@media (prefers-reduced-motion:reduce){
+  .boss-warning-fx.end-warning strong,.boss-name-fx.end-boss-name strong,.boss-name-fx.end-boss-name::before,body[data-mode="end"] .actor.enemy.end-corrupted-boss .actor-sprite{animation:none!important}
+  body[data-mode="end"] .actor.enemy.end-corrupted-boss::before{opacity:.66}
+  body[data-mode="end"] .actor.enemy.end-corrupted-boss::after{opacity:.58}
+}
