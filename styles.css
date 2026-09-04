@@ -1948,3 +1948,94 @@ body.end-double-barrier-active.end-barrier-second .boss-shield-fx .shield-ring{b
   body[data-mode="end"] .actor.enemy.end-corrupted-boss::before{opacity:.66}
   body[data-mode="end"] .actor.enemy.end-corrupted-boss::after{opacity:.58}
 }
+
+/* =========================================================
+   WORLD FINAL BOSS — restrained persistent aura
+   Existing worlds get one readable world-colored halo/particle layer.
+   END remains deliberately much heavier and uses its own corruption stack.
+   ========================================================= */
+body{--world-final-a:#f3d477;--world-final-b:#fff5bd}
+body[data-final-boss-world="front"]{--world-final-a:#e5bd4f;--world-final-b:#fff1a2}
+body[data-final-boss-world="back"]{--world-final-a:#735cff;--world-final-b:#73e6ff}
+body[data-final-boss-world="crimson"]{--world-final-a:#d93655;--world-final-b:#ff9b65}
+body[data-final-boss-world="blue"]{--world-final-a:#4e8eff;--world-final-b:#9eefff}
+body[data-final-boss-world="silver"]{--world-final-a:#9dbdff;--world-final-b:#eef8ff}
+body[data-final-boss-world="midori"]{--world-final-a:#38d4ad;--world-final-b:#b9ffe7}
+body.world-final-aura-active .actor.enemy.world-final-boss-aura{isolation:isolate}
+body.world-final-aura-active .actor.enemy.world-final-boss-aura::before{
+  content:"";position:absolute;z-index:-1;left:50%;top:50%;width:127%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,transparent 0 53%,color-mix(in srgb,var(--world-final-a) 25%,transparent) 55% 59%,transparent 61%),conic-gradient(from 0deg,transparent,var(--world-final-a),transparent 29%,var(--world-final-b) 50%,transparent 69%,var(--world-final-a),transparent);
+  -webkit-mask:radial-gradient(circle,transparent 0 54%,#000 56% 60%,transparent 62%);mask:radial-gradient(circle,transparent 0 54%,#000 56% 60%,transparent 62%);
+  opacity:.56;filter:drop-shadow(0 0 10px var(--world-final-a));animation:worldFinalHalo 11s linear infinite
+}
+body.world-final-aura-active .actor.enemy.world-final-boss-aura::after{
+  content:"";position:absolute;z-index:2;inset:-5%;pointer-events:none;opacity:.45;mix-blend-mode:screen;
+  background:radial-gradient(circle at 18% 22%,var(--world-final-b) 0 1.3px,transparent 2.7px),radial-gradient(circle at 82% 19%,var(--world-final-a) 0 1.5px,transparent 3px),radial-gradient(circle at 76% 72%,var(--world-final-b) 0 1.2px,transparent 2.5px),radial-gradient(circle at 26% 77%,var(--world-final-a) 0 1.5px,transparent 3px);
+  background-size:47px 53px,61px 59px,53px 67px,71px 63px;animation:worldFinalParticles 6.8s ease-in-out infinite alternate
+}
+body.world-final-aura-active .actor.enemy.world-final-boss-aura .actor-sprite{filter:drop-shadow(0 0 8px color-mix(in srgb,var(--world-final-a) 58%,transparent)) drop-shadow(0 0 17px color-mix(in srgb,var(--world-final-b) 26%,transparent));animation:worldFinalPulse 4.8s ease-in-out infinite}
+@keyframes worldFinalHalo{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes worldFinalParticles{0%{opacity:.28;transform:translateY(2px)}100%{opacity:.52;transform:translateY(-5px)}}
+@keyframes worldFinalPulse{0%,100%{filter:brightness(.98) drop-shadow(0 0 7px color-mix(in srgb,var(--world-final-a) 52%,transparent))}50%{filter:brightness(1.06) drop-shadow(0 0 13px color-mix(in srgb,var(--world-final-a) 72%,transparent)) drop-shadow(0 0 21px color-mix(in srgb,var(--world-final-b) 34%,transparent))}}
+
+/* END Blue adult now attacks with a wooden-stick swing + pressure impact, not a magic cast. */
+body[data-mode="end"] .battlefield>.attack-effect.end-hit-blue::before{
+  left:-5%;top:8%;width:102%;height:83%;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none;
+  background:linear-gradient(136deg,transparent 37%,rgba(160,221,255,.10) 40%,#eafdff 44%,#76b7ff 47%,rgba(59,117,238,.65) 50%,transparent 56%);
+  filter:drop-shadow(0 0 8px #eaffff) drop-shadow(0 0 22px #5c9fff);transform:rotate(-2deg);animation:endBlueClubArc .76s ease-out both
+}
+body[data-mode="end"] .battlefield>.attack-effect.end-hit-blue::after{
+  left:37%;top:30%;width:46%;aspect-ratio:1;height:auto;border:5px solid rgba(181,231,255,.94);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.48),rgba(95,165,255,.13) 34%,transparent 62%);box-shadow:0 0 11px #fff,0 0 28px #5e9fff;filter:none;animation:endBlueImpactRing .76s ease-out both
+}
+body[data-mode="end"] .battlefield>.attack-effect.end-finisher-blue::before{
+  left:-28%;top:0;width:145%;height:96%;border:0;border-radius:0;box-shadow:none;
+  background:linear-gradient(137deg,transparent 35%,rgba(166,224,255,.10) 38%,#fff 43%,#8ec8ff 46%,#4f85ed 49%,rgba(40,86,190,.24) 52%,transparent 58%);
+  filter:drop-shadow(0 0 13px #fff) drop-shadow(0 0 38px #578fff);animation:endBlueClubFinisher 1.08s ease-out both
+}
+body[data-mode="end"] .battlefield>.attack-effect.end-finisher-blue::after{
+  left:20%;top:18%;width:78%;aspect-ratio:1;height:auto;border:9px solid rgba(165,220,255,.94);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.35),rgba(87,153,255,.12) 42%,transparent 67%);box-shadow:0 0 18px #fff,0 0 52px #4e89f7;filter:none;animation:endBlueImpactFinisher 1.08s ease-out both
+}
+@keyframes endBlueClubArc{0%{opacity:0;transform:translate(-28%,18%) rotate(-8deg) scale(.72)}25%{opacity:1}72%{opacity:.98;transform:translate(7%,-4%) rotate(2deg) scale(1.05)}100%{opacity:0;transform:translate(14%,-7%) rotate(5deg) scale(1.12)}}
+@keyframes endBlueImpactRing{0%,25%{opacity:0;transform:scale(.24)}42%{opacity:1;transform:scale(.72)}100%{opacity:0;transform:scale(1.65)}}
+@keyframes endBlueClubFinisher{0%{opacity:0;transform:translate(-34%,22%) rotate(-9deg) scale(.72)}22%{opacity:1}66%{opacity:1;transform:translate(5%,-4%) rotate(1deg) scale(1.03)}100%{opacity:0;transform:translate(17%,-9%) rotate(4deg) scale(1.16)}}
+@keyframes endBlueImpactFinisher{0%,24%{opacity:0;transform:scale(.2)}43%{opacity:1;transform:scale(.62)}100%{opacity:0;transform:scale(1.85)}}
+
+/* Tokonatsu: keep the END technique title on one line even in narrow portrait layouts. */
+body[data-mode="end"][data-end-boss-world="blue"] .boss-technique-banner strong{white-space:nowrap;font-size:clamp(1rem,5.2vw,2.15rem);letter-spacing:.035em}
+
+/* =========================================================
+   END FINAL defeat — collapse, five allied lights, then silence.
+   Deliberately longer than a normal boss defeat; no rapid flashing.
+   ========================================================= */
+body.end-final-defeat-active .question-panel{opacity:.15;transition:opacity .55s ease}
+body.end-final-defeat-active .actor.hero{filter:brightness(1.08) drop-shadow(0 0 12px rgba(216,245,255,.28))}
+body.end-final-defeat-active .actor.enemy.end-final-defeat .actor-sprite{animation:endFinalBossDestabilize 3.1s ease-in-out both}
+.end-final-collapse-fx{position:absolute;z-index:68;inset:0;pointer-events:none;overflow:hidden;opacity:0;background:radial-gradient(circle at 76% 46%,rgba(157,73,222,.12),transparent 32%),linear-gradient(180deg,transparent,rgba(5,3,13,.15))}
+.end-final-collapse-fx.active{opacity:1}
+.end-final-collapse-fx .collapse-ring{position:absolute;right:1%;top:7%;width:43%;aspect-ratio:1;border-radius:50%;border:3px solid rgba(205,128,255,.72);box-shadow:0 0 20px rgba(174,76,238,.52),inset 0 0 24px rgba(95,43,142,.24);opacity:0}
+.end-final-collapse-fx.active .ring-a{animation:endFinalRingBreak 3.25s ease-in both}
+.end-final-collapse-fx.active .ring-b{right:5%;top:11%;width:35%;border-color:rgba(236,188,255,.56);animation:endFinalRingBreakB 3.1s .14s ease-in both}
+.end-final-collapse-fx .collapse-crack{position:absolute;right:7%;top:10%;width:38%;height:62%;opacity:0;background:repeating-linear-gradient(117deg,transparent 0 13%,rgba(196,105,255,.68) 13.3% 13.7%,transparent 14% 27%);filter:drop-shadow(0 0 8px rgba(176,76,242,.64))}
+.end-final-collapse-fx.active .collapse-crack{animation:endFinalCracks 3s .35s ease-out both}
+.end-final-collapse-fx .hero-lights{position:absolute;left:12%;right:12%;bottom:15%;height:24%;opacity:0;display:flex;align-items:flex-end;justify-content:center;gap:clamp(18px,5vw,72px)}
+.end-final-collapse-fx .hero-lights i{display:block;width:clamp(12px,2vw,25px);aspect-ratio:1;border-radius:50%;background:#fff;box-shadow:0 0 16px currentColor,0 0 38px currentColor;transform:translateY(32px) scale(.45)}
+.end-final-collapse-fx .hero-lights i:nth-child(1){color:#6feaff}.end-final-collapse-fx .hero-lights i:nth-child(2){color:#e55567}.end-final-collapse-fx .hero-lights i:nth-child(3){color:#65a7ff}.end-final-collapse-fx .hero-lights i:nth-child(4){color:#d8e8ff}.end-final-collapse-fx .hero-lights i:nth-child(5){color:#50e7bc}
+.end-final-collapse-fx.calm .hero-lights{animation:endFinalFiveLights 2.05s ease-out both}
+.end-final-collapse-fx.calm .hero-lights i{animation:endFinalLightRise 1.65s ease-out both}
+.end-final-collapse-fx strong{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);white-space:nowrap;font:900 clamp(.66rem,1.7vw,1.02rem)/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.28em;color:#e7d6ff;text-shadow:0 0 13px rgba(180,104,234,.52);opacity:0}
+.end-final-collapse-fx.calm strong{animation:endFinalSilenceText 2.05s ease-out both}
+@keyframes endFinalBossDestabilize{0%{filter:brightness(1) saturate(1);transform:none}28%{filter:brightness(1.18) saturate(1.2) drop-shadow(-4px 0 3px rgba(161,66,231,.65)) drop-shadow(4px 0 3px rgba(217,65,113,.44));transform:translateX(2px)}52%{filter:brightness(.92) saturate(1.25) blur(.3px);transform:translateX(-3px) scale(1.015)}78%{filter:brightness(1.28) saturate(.88) blur(1.2px);transform:scale(1.035)}100%{filter:brightness(1.7) saturate(.25) blur(5px);transform:scale(1.09);opacity:.12}}
+@keyframes endFinalRingBreak{0%{opacity:.9;transform:rotate(0) scale(.92)}45%{opacity:1;transform:rotate(38deg) scale(1)}72%{opacity:.7;transform:rotate(74deg) scale(1.1)}100%{opacity:0;transform:rotate(116deg) scale(1.48);filter:blur(5px)}}
+@keyframes endFinalRingBreakB{0%{opacity:.7;transform:rotate(0) scale(.88)}55%{opacity:.9;transform:rotate(-46deg) scale(1.05)}100%{opacity:0;transform:rotate(-103deg) scale(1.52);filter:blur(6px)}}
+@keyframes endFinalCracks{0%{opacity:0;transform:scale(.82)}26%{opacity:.8}72%{opacity:1;transform:scale(1.04)}100%{opacity:0;transform:scale(1.28);filter:blur(4px)}}
+@keyframes endFinalFiveLights{0%{opacity:0}25%,78%{opacity:1}100%{opacity:0}}
+@keyframes endFinalLightRise{0%{opacity:0;transform:translateY(34px) scale(.42)}38%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-44px) scale(.7)}}
+@keyframes endFinalSilenceText{0%,16%{opacity:0;transform:translate(-50%,8px)}36%,76%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-5px)}}
+
+@media (orientation:portrait){
+  body[data-mode="end"][data-end-boss-world="blue"] .boss-technique-banner strong{font-size:clamp(.92rem,4.4vw,1.45rem)}
+  .end-final-collapse-fx .collapse-ring{right:-5%;top:10%;width:52%}.end-final-collapse-fx .ring-b{right:0;top:14%;width:43%}.end-final-collapse-fx .hero-lights{bottom:47%;gap:clamp(12px,4vw,28px)}.end-final-collapse-fx strong{bottom:40%;font-size:.56rem;letter-spacing:.15em}
+}
+@media (prefers-reduced-motion:reduce){
+  body.world-final-aura-active .actor.enemy.world-final-boss-aura::before,body.world-final-aura-active .actor.enemy.world-final-boss-aura::after,body.world-final-aura-active .actor.enemy.world-final-boss-aura .actor-sprite,.end-final-collapse-fx *{animation:none!important}
+}
