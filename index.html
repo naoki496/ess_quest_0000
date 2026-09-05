@@ -24,6 +24,7 @@
       <div class="title-track"><span>COLLECTION</span><strong id="titleTrackName">0 / 100</strong></div>
       <div class="title-wallet"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
       <button id="musicBtn" class="music-entry-btn" type="button" aria-label="BGM鑑賞" title="BGM鑑賞">♫</button>
+      <button id="dataManagementBtn" class="music-entry-btn data-entry-btn" type="button" aria-label="データ管理" title="データ管理">▣</button>
       <span id="debugBadge" class="debug-badge" hidden>DEBUG</span>
     </div>
 
@@ -75,6 +76,42 @@
     <footer class="sub-footer"><button id="worldWarpBackBtn" class="back-btn">タイトルにもどる</button></footer>
   </div>
 </section>
+
+<section id="dataManagementScreen" class="screen sub-screen" hidden>
+  <div class="sub-bg"></div>
+  <div class="sub-shell panel-gold data-shell">
+    <header class="sub-header"><div><small>SAVE DATA</small><h2>データ管理</h2></div></header>
+    <div class="data-management-body">
+      <section class="data-info-card">
+        <strong>このゲームのセーブについて</strong>
+        <p>コレクション、モンスター図鑑、世界の解放状況、BGM、各種記録などは、この端末のこのブラウザ内に自動保存されます。正常なセーブは復旧用として1世代だけ自動バックアップします。</p>
+      </section>
+      <section class="data-status-card" aria-label="セーブ状態">
+        <div><span>現在のセーブ</span><strong id="dataStatusMain">確認中</strong></div>
+        <div><span>自動バックアップ</span><strong id="dataStatusBackup">確認中</strong></div>
+        <div><span>破損データの退避</span><strong id="dataStatusCorrupt">確認中</strong></div>
+      </section>
+      <p id="dataManagementNotice" class="data-notice" hidden></p>
+      <section class="data-delete-zone">
+        <div><strong>セーブデータを削除</strong><p>現在のセーブ、自動バックアップ、破損時の退避データをこのブラウザからすべて削除します。</p></div>
+        <button id="dataDeleteBtn" class="menu-btn pause-danger data-delete-btn" type="button">すべてのセーブデータを削除</button>
+      </section>
+    </div>
+    <footer class="sub-footer"><button id="dataManagementBackBtn" class="back-btn">タイトルにもどる</button></footer>
+  </div>
+</section>
+
+<div id="dataDeleteConfirm" class="data-delete-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="dataDeleteConfirmTitle">
+  <section class="pause-card pause-confirm panel-gold">
+    <small>DELETE SAVE DATA</small>
+    <h2 id="dataDeleteConfirmTitle">セーブデータを削除しますか？</h2>
+    <p><strong>この操作は元に戻せません。</strong><br>コレクション、モンスター図鑑、世界の解放状況、BGM、記録などに加え、自動バックアップと破損時の退避データもすべて削除します。</p>
+    <div class="pause-actions">
+      <button id="dataDeleteCancelBtn" class="menu-btn primary" type="button">キャンセル</button>
+      <button id="dataDeleteConfirmBtn" class="menu-btn pause-danger" type="button">削除する</button>
+    </div>
+  </section>
+</div>
 
 <section id="shopScreen" class="screen sub-screen" hidden>
   <div class="sub-bg"></div>
@@ -181,7 +218,7 @@
   <header class="hud panel-gold">
     <div class="hud-unit"><small>すすみ</small><strong id="progressText">0 / 75</strong></div>
     <div class="progress-wrap"><div class="progress-meta"><span id="stageLabel">STAGE 1</span><b id="stageName">はじまりの もり</b></div><div class="progress-bar"><i id="progressFill"></i></div></div>
-    <div class="hud-unit"><small>ライフ</small><div id="lifeDisplay" class="hearts">♥ ♥ ♥</div></div>
+    <div class="hud-unit"><small>ライフ</small><div id="lifeDisplay" class="hearts" aria-label="ライフ3">◆ ◆ ◆</div></div>
     <div class="hud-unit timer"><small>のこり</small><strong id="timerText">60</strong><span>びょう</span></div>
     <button id="soundBtn" class="sound-btn">♪ ON</button>
     <button id="pauseBtn" class="pause-btn" type="button" aria-label="ポーズ" title="ポーズ">Ⅱ</button>
