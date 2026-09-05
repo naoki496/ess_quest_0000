@@ -104,11 +104,12 @@
   const END_HERO_FILES={front:'hero.png',back:'end_back_hero.png',crimson:'end_crimson_hero.png',blue:'end_blue_hero_adult.png',silver:'end_silver_hero.png',midori:'end_midori_hero.png'};
   const END_HERO_NAMES={front:'ゆうしゃ',back:'魔法少女',crimson:'流浪の剣士',blue:'青年',silver:'銀狼の少女',midori:'海賊船長'};
   const END_FINAL_HERO_ORDER=['back','crimson','blue','silver','midori'];
+  let endFinalHeroOrder=[...END_FINAL_HERO_ORDER];
   let endRunRoute=['midori','crimson','silver','back','blue'],endHeroWorld='midori',endFinalPhase=false,endStageWarningIndex=-1;
   function newEndRoute(){return ['midori',...shuffle(['crimson','silver','back','blue'])];}
   function buildEndStages(route=endRunRoute){return route.map((sourceWorld,i)=>{const c=END_REGION_CONFIG[sourceWorld];return{name:c.name,key:`end-${sourceWorld}`,count:15,normalCount:10,bossCount:5,bgm:c.bgm,bossBgm:c.bossBgm,bg:c.bg,boss:c.boss,roadBosses:c.roadBosses,sourceWorld,endStage:i};});}
   function currentEndSource(){return endFinalPhase?'front':(endRunRoute[stageIndex]||'midori');}
-  function currentEndHeroWorld(){return endFinalPhase?(END_FINAL_HERO_ORDER[Math.max(0,Math.min(4,bossQuestion))]||'midori'):endHeroWorld;}
+  function currentEndHeroWorld(){return endFinalPhase?(endFinalHeroOrder[Math.max(0,Math.min(4,bossQuestion))]||'midori'):endHeroWorld;}
   function endRoadEntriesFor(sourceWorld,stage=0){const c=END_REGION_CONFIG[sourceWorld];return(c?.roadBosses||[]).map(([name,img],i)=>({id:`end-${sourceWorld}-road-${i+1}`,world:'end',sourceWorld,stage,rarity:5,name,img,boss:true,endPastBoss:true}));}
   function allEndMonsterEntries(){
     const entries=[];
@@ -393,6 +394,7 @@
     if(world==='silver')return isSilverWorldUnlocked();
     if(world==='midori')return isMidoriWorldUnlocked();
     if(world==='end')return isEndWorldUnlocked();
+    if(world==='white')return isWorldActuallyUnlocked('white');
     return false;
   }
   function isCrimsonWorldUnlocked(){return debugFullUnlock||hasSecretRelic('common_master');}
@@ -779,14 +781,42 @@ function markWorldVisited(world){
     {key:'silver',short:'銀',name:'銀の世界'},
     {key:'midori',short:'翠',name:'翠の世界'},
     {key:'end',short:'終',name:'終の世界'},
-    {key:'future-2',short:'?',name:'？？？',future:true}
+    {key:'white',short:'白',name:'白の世界'}
   ];
   function musicWorldSlot(key){return MUSIC_WORLD_SLOTS.find(w=>w.key===key)||MUSIC_WORLD_SLOTS[0];}
-  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver','midori','end'].includes(key);}
+  function isKnownMusicWorld(key){return ['front','back','crimson','blue','silver','midori','end','white'].includes(key);}
   function isMusicSlotUnlocked(key){return isKnownMusicWorld(key)&&isMusicWorldVisible(key);}
   function formatMusicTime(seconds){
     const n=Number(seconds);if(!Number.isFinite(n)||n<0)return'--:--';
     const total=Math.floor(n),m=Math.floor(total/60),sec=total%60;return`${m}:${String(sec).padStart(2,'0')}`;
+  }
+  function whiteMusicShufflePool(){
+    const worlds=['front','back','crimson','blue','silver','midori','end'];
+    const labels={front:'光',back:'裏',crimson:'紅',blue:'蒼',silver:'銀',midori:'翠',end:'終'};
+    const byFile=new Map();
+    for(const world of worlds){
+      for(const track of musicTracks(world)){
+        if(!isMusicUnlocked(world,track.id))continue;
+        const existing=byFile.get(track.file);
+        if(existing){if(!existing.sources.includes(labels[world]))existing.sources.push(labels[world]);continue;}
+        byFile.set(track.file,{...track,sourceWorld:world,sources:[labels[world]]});
+      }
+    }
+    return [...byFile.values()].map((track,i)=>({...track,shuffleIndex:i}));
+  }
+  async function playWhiteRandomTrack(forceDifferent=true){
+    if(musicWorld!=='white')return;
+    const pool=whiteMusicShufflePool();if(!pool.length)return;
+    let index=0;
+    if(pool.length>1){
+      const choices=pool.map((_,i)=>i).filter(i=>!forceDifferent||i!==musicTrackIndex);
+      index=pick(choices.length?choices:pool.map((_,i)=>i));
+    }
+    const track=pool[index],src=`./assets/${track.file}`;
+    try{
+      musicPlayer.pause();musicPlayer.loop=false;musicPlayer.src=src;musicPlayer.load();musicTrackIndex=index;musicPlayer.volume=.38;musicPlayer.currentTime=0;await musicPlayer.play();
+    }catch{}
+    renderMusicPlayer();
   }
   function updateMusicSeek(){
     if(!els.musicSeek)return;
@@ -829,10 +859,10 @@ function markWorldVisited(world){
     if(!isMusicWorldVisible(musicWorld)){musicWorld='front';musicSelectedWorld='front';musicTrackIndex=-1;stopMusicPlayer();}
     renderMusicWorldTabs();
     const card=els.musicOverlay?.querySelector('.music-card');if(card)card.dataset.musicWorld=selectedUnlocked?selected.key:'locked';
-    if(els.musicWorldStatus)els.musicWorldStatus.textContent=selectedUnlocked?'WORLD LIBRARY':'LOCKED WORLD';
+    if(els.musicWorldStatus)els.musicWorldStatus.textContent=selectedUnlocked?(selected.key==='white'?'RANDOM JUKEBOX':'WORLD LIBRARY'):'LOCKED WORLD';
     if(els.musicWorldTitle)els.musicWorldTitle.textContent=selectedUnlocked?selected.name:'？？？';
     const musicNote=els.musicOverlay?.querySelector('.music-note');
-    if(musicNote)musicNote.textContent=selectedUnlocked&&selected.key==='end'?'終の世界では専用ボス曲のみ収録。道中曲は元の世界のBGMページで聴くことができます。':'一度到達したステージやボス戦のBGMが解禁されます。';
+    if(musicNote)musicNote.textContent=selectedUnlocked&&selected.key==='end'?'終の世界では専用ボス曲のみ収録。道中曲は元の世界のBGMページで聴くことができます。':selectedUnlocked&&selected.key==='white'?'解禁済みの光～終のBGMを横断して、曲が終わるたびに完全ランダムで次の1曲へ。直前と同じ曲は連続しません。':'一度到達したステージやボス戦のBGMが解禁されます。';
     els.musicTrackList.innerHTML='';
     if(!selectedUnlocked){
       if(els.musicUnlockCount)els.musicUnlockCount.textContent='この世界の音楽はまだ解放されていません。';
@@ -841,6 +871,17 @@ function markWorldVisited(world){
       els.musicNowTitle.textContent='曲を選んでください';els.musicNowWhere.textContent='解放済みの世界からBGMを選択できます。';
       els.musicPrevBtn.disabled=true;els.musicPlayBtn.disabled=true;els.musicNextBtn.disabled=true;els.musicStopBtn.disabled=true;updateMusicSeek();return;
     }
+    if(selected.key==='white'){
+      const pool=whiteMusicShufflePool(),current=pool[musicTrackIndex];
+      if(els.musicUnlockCount)els.musicUnlockCount.textContent=`${pool.length} TRACKS IN RANDOM POOL`;
+      if(els.musicUnlockFill)els.musicUnlockFill.style.width=pool.length?'100%':'0%';
+      els.musicTrackList.innerHTML=`<div class="music-white-shuffle-panel"><small>WHITE WORLD / ALL TRACK SHUFFLE</small><strong>RANDOM PLAY</strong><p>光・裏・紅・蒼・銀・翠・終で解禁したBGMを、世界の区別なくランダム連続再生します。</p><button type="button" class="music-white-random-btn" ${pool.length?'':'disabled'}>${musicTrackIndex>=0?'NEXT RANDOM':'RANDOM PLAY'}</button></div>`;
+      const randomBtn=els.musicTrackList.querySelector('.music-white-random-btn');if(randomBtn)randomBtn.onclick=()=>playWhiteRandomTrack(true);
+      if(current){els.musicNowTitle.textContent=current.title;els.musicNowWhere.textContent=`${current.sources.join('・')}の世界`;}
+      else{els.musicNowTitle.textContent='RANDOM PLAY';els.musicNowWhere.textContent=pool.length?'ボタンを押すと完全ランダム連続再生を開始します。':'解禁済みBGMがありません。';}
+      const has=pool.length>0;els.musicPrevBtn.disabled=true;els.musicPlayBtn.disabled=!has;els.musicNextBtn.disabled=!has;els.musicStopBtn.disabled=musicTrackIndex<0;els.musicPlayBtn.textContent=musicTrackIndex>=0&&!musicPlayer.paused?'Ⅱ':'▶';els.musicNextBtn.setAttribute('aria-label','次のランダム曲');updateMusicSeek();return;
+    }
+    els.musicNextBtn.setAttribute('aria-label','次の曲');
     const tracks=musicTracks(musicWorld);
     const unlockedIndices=tracks.map((t,i)=>isMusicUnlocked(musicWorld,t.id)?i:-1).filter(i=>i>=0);
     const unlockedCount=unlockedIndices.length;
@@ -882,6 +923,7 @@ function markWorldVisited(world){
   }
   function moveMusicTrack(direction){
     if(!isMusicSlotUnlocked(musicSelectedWorld))return;
+    if(musicWorld==='white'){if(direction>0)playWhiteRandomTrack(true);return;}
     const tracks=musicTracks(musicWorld),allowed=tracks.map((t,i)=>isMusicUnlocked(musicWorld,t.id)?i:-1).filter(i=>i>=0);
     if(!allowed.length)return;
     let pos=allowed.indexOf(musicTrackIndex);
@@ -983,7 +1025,7 @@ function markWorldVisited(world){
   }
   async function debugJumpToEndFinal(question=0){
     if(!debugFullUnlock)return;
-    closeDebugPanel();mode='end';resetRun();endFinalPhase=true;stageIndex=4;stageQuestion=10;bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(question)||0));totalProgress=75+bossQuestion;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
+    closeDebugPanel();mode='end';resetRun();endFinalHeroOrder=shuffle(END_FINAL_HERO_ORDER);endFinalPhase=true;stageIndex=4;stageQuestion=10;bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(question)||0));totalProgress=75+bossQuestion;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
     await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode='end';document.body.dataset.stage='final';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},'normal',1250);
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,bossQuestion);
   }
@@ -2487,6 +2529,11 @@ function markWorldVisited(world){
     a.muted=false;
     currentBgm=null;
   }
+  function showBgmTitleToast(file){
+    if(!file)return;const battlefield=document.querySelector('.battlefield');if(!battlefield)return;let toast=$('bgmTitleToast');
+    if(!toast){toast=document.createElement('div');toast.id='bgmTitleToast';toast.className='bgm-title-toast';battlefield.appendChild(toast);}
+    const title=String(file).replace(/\.mp3$/i,'');toast.innerHTML=`<small>NOW PLAYING</small><strong>♪ ${title}</strong>`;toast.classList.remove('show');void toast.offsetWidth;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2300);
+  }
   async function playStageBgm(){
     if(!soundOn)return;
     const file=bossPhase?currentStage().bossBgm:currentStage().bgm;
@@ -2504,7 +2551,7 @@ function markWorldVisited(world){
       player.volume=.32;
       try{player.currentTime=0;}catch{}
       await player.play();
-      currentBgm=player;
+      currentBgm=player;showBgmTitleToast(file);
     }catch{
       try{
         player.pause();
@@ -2891,7 +2938,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
     currentQuestion=mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
-    renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase)applyEndFinalQuestionModifier();syncPauseButton();updateSpecialHud();
+    renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase)applyEndFinalQuestionModifier(bossQuestion===4&&bossSpecialSequence?.type==='end-final-convergence'?bossSpecialSequence.step:null);syncPauseButton();updateSpecialHud();
   }
 
   function clearQuestionUi(){clearEndSpecialEffects();setFractionQuestionLayout(false);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
@@ -2959,14 +3006,14 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       const hasRewrite=!endFinalPhase&&boss.baseName&&boss.baseName!==boss.name;
       if(kicker)kicker.textContent=endFinalPhase?'TERMINAL ENTITY DETECTED':'ENDWORLD CORRUPTION';
       if(english)english.textContent='';
-      text.textContent=hasRewrite?boss.baseName:boss.name;
+      if(!hasRewrite&&!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=hasRewrite?boss.baseName:boss.name;
       fx.hidden=false;fx.className=`boss-name-fx active end-boss-name end-boss-name-${endFinalPhase?'front':(boss.sourceWorld||currentEndSource())}`;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
       await sleep(hasRewrite?520:760);
       if(hasRewrite){
         fx.classList.add('end-name-corrupting');playEndCorruptionNoise(1080);
         const frames=[.28,.48,.68,.82,.58,.74];
         for(const level of frames){text.textContent=corruptedEndNameFrame(boss.name,level);fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});await sleep(165);}
-        text.textContent=boss.name;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
+        if(!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=boss.name;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
         fx.classList.remove('end-name-corrupting');fx.classList.add('end-name-resolved');
       }else fx.classList.add('end-name-resolved');
       if(english)english.textContent=boss.english||'';
@@ -3851,7 +3898,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     ]);
   }
   function startEndBlueLoop(){
-    document.body.classList.add('end-blue-loop-active');document.querySelector('.question-panel')?.classList.add('end-special-panel');const chain=makeEndBlueLoopChain();endSpecialState={type:'end-blue-loop',step:0,chain};populateSpecialQuestion(chain[0],{chip:'回帰層 I',step:1});startTimer(45);
+    document.body.classList.add('end-blue-loop-active');document.querySelector('.question-panel')?.classList.add('end-special-panel');const chain=makeEndBlueLoopChain();endSpecialState={type:'end-blue-loop',step:0,chain};bossSpecialSequence={type:'end-blue-loop',step:0,chain};populateSpecialQuestion(chain[0],{chip:'回帰層 I',step:1});startTimer(45);
   }
   function makeEndBackCausalChain(){
     const x=pick([60,70,80]),mult=pick([6,8,10]),add=40,total=x*mult+add,y=x*3-20,eqCorrect=`${y+10}−10`;
@@ -3864,16 +3911,22 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function startEndBackCausal(){
     document.body.classList.add('end-back-causal-active');document.querySelector('.question-panel')?.classList.add('end-special-panel');const chain=makeEndBackCausalChain();endSpecialState={type:'end-back-causal',step:0,chain};populateSpecialQuestion(chain[0],{chip:'因果逆算',step:1});startTimer(45);
   }
-  function applyEndFinalQuestionModifier(){
+  function applyEndFinalQuestionModifier(finalStrike=null){
     if(mode!=='end'||!endFinalPhase||!currentQuestion)return;clearEndSpecialEffects();document.body.classList.remove('boss-time-pressure');document.body.classList.add('end-final-convergence-active');const panel=document.querySelector('.question-panel');panel?.classList.add('end-special-panel');
     const phase=Math.max(0,Math.min(4,bossQuestion));
+    if(phase===4&&finalStrike!==null){
+      const strike=Math.max(0,Math.min(2,Number(finalStrike)||0));
+      if(strike===0){setBossStepChip('終式・第一収束',1);document.body.classList.add('boss-time-pressure');return;}
+      if(strike===1){setBossStepChip('終式・第二収束',2);document.body.classList.add('end-final-silver-equivalent');[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+100}−100`;b.classList.add('end-equivalent-choice');});return;}
+      setBossStepChip('五界収束・終撃',3);panel?.classList.add('end-final-tide-panel');const guide=document.createElement('div');guide.id='endFinalTideGuide';guide.className='end-final-tide-guide';guide.innerHTML='<button type="button">潮流 I</button><button type="button">潮流 II</button><button type="button">潮流 III</button><strong>三つの条件を確認せよ</strong>';panel?.querySelector('.choice-caption')?.before(guide);const seen=new Set();const ans=Number(currentQuestion.answer),lower=Math.floor(ans/1000)*1000,upper=lower+1000;const cond=[`答えは${lower}以上`,`答えは${upper}未満`,`一の位は${Math.abs(ans)%10}`];[...guide.querySelectorAll('button')].forEach((b,i)=>{b.onclick=()=>{if(paused||locked)return;seen.add(i);b.classList.add('seen');guide.querySelector('strong').textContent=cond[i];if(seen.size===3){els.feedbackText.textContent='五界の条件が収束した。最後の答えを選ぼう！';[...els.choices.children].forEach(x=>x.disabled=false);}};});[...els.choices.children].forEach(x=>x.disabled=true);return;
+    }
     if(phase===0){
       const ans=currentQuestion.answer,k=600;currentQuestion={...currentQuestion,expression:`□ ÷ 1.2 + 500 = ${ans/1.2+500}`,displayExpression:`□ ÷ 1.2 + 500 = ${ans/1.2+500}　□は？`};renderQuestionContent(currentQuestion);setBossStepChip('因果反転',1);
     }else if(phase===1){setBossStepChip('一刀断算',2);document.body.classList.add('boss-time-pressure');}
     else if(phase===2){setBossStepChip('時の改竄',3);const ans=currentQuestion.answer;endFinalModifierTimer=setTimeout(()=>{if(!currentQuestion||bossQuestion!==2||paused)return;document.body.classList.add('end-final-blue-rewrite');const n=pick([120,240,360]);els.mathProblem.textContent=`${ans+n} − ${n} = ?`;fitMathProblemToBox(currentQuestion);els.feedbackText.textContent='記憶が書き換わった――答えは変わらない。';},11000);}
     else if(phase===3){setBossStepChip('鏡界反転',4);document.body.classList.add('end-final-silver-equivalent');[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+100}−100`;b.classList.add('end-equivalent-choice');});}
     else{
-      setBossStepChip('五界収束',5);panel?.classList.add('end-final-tide-panel');const guide=document.createElement('div');guide.id='endFinalTideGuide';guide.className='end-final-tide-guide';guide.innerHTML='<button type="button">潮流 I</button><button type="button">潮流 II</button><button type="button">潮流 III</button><strong>三つの条件を確認せよ</strong>';panel?.querySelector('.choice-caption')?.before(guide);const seen=new Set();const cond=[`答えは100の倍数`,`答えは1000より大きい`,`答えは7000より小さい`];[...guide.querySelectorAll('button')].forEach((b,i)=>{b.onclick=()=>{if(paused||locked)return;seen.add(i);b.classList.add('seen');guide.querySelector('strong').textContent=cond[i];if(seen.size===3){els.feedbackText.textContent='五界の条件が収束した。答えを選ぼう！';[...els.choices.children].forEach(x=>x.disabled=false);}};});[...els.choices.children].forEach(x=>x.disabled=true);
+      setBossStepChip('五界収束',5);panel?.classList.add('end-final-tide-panel');const guide=document.createElement('div');guide.id='endFinalTideGuide';guide.className='end-final-tide-guide';guide.innerHTML='<button type="button">潮流 I</button><button type="button">潮流 II</button><button type="button">潮流 III</button><strong>三つの条件を確認せよ</strong>';panel?.querySelector('.choice-caption')?.before(guide);const seen=new Set();const ans=Number(currentQuestion.answer),lower=Math.floor(ans/1000)*1000,upper=lower+1000;const cond=[`答えは${lower}以上`,`答えは${upper}未満`,`一の位は${Math.abs(ans)%10}`];[...guide.querySelectorAll('button')].forEach((b,i)=>{b.onclick=()=>{if(paused||locked)return;seen.add(i);b.classList.add('seen');guide.querySelector('strong').textContent=cond[i];if(seen.size===3){els.feedbackText.textContent='五界の条件が収束した。答えを選ぼう！';[...els.choices.children].forEach(x=>x.disabled=false);}};});[...els.choices.children].forEach(x=>x.disabled=true);
     }
   }
   function makeEndBarrierQuestion(){return makeEndQuestion(currentEndSource(),bossQuestion);}
@@ -4020,7 +4073,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         bossSpecialSequence={type:'end-blue-loop',step:0};startEndBlueLoop();break;
       }
       case'end-final-convergence':{
-        bossSpecialSequence={type:'end-final-convergence',step:'final'};prepareQuestion();applyEndFinalQuestionModifier();startTimer(battleQuestionTime());break;
+        // The FINAL climax is an offensive three-question convergence, not another double-shield pattern.
+        bossSpecialSequence={type:'end-final-convergence',step:0};prepareQuestion();startTimer(30);break;
       }
       case'crimson-genma':{
         bossSpecialSequence={type:'crimson-genma',step:'final'};await startCrimsonGenmaFinal();break;
@@ -4343,15 +4397,22 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(seq.type==='end-genma-triple'){
         const st=endSpecialState;if(st&&st.type==='end-genma-triple'&&st.step<2){await intermediate(st.step===0?'初太刀を突破！':'返し太刀を突破！');st.step++;await showBossPhaseTransition(st.step===1?'SECOND BLADE':'FINAL BLADE',st.step===1?'返し太刀':'絶ち太刀','slash');populateSpecialQuestion(st.chain[st.step],{chip:st.step===1?'返し太刀':'絶ち太刀',step:st.step+1});startTimer(st.step===1?15:10,{preserveCountCue:true});return;}
       }
-      if(seq.type==='end-blue-loop'){
-        const st=endSpecialState;if(st&&st.type==='end-blue-loop'&&st.step<2){
-          await intermediate(st.step===0?'第一回帰層を突破！':'第二回帰層を突破！');
-          // Make each temporal revival explicit: HP reaches zero, then the summer rewinds and restores the final segment.
-          bossQuestion=5;renderGame();updateBossHpHud();await sleep(420);
-          bossQuestion=4;renderGame();updateBossHpHud();
-          st.step++;await showBlueEndlessReset(st.step===1?'夏が巻き戻る':'もう一度、夏が戻る',st.step===1?'FIRST REWIND':'SECOND REWIND');
-          populateSpecialQuestion(st.chain[st.step],{chip:st.step===1?'回帰層 II':'最終巡',step:st.step+1});startTimer(st.step===1?35:25,{preserveCountCue:true});return;
-        }
+      if(seq.type==='end-blue-loop'&&Number(seq.step)<2){
+        const step=Number(seq.step)||0,chain=seq.chain||endSpecialState?.chain||makeEndBlueLoopChain();
+        await intermediate(step===0?'第一回帰層を突破！':'第二回帰層を突破！');
+        // Two explicit revivals: HP reaches zero twice, then the summer rewinds and restores the final segment each time.
+        bossQuestion=5;renderGame();updateBossHpHud();await sleep(480);
+        bossQuestion=4;renderGame();updateBossHpHud();
+        const nextStep=step+1;bossSpecialSequence={type:'end-blue-loop',step:nextStep,chain};endSpecialState={type:'end-blue-loop',step:nextStep,chain};
+        await showBlueEndlessReset(nextStep===1?'夏が巻き戻る':'もう一度、夏が戻る',nextStep===1?'FIRST REWIND':'SECOND REWIND');
+        populateSpecialQuestion(chain[nextStep],{chip:nextStep===1?'回帰層 II':'最終巡',step:nextStep+1});startTimer(nextStep===1?35:25,{preserveCountCue:true});return;
+      }
+      if(seq.type==='end-final-convergence'&&Number(seq.step)<2){
+        const step=Number(seq.step)||0;
+        await intermediate(step===0?'第一収束を突破！':'第二収束を突破！');
+        await showBossPhaseTransition(step===0?'SECOND CONVERGENCE':'FINAL CONVERGENCE',step===0?'第二収束':'五界収束・終撃','impact');
+        bossSpecialSequence={type:'end-final-convergence',step:step+1};
+        currentQuestion=makeEndFinalQuestion(4);renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});locked=false;applyEndFinalQuestionModifier(step+1);syncPauseButton();updateSpecialHud();startTimer(30,{preserveCountCue:true});return;
       }
       if(seq.type==='end-back-causal'){
         const st=endSpecialState;if(st&&st.type==='end-back-causal'&&st.step<2){await intermediate(st.step===0?'原因を特定！':'再計算成功！');st.step++;await showReconstructTransition(st.step===1?'CAUSE→RESULT':'RESULT→STRUCTURE',st.step===1?'CAUSAL REBUILD':'STRUCTURE JUDGE');populateSpecialQuestion(st.chain[st.step],{chip:st.step===1?'再計算':'構造判定',step:st.step+1});startTimer(st.step===1?35:30,{preserveCountCue:true});return;}
@@ -4442,7 +4503,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(blueQ10Slow)els.heroActor.classList.add('blue-q10-slow');
       runAttackMotion();await sleep(180);playSE(correctSE);await sleep(blueQ10Slow?1370:720);els.heroActor.classList.remove('blue-q10-slow');totalProgress++;
       if(bossPhase){
+        const previousFinalHero=mode==='end'&&endFinalPhase?currentEndHeroWorld():null;
         bossQuestion++;renderGame();
+        if(mode==='end'&&endFinalPhase&&bossQuestion<5)await showEndFinalHeroRelay(previousFinalHero,currentEndHeroWorld());
         if(bossQuestion>=5){await defeatBoss();return;}
         if(bossQuestion===4){await runBossFifthAction();return;}
         prepareQuestion();startTimer(battleQuestionTime());return;
@@ -4484,7 +4547,18 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     document.body.classList.add('end-rescue-active');
     const wrap=document.createElement('div');wrap.className='end-rescue-fx';wrap.innerHTML=`<div class="end-rescue-river"></div><img src="./assets/${file}" alt="${END_HERO_NAMES[rescued]||'主人公'}"><strong>RESCUED</strong>`;document.body.appendChild(wrap);await sleep(2300);wrap.remove();document.body.classList.remove('end-rescue-active');endHeroWorld=rescued;
   }
+  async function showEndFinalHeroRelay(fromWorld,toWorld){
+    if(mode!=='end'||!endFinalPhase||!toWorld||fromWorld===toWorld)return;
+    const battlefield=document.querySelector('.battlefield');if(!battlefield)return;
+    document.body.classList.add('end-final-hero-switching');
+    let fx=$('endFinalHeroRelay');if(!fx){fx=document.createElement('div');fx.id='endFinalHeroRelay';fx.className='end-final-hero-relay';battlefield.appendChild(fx);}
+    const worldLabel={back:'裏',crimson:'紅',blue:'蒼',silver:'銀',midori:'翠'}[toWorld]||'';
+    fx.innerHTML=`<small>NEXT RELAY / ${worldLabel}</small><strong>${END_HERO_NAMES[toWorld]||'主人公'}</strong><span>次の一問へ</span>`;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');
+    await sleep(760);document.body.classList.remove('end-final-hero-switching');await sleep(360);fx.classList.remove('show');
+  }
+
   async function beginEndFinalBoss(){
+    endFinalHeroOrder=shuffle(END_FINAL_HERO_ORDER);
     endFinalPhase=true;bossPhase=true;bossQuestion=0;currentMonster=null;currentQuestion=null;lives=3;clearBossAction();unlockCurrentBossMusic();
     // FINAL has no road encounters, but it should still receive the same stage-title beat
     // as every other area before the boss appears. Keep the battlefield empty while the
@@ -4523,6 +4597,15 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     document.body.classList.remove('end-final-defeat-active');
   }
 
+  async function showEndCongratulationsGate(){
+    const battlefield=document.querySelector('.battlefield');if(!battlefield)return;
+    let gate=$('endCongratulationsGate');if(!gate){gate=document.createElement('div');gate.id='endCongratulationsGate';gate.className='end-congratulations-gate';gate.setAttribute('role','button');gate.setAttribute('tabindex','0');battlefield.appendChild(gate);}
+    gate.innerHTML='<small>END WORLD COMPLETE</small><strong>CONGRATULATION!!</strong><span>画面をタップしてリザルトへ</span>';gate.classList.remove('show');void gate.offsetWidth;gate.classList.add('show');
+    await sleep(850);
+    await new Promise(resolve=>{let done=false;const key=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();finish();}};const finish=()=>{if(done)return;done=true;gate.removeEventListener('pointerup',finish);window.removeEventListener('keydown',key);resolve();};gate.addEventListener('pointerup',finish,{once:true});window.addEventListener('keydown',key);});
+    gate.classList.remove('show');await sleep(300);gate.remove();
+  }
+
   async function defeatBoss(){
     stopTimer();clearBossAction();els.answerMark.hidden=true;
     const terminalClear=mode==='end'&&endFinalPhase;
@@ -4543,7 +4626,12 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }
     els.enemyActor.classList.remove('boss-defeat','end-final-defeat','finisher-hit','finisher-midori-hit');els.heroActor.classList.remove('finisher-front','finisher-back');document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');els.attackEffect.className='attack-effect';
     if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await finishRun();return;}
-    if(terminalClear){await sleep(450);await finishRun();return;}
+    if(terminalClear){
+      // The clear is committed as soon as the final enemy is defeated, before the tap gate,
+      // so closing the app on the congratulations screen cannot lose the clear record.
+      if(!debugFullUnlock){save.endClears=(save.endClears||0)+1;persist();syncSecretRelics();}
+      await sleep(450);await showEndCongratulationsGate();await finishRun({skipEndCommit:true});return;
+    }
     if(mode==='end')await showEndRescue(currentEndSource());
     await clearStage();
   }
@@ -4571,11 +4659,11 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await sceneBlackout(async()=>{showOnly(els.gameScreen);document.body.dataset.mode='crimson';document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);},{fadeIn:520,hold:220,fadeOut:700});
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,0);
   }
-  async function finishRun(){
+  async function finishRun({skipEndCommit=false}={}){
     stopTimer();await stopBgmFade(500);let reward=null;
     if(!debugFullUnlock){
       if(mode==='front'){save.frontClears++;if(!save.backUnlocked){save.backUnlocked=true;if(!save.owned.includes(100))save.owned.push(100);reward=ITEMS.find(i=>i.id===100);}else reward=randomReward();}
-      else if(mode==='back'){save.backClears++;reward=randomReward();}else if(mode==='crimson'){save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}else if(mode==='blue'){save.blueClears=(save.blueClears||0)+1;reward=randomReward();}else if(mode==='silver'){save.silverClears=(save.silverClears||0)+1;reward=randomReward();}else if(mode==='midori'){save.midoriClears=(save.midoriClears||0)+1;reward=randomReward();}else if(mode==='end'){save.endClears=(save.endClears||0)+1;}
+      else if(mode==='back'){save.backClears++;reward=randomReward();}else if(mode==='crimson'){save.crimsonClears=(save.crimsonClears||0)+1;reward=randomReward();}else if(mode==='blue'){save.blueClears=(save.blueClears||0)+1;reward=randomReward();}else if(mode==='silver'){save.silverClears=(save.silverClears||0)+1;reward=randomReward();}else if(mode==='midori'){save.midoriClears=(save.midoriClears||0)+1;reward=randomReward();}else if(mode==='end'&&!skipEndCommit){save.endClears=(save.endClears||0)+1;}
       persist();syncSecretRelics();
     }else renderTitle();renderResult();els.resultOverlay.hidden=false;if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'特別なアイテムを手に入れた！':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}else enqueuePendingSecretRelicNotices({showNow:true});
   }
@@ -4592,7 +4680,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.musicNextBtn.onclick=()=>moveMusicTrack(1);
   els.musicStopBtn.onclick=()=>{stopMusicPlayer();renderMusicPlayer();};
   els.musicPlayBtn.onclick=()=>{
-    if(musicTrackIndex<0){moveMusicTrack(1);return;}
+    if(musicTrackIndex<0){if(musicWorld==='white')playWhiteRandomTrack(true);else moveMusicTrack(1);return;}
     if(musicPlayer.paused)musicPlayer.play().then(renderMusicPlayer).catch(()=>{});else{musicPlayer.pause();renderMusicPlayer();}
   };
   musicPlayer.addEventListener('play',renderMusicPlayer);
@@ -4600,6 +4688,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   musicPlayer.addEventListener('timeupdate',updateMusicSeek);
   musicPlayer.addEventListener('loadedmetadata',updateMusicSeek);
   musicPlayer.addEventListener('durationchange',updateMusicSeek);
+  musicPlayer.addEventListener('ended',()=>{if(musicWorld==='white'&&!els.musicOverlay.hidden)playWhiteRandomTrack(true);});
   if(els.musicSeek){
     els.musicSeek.oninput=()=>{
       const duration=Number(musicPlayer.duration);if(!Number.isFinite(duration)||duration<=0)return;

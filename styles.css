@@ -2146,9 +2146,47 @@ body[data-mode="white"].white-beyond-active .question-panel{border-color:rgba(19
 body[data-mode="white"].white-beyond-active .question-cap{color:#d6b8f2}
 
 @media (prefers-reduced-motion:reduce){.white-memory-fx i,.white-challenge-banner.show{animation:none!important}.white-memory-fx i{opacity:.22}.white-challenge-banner.show{opacity:1;transform:translate(-50%,-50%)}}
-/* White normal questions have no target monster. A correct answer energizes the
-   memory-space particles instead of making the hero swing at empty space. */
+/* White normal battles reuse past-world monsters. The light particles remain a
+   subtle White-world memory effect behind the normal attack cycle. */
 .white-memory-fx.answer-pulse{animation:whiteMemoryAnswerPulse .70s ease-out both}
 .white-memory-fx.answer-pulse i{box-shadow:0 0 10px currentColor,0 0 25px currentColor;opacity:.76}
 @keyframes whiteMemoryAnswerPulse{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.35);transform:scale(1.012)}100%{filter:brightness(1);transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.white-memory-fx.answer-pulse{animation:none!important;filter:brightness(1.15)}}
+
+/* ===== 2026-09-05 refinement: End FINAL relay / clear gate / BGM labels / White shuffle ===== */
+.boss-name-fx.end-boss-name strong .end-red-glyph{color:#ff4056;text-shadow:0 0 7px #fff,0 0 18px rgba(255,34,56,.9),0 0 34px rgba(179,0,27,.72)}
+
+.end-final-hero-relay{position:absolute;z-index:64;left:50%;top:51%;min-width:min(430px,72vw);padding:12px 24px;text-align:center;transform:translate(-50%,-50%) scale(.96);opacity:0;pointer-events:none;border-top:1px solid rgba(199,171,255,.48);border-bottom:1px solid rgba(104,216,255,.42);background:linear-gradient(90deg,transparent,rgba(7,8,20,.92) 14% 86%,transparent);filter:drop-shadow(0 0 18px rgba(128,83,201,.24))}
+.end-final-hero-relay small{display:block;color:#caaeff;font:900 .58rem/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.22em}
+.end-final-hero-relay strong{display:block;margin:5px 0 2px;color:#f4f7ff;font:900 clamp(1.2rem,4vw,2rem)/1.1 "Yu Gothic",sans-serif;letter-spacing:.08em;text-shadow:0 0 13px rgba(130,208,255,.42)}
+.end-final-hero-relay span{display:block;color:#98aac3;font-size:.65rem;letter-spacing:.12em}
+.end-final-hero-relay.show{animation:endFinalRelayIn 1.15s ease both}
+body.end-final-hero-switching .actor.hero img{opacity:0!important;transform:translateY(8px) scale(.98)!important;transition:opacity .30s ease,transform .30s ease}
+body[data-mode="end"] .actor.hero img{transition:opacity .30s ease,transform .30s ease}
+@keyframes endFinalRelayIn{0%{opacity:0;transform:translate(-50%,-47%) scale(.94)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}72%{opacity:1}100%{opacity:0;transform:translate(-50%,-53%) scale(1.015)}}
+
+.end-congratulations-gate{position:absolute;z-index:118;inset:0;display:grid;place-content:center;text-align:center;gap:8px;padding:24px;background:radial-gradient(circle at 50% 46%,rgba(106,71,151,.24),transparent 31%),linear-gradient(180deg,rgba(4,4,12,.76),rgba(2,5,12,.91));opacity:0;pointer-events:none;cursor:pointer;outline:none}
+.end-congratulations-gate.show{opacity:1;pointer-events:auto;animation:endCongratsReveal .72s ease both}
+.end-congratulations-gate small{color:#c8b1ed;font:900 .66rem/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.30em}
+.end-congratulations-gate strong{display:block;color:#fff6d8;font:900 clamp(2rem,8vw,6.4rem)/.98 Arial,"Yu Gothic",sans-serif;letter-spacing:.055em;text-shadow:0 0 8px #fff,0 0 26px rgba(255,211,106,.52),0 0 55px rgba(119,87,216,.42)}
+.end-congratulations-gate span{margin-top:10px;color:#dce7f5;font-size:clamp(.68rem,1.8vw,1rem);letter-spacing:.12em;animation:endCongratsTap 1.7s ease-in-out infinite}
+@keyframes endCongratsReveal{0%{opacity:0;filter:blur(4px);transform:scale(.985)}100%{opacity:1;filter:blur(0);transform:scale(1)}}
+@keyframes endCongratsTap{0%,100%{opacity:.52}50%{opacity:1}}
+
+.bgm-title-toast{position:absolute;z-index:58;left:18px;top:16px;max-width:min(520px,72vw);padding:8px 14px 9px;border-left:3px solid rgba(205,223,247,.78);border-radius:4px 10px 10px 4px;background:linear-gradient(90deg,rgba(4,11,24,.88),rgba(7,15,30,.70),transparent);opacity:0;transform:translateX(-10px);pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.26))}
+.bgm-title-toast small{display:block;color:#8ea3bd;font:800 .48rem/1.1 Arial,sans-serif;letter-spacing:.19em}
+.bgm-title-toast strong{display:block;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#edf4fb;font:800 clamp(.68rem,1.6vw,.88rem)/1.2 Arial,"Yu Gothic",sans-serif;letter-spacing:.035em;text-shadow:0 0 9px rgba(128,194,239,.20)}
+.bgm-title-toast.show{animation:bgmTitleToast 2.25s ease both}
+@keyframes bgmTitleToast{0%{opacity:0;transform:translateX(-12px)}13%,72%{opacity:.92;transform:translateX(0)}100%{opacity:0;transform:translateX(7px)}}
+
+.music-card[data-music-world="white"]{background:linear-gradient(180deg,rgba(25,28,38,.98),rgba(9,12,20,.99));border-color:rgba(207,222,243,.30)}
+.music-card[data-music-world="white"] .music-world-tab.active{color:#eef6ff;border-color:rgba(190,218,242,.62);background:linear-gradient(180deg,rgba(81,97,119,.58),rgba(30,36,49,.82));box-shadow:inset 0 0 14px rgba(180,213,242,.08)}
+.music-white-shuffle-panel{min-height:100%;display:grid;place-content:center;justify-items:center;gap:10px;padding:24px;text-align:center;border:1px solid rgba(203,220,241,.20);border-radius:16px;background:radial-gradient(circle at 50% 38%,rgba(130,172,211,.10),transparent 36%),linear-gradient(180deg,rgba(26,32,44,.68),rgba(10,14,23,.72))}
+.music-white-shuffle-panel small{color:#a9bed6;font:900 .58rem/1.2 Arial,sans-serif;letter-spacing:.20em}.music-white-shuffle-panel strong{color:#eef5fc;font:900 clamp(1.5rem,5vw,2.8rem)/1 Arial,sans-serif;letter-spacing:.08em;text-shadow:0 0 17px rgba(148,201,239,.16)}
+.music-white-shuffle-panel p{max-width:520px;margin:0;color:#aab8ca;font-size:.72rem;line-height:1.6}
+.music-white-random-btn{min-width:190px;min-height:46px;margin-top:4px;padding:10px 20px;border:1px solid rgba(204,224,244,.45);border-radius:999px;background:linear-gradient(180deg,rgba(88,110,134,.88),rgba(36,45,60,.94));color:#fff;font:900 .78rem/1 Arial,"Yu Gothic",sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.26),inset 0 1px rgba(255,255,255,.08)}
+.music-white-random-btn:disabled{opacity:.35;cursor:default}
+
+@media (orientation:portrait){.bgm-title-toast{left:10px;top:10px;max-width:82vw}.end-final-hero-relay{min-width:76vw}.end-congratulations-gate strong{font-size:clamp(2rem,11vw,4.2rem)}}
+@media (orientation:landscape) and (max-height:500px){.bgm-title-toast{left:8px;top:7px;padding:5px 9px}.bgm-title-toast small{font-size:.40rem}.bgm-title-toast strong{font-size:.60rem}.end-final-hero-relay{top:48%;padding:8px 20px}.end-congratulations-gate{gap:4px}.end-congratulations-gate strong{font-size:2.8rem}.end-congratulations-gate span{margin-top:3px;font-size:.58rem}.music-white-shuffle-panel{padding:10px;gap:5px}.music-white-shuffle-panel p{font-size:.56rem}.music-white-random-btn{min-height:34px;min-width:160px;padding:6px 14px}}
+@media (prefers-reduced-motion:reduce){.end-final-hero-relay.show,.end-congratulations-gate.show,.end-congratulations-gate span,.bgm-title-toast.show{animation:none!important}.end-final-hero-relay.show{opacity:1;transform:translate(-50%,-50%)}.end-congratulations-gate.show{opacity:1}.bgm-title-toast.show{opacity:1;transform:translateX(0)}}
