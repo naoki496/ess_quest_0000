@@ -214,13 +214,17 @@
 
 <div id="gameOverOverlay" class="game-over-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
   <section class="game-over-card pause-card panel-gold">
-    <small>GAME OVER</small>
-    <h2 id="gameOverTitle">ざんねん！</h2>
-    <p id="gameOverMessage">このステージの最初からやりなおしますか？</p>
-    <p class="game-over-note">タイトルにもどると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>75</span> からになります。</p>
+    <small>GAME OVER / REVIEW</small>
+    <h2 id="gameOverTitle">今回の振り返り</h2>
+    <p id="gameOverMessage">間違えた問題を確認して、もう一度挑戦しよう。</p>
+    <section class="game-over-review" aria-labelledby="gameOverReviewTitle">
+      <div class="game-over-review-head"><strong id="gameOverReviewTitle">間違えた問題</strong><span>直近3問まで</span></div>
+      <div id="gameOverReviewList" class="game-over-review-list" aria-live="polite"></div>
+    </section>
+    <p class="game-over-note">タイトルに戻ると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>75</span> からになります。</p>
     <div class="pause-actions">
       <button id="gameOverRetryBtn" class="menu-btn primary" type="button">ステージ最初から</button>
-      <button id="gameOverTitleBtn" class="menu-btn pause-danger" type="button">タイトルにもどる</button>
+      <button id="gameOverTitleBtn" class="menu-btn pause-danger" type="button">タイトルに戻る</button>
     </div>
   </section>
 </div>

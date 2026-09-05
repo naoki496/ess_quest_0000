@@ -194,7 +194,7 @@
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
     resultOverlay:$('resultOverlay'),resultMistakes:$('resultMistakes'),resultTimeouts:$('resultTimeouts'),resultRestarts:$('resultRestarts'),resultGold:$('resultGold'),resultErrors:$('resultErrors'),replayBtn:$('replayBtn'),toTitleBtn:$('toTitleBtn'),
-    rewardOverlay:$('rewardOverlay'),rewardCard:$('rewardCard'),rewardKicker:$('rewardKicker'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
+    rewardOverlay:$('rewardOverlay'),rewardCard:$('rewardCard'),rewardKicker:$('rewardKicker'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverReviewList:$('gameOverReviewList'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
   };
 
   let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
@@ -229,12 +229,14 @@
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
   function musicTracks(world){
     if(world==='end'){
+      // 終の世界では、道中旧ボス曲は元世界のBGMページで聴けるため重複掲載しない。
+      // ここでは終専用の領域ボス5曲＋FINALだけを独立した音楽集として扱う。
       const defs=[
-        ['midori-normal','翠・通常ボス','Hard a starboard..mp3','大時空支流／翠系の道中旧ボス戦。'],['midori-boss','翠・終界ボス','BOSS CRASHER.mp3','大時空支流の終界ボス戦。'],
-        ['crimson-normal','紅・通常ボス','乾坤一擲.mp3','浮遊黒曜要塞／紅系の道中旧ボス戦。'],['crimson-boss','紅・終界ボス','BOSS ASSAULT.mp3','浮遊黒曜要塞の終界ボス戦。'],
-        ['silver-normal','銀・通常ボス','CRAZY.mp3','銀鏡極彩色舞台／銀系の道中旧ボス戦。'],['silver-boss','銀・終界ボス','BOSS DAWN.mp3','銀鏡極彩色舞台の終界ボス戦。'],
-        ['back-normal','裏・通常ボス','boss.mp3','儀式祭殿裏東京／裏系の道中旧ボス戦。'],['back-boss','裏・終界ボス','BOSS DEFEAT.mp3','儀式祭殿裏東京の終界ボス戦。'],
-        ['blue-normal','蒼・通常ボス','残夏.mp3','永劫夏界大迷宮／蒼系の道中旧ボス戦。'],['blue-boss','蒼・終界ボス','BOSS IGNITE.mp3','永劫夏界大迷宮の終界ボス戦。'],
+        ['midori-boss','翠・終界ボス','BOSS CRASHER.mp3','大時空支流の終界ボス戦。'],
+        ['crimson-boss','紅・終界ボス','BOSS ASSAULT.mp3','浮遊黒曜要塞の終界ボス戦。'],
+        ['blue-boss','蒼・終界ボス','BOSS IGNITE.mp3','永劫夏界大迷宮の終界ボス戦。'],
+        ['silver-boss','銀・終界ボス','BOSS DAWN.mp3','銀鏡極彩色舞台の終界ボス戦。'],
+        ['back-boss','裏・終界ボス','BOSS DEFEAT.mp3','儀式祭殿裏東京の終界ボス戦。'],
         ['final','FINAL','BOSS EXTERMINATE.mp3','FINAL「まおうの へや」のラスボス戦。']
       ];
       return defs.map(([id,label,file,where])=>({id,file,label,title:file.replace(/\.mp3$/i,''),where:`終の世界 ${where}`}));
@@ -279,7 +281,7 @@
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(save));}catch{}
     return true;
   }
-  function unlockCurrentStageMusic(){return mode==='end'?unlockMusic('end',`${currentEndSource()}-normal`):unlockMusic(mode,`stage-${stageIndex+1}`);}
+  function unlockCurrentStageMusic(){return mode==='end'?false:unlockMusic(mode,`stage-${stageIndex+1}`);}
   function unlockCurrentBossMusic(){if(mode==='end')return unlockMusic('end',endFinalPhase?'final':`${currentEndSource()}-boss`);return unlockMusic(mode,mode==='crimson'?(crimsonLastPhase?'final':'boss'):(stageIndex===4?'final':'boss'));}
 
   // The hit effect belongs to the battlefield, not to the hero actor.  Keeping it
@@ -757,6 +759,8 @@ function markWorldVisited(world){
     const card=els.musicOverlay?.querySelector('.music-card');if(card)card.dataset.musicWorld=selectedUnlocked?selected.key:'locked';
     if(els.musicWorldStatus)els.musicWorldStatus.textContent=selectedUnlocked?'WORLD LIBRARY':'LOCKED WORLD';
     if(els.musicWorldTitle)els.musicWorldTitle.textContent=selectedUnlocked?selected.name:'？？？';
+    const musicNote=els.musicOverlay?.querySelector('.music-note');
+    if(musicNote)musicNote.textContent=selectedUnlocked&&selected.key==='end'?'終の世界では専用ボス曲のみ収録。道中曲は元の世界のBGMページで聴くことができます。':'一度到達したステージやボス戦のBGMが解禁されます。';
     els.musicTrackList.innerHTML='';
     if(!selectedUnlocked){
       if(els.musicUnlockCount)els.musicUnlockCount.textContent='この世界の音楽はまだ解放されていません。';
@@ -1046,7 +1050,7 @@ function markWorldVisited(world){
     stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
     document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent');
-    if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();
+    if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};pendingReviewTip=null;const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();
   }
 
   function getMonsterCatalog(){return mode==='front'?FRONT_MONSTERS:mode==='back'?BACK_MONSTERS:mode==='crimson'?CRIMSON_MONSTERS:mode==='blue'?BLUE_MONSTERS:mode==='silver'?SILVER_MONSTERS:mode==='midori'?MIDORI_MONSTERS:END_MONSTERS;}
@@ -2087,6 +2091,8 @@ function markWorldVisited(world){
     const en=bossPhase?currentBoss():currentMonster;if(en){applyEnemyFacing(en);setEnemyNameDisplay(en);fitSingleLineText(els.enemyName,{maxWidthRatio:.31,minPx:9});}else setEnemyNameDisplay(null);
     const endCorrupted=mode==='end'&&bossPhase&&!!en?.boss;if(endCorrupted){document.body.classList.add('end-boss-corruption-active');document.body.dataset.endBossWorld=en.sourceWorld||'front';els.enemyActor.classList.add('end-corrupted-boss');}else{document.body.classList.remove('end-boss-corruption-active');document.body.removeAttribute('data-end-boss-world');els.enemyActor.classList.remove('end-corrupted-boss');}
     syncWorldBossAura();
+    const choiceCaption=document.querySelector('.question-panel .choice-caption');
+    if(choiceCaption)choiceCaption.textContent=['crimson','blue','silver','midori','end'].includes(mode)?'答えを選ぼう':'こたえを えらぼう';
     updateBossHpHud();
   }
 
@@ -2259,7 +2265,46 @@ const MAP_TIPS=[
 ];
 const MAP_TIP_INTRO_KEYS=['special-1','book-1','gold-1','collection-1','bgm-1','secret-shop'];
 const MAP_SECRET_TIER_HINTS={1:'secret-rarity',2:'secret-high',3:'secret-key'};
-let lastMapTipKey='';
+// 紅以降は、幼い表記の基本操作TIPから「学習＋攻略」へ内容を段階的に切り替える。
+// 光・裏は従来のTIPプールをそのまま使用する。
+const ADVANCED_MAP_TIPS={
+  crimson:[
+    {key:'crimson-order',category:'計算の順序',text:'掛け算・割り算は、足し算・引き算より先に計算する。式を小さな段階に分けて確認しよう。'},
+    {key:'crimson-review',category:'再挑戦',text:'ライフが尽きたときは「今回の振り返り」を確認し、同じ間違いを一つずつ減らしていこう。'},
+    {key:'crimson-secret',category:'SECRET RELIC',text:'ショップでは手に入らない特別なアイテムが存在する。コレクションや図鑑の完成にも意味があるようだ。'},
+    {key:'crimson-book',category:'図鑑の秘密',text:'★4・★5のモンスターを集めることは、図鑑を埋める以上の意味を持つことがある。'},
+    {key:'crimson-unlock',category:'世界を開く鍵',text:'次の世界に必要な証は、一つの世界だけで揃うとは限らない。以前の世界の図鑑も見直してみよう。'}
+  ],
+  blue:[
+    {key:'blue-fraction',category:'分数',text:'分母が違う分数の足し算・引き算は、まず通分して分母をそろえる。'},
+    {key:'blue-rate',category:'割合',text:'割合は「比べる量 ÷ もとにする量」。何を基準にしているかを先に確認しよう。'},
+    {key:'blue-speed',category:'速さ',text:'速さ・時間・道のりのうち、何を求める問題なのかを整理してから式を作ろう。'},
+    {key:'blue-review',category:'再挑戦',text:'振り返りに出たアドバイスは、次の挑戦でも使える。答えだけでなく考え方を確認しよう。'},
+    {key:'blue-unlock',category:'世界を開く鍵',text:'新しい世界への道には、複数の世界で得た「珍しい出会いの証」が関わることがある。'}
+  ],
+  silver:[
+    {key:'silver-ratio',category:'比',text:'比は両方の数を同じ倍率で変えても関係が変わらない。できるだけ簡単な比に直して考えよう。'},
+    {key:'silver-circle',category:'円',text:'半径と直径を取り違えないように注意。円周と面積では使う式も異なる。'},
+    {key:'silver-relation',category:'比例・反比例',text:'比例では一方が何倍なら他方も同じ倍率。反比例では積が一定になることを利用しよう。'},
+    {key:'silver-book',category:'図鑑を確認',text:'未遭遇の★4・★5が残っていないか確認してみよう。世界を進めるための証につながることがある。'},
+    {key:'silver-review',category:'複数段階の問題',text:'一度に答えを出そうとせず、「先に何を求めるか」を決めると計算が整理しやすい。'}
+  ],
+  midori:[
+    {key:'midori-unit',category:'単位換算',text:'kmとm、LとmL、m²とcm²など、単位をそろえてから計算しよう。面積の換算では倍率にも注意。'},
+    {key:'midori-logic',category:'条件整理',text:'条件が多い問題は、当てはまらない選択肢を一つずつ消すと判断しやすい。'},
+    {key:'midori-area',category:'面積',text:'複合図形は、知っている図形に分けるか、大きな図形から不要な部分を引いて考えよう。'},
+    {key:'midori-secret',category:'SECRET RELIC',text:'世界を開く証には、複数の世界の図鑑制覇で得られるものもある。★4・★5の未遭遇を確認しよう。'},
+    {key:'midori-review',category:'再挑戦',text:'間違えた問題の種類を見直し、次の挑戦では最初の一手を変えてみよう。'}
+  ],
+  end:[
+    {key:'end-review',category:'再挑戦',text:'ライフが尽きても、振り返りから弱点を確認できる。領域ボスでは特殊行動の仕組みも読み直そう。'},
+    {key:'end-river',category:'時空河',text:'道中に現れるのは、かつて戦った強敵たち。終界ボスだけが時空河の侵食によって異なる力を得ている。'},
+    {key:'end-integrate',category:'総合問題',text:'難しい問題ほど、単位・計算順序・条件を分けて整理する。複数の知識を一度に使おうとしないことが近道。'},
+    {key:'end-relic',category:'その先へ',text:'終の世界を越えた証にも、まだ役割が残されている。最後まで集めたコレクションと図鑑を確認しよう。'},
+    {key:'end-boss',category:'終界ボス',text:'特殊行動で式や見た目が変わっても、問題の基本となる計算規則まで変わるわけではない。'}
+  ]
+};
+let lastMapTipKey='',pendingReviewTip=null;
 function currentMapSecretTipTier(){
   if(save.secretRelics?.includes('uncommon_master')||save.silverClears>0)return 3;
   if(save.secretRelics?.includes('common_master')||save.crimsonClears>0)return 2;
@@ -2268,6 +2313,14 @@ function currentMapSecretTipTier(){
 }
 function chooseMapTip(){
   let tip=null;
+  // 紅以降では、直前のGAME OVERで得た学習ポイントを一度だけ最優先する。
+  if(['crimson','blue','silver','midori','end'].includes(mode)){
+    if(pendingReviewTip){tip=pendingReviewTip;pendingReviewTip=null;lastMapTipKey=tip.key;return tip;}
+    const advanced=ADVANCED_MAP_TIPS[mode]||ADVANCED_MAP_TIPS.crimson;
+    const pool=advanced.filter(t=>t.key!==lastMapTipKey);
+    tip=pick(pool.length?pool:advanced);lastMapTipKey=tip.key;return tip;
+  }
+  // 光・裏は従来どおり、基本操作とコレクション導線を中心に表示する。
   const tier=currentMapSecretTipTier();
   if(!debugFullUnlock&&save.mapTipIntroIndex<MAP_TIP_INTRO_KEYS.length){
     const key=MAP_TIP_INTRO_KEYS[save.mapTipIntroIndex++];tip=MAP_TIPS.find(t=>t.key===key)||MAP_TIPS[0];persistQuietly();
@@ -3725,20 +3778,117 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     document.body.classList.remove('battle-countdown-active');
   }
 
+  function mistakeSpecialAdvice(){
+    const type=endSpecialState?.type||bossSpecialSequence?.type||'';
+    const map={
+      'end-blue-loop':'時間が巻き戻っても、問題の基本となる計算規則は変わらない。回帰後は焦らず式を読み直そう。',
+      'blue-endless-summer':'同じ答えへ戻る仕掛けでは、見た目の変化より「何が変わっていないか」を確認しよう。',
+      'end-mimesis-equivalent':'式の見た目が変わっても、同じ値を表している場合がある。変形の前後を比べよう。',
+      'silver-mimesis':'鏡写しの表示に惑わされず、元の数量関係を一つずつ確認しよう。',
+      'end-back-causal':'結果から原因を逆にたどる問題では、答えから計算を戻して確かめるとよい。',
+      'reverse-reconstruct':'逆算では、最後に行った計算から反対の計算で戻っていこう。',
+      'reconstruct':'前の答えが次の問題につながる。途中の値を覚えるのではなく、関係を確認しよう。',
+      'reverse':'逆算では、足し算↔引き算、掛け算↔割り算の対応を意識しよう。',
+      'shield-reverse':'結界を破った後も、逆算の基本は同じ。最後の計算から順に戻していこう。',
+      'end-tide-judgment':'条件が多いときは、正解を一気に探さず、当てはまらない選択肢を順に消していこう。',
+      'midori-tide':'複数の条件は一つずつ確認する。すべてを同時に考えなくてもよい。',
+      'midori-route':'条件に合わない航路を一つずつ除外すると、最後の候補が見えやすい。',
+      'end-genma-triple':'連続問題では、前の失敗を引きずらず、その一問の計算順序だけに集中しよう。',
+      'double':'連続攻撃では、一問ごとに式を読み直す。急いで前の答え方を繰り返さないようにしよう。',
+      'shield-double':'連続攻撃では、一問ごとに式を読み直す。急いで前の答え方を繰り返さないようにしよう。',
+      'transform':'式が書き換わっても、どの計算を先にするかを整理すれば答えに近づける。',
+      'crimson-moon-shift':'選択肢の位置が変わっても、数字や式そのものを見て判断しよう。',
+      'silver-mirror':'左右が入れ替わって見えても、数量関係を落ち着いて読み取ろう。',
+      'silver-spotlight':'見える選択肢が限られていても、先に自分で答えを計算してから選ぶと迷いにくい。'
+    };
+    return map[type]||'';
+  }
+  function mathAdviceForQuestion(q=currentQuestion){
+    const text=String(q?.displayExpression??q?.expression??'').replace(/<[^>]*>/g,' ');
+    if(q?.fraction||/\d+\s*\/\s*\d+/.test(text))return '分数は、足し算・引き算なら分母をそろえ、掛け算・割り算なら計算の規則を確認しよう。';
+    if(/何%|％|%|割合|割引|増え|減っ/.test(text))return '割合は「比べる量 ÷ もとにする量」。どの数を基準にするかを先に確認しよう。';
+    if(/速さ|時速|分速|秒速|道のり|km\/h|m\/分/.test(text))return '速さ・時間・道のりのうち、何を求める問題かを整理してから式を作ろう。';
+    if(/円周|円の面積|半径|直径|3\.14/.test(text))return '円では半径と直径を取り違えないことが大切。円周と面積の式も確認しよう。';
+    if(/比例|反比例/.test(text))return '比例は同じ倍率、反比例は積が一定になることを使って関係を確かめよう。';
+    if(/\d+\s*[:：]\s*\d+|同じ比|比は/.test(text))return '比は両方の数を同じ倍率で変えても関係が変わらない。簡単な比に直して考えよう。';
+    if(/cm²|m²|面積|台形|三角形|平行四辺形/.test(text))return '面積は、図形を分けるか、大きな図形から不要な部分を引くと整理しやすい。単位にも注意しよう。';
+    if(/cm³|m³|体積/.test(text))return '体積は、たて・横・高さなど必要な長さをそろえてから計算しよう。';
+    if(/km|mL|kg|cm|L|時間|分|秒/.test(text)&&/[=＝?？□]/.test(text))return '単位換算では、まず同じ単位にそろえる。100倍・1000倍などの関係を確認しよう。';
+    if(/□/.test(text))return '□を求める問題は、分かっている結果から逆向きに計算すると整理しやすい。';
+    if(/[×*]/.test(text)&&/[÷/]/.test(text)&&/[+＋\-−]/.test(text))return '混合計算では、掛け算・割り算を足し算・引き算より先に計算しよう。';
+    if(/[×*÷/]/.test(text)&&/[+＋\-−]/.test(text))return '計算の順序を確認し、掛け算・割り算を先に処理しよう。';
+    if(/[×*]/.test(text))return '掛け算は、位をそろえて途中の積を確認すると計算ミスを減らせる。';
+    if(/[÷/]/.test(text))return '割り算は「割る数×答え＋余り」で元の数に戻るか確かめると安心。';
+    if(/[+＋]/.test(text)&&/[\-−]/.test(text))return '足し算と引き算が続くときは、左から順に一段ずつ計算しよう。';
+    if(/[+＋]/.test(text))return '足し算では位をそろえ、繰り上がりがある場所を確認しよう。';
+    if(/[\-−]/.test(text))return '引き算では位をそろえ、繰り下がりが必要な場所を確認しよう。';
+    if(/並び|規則|次|□は/.test(text))return '数の並びでは、となり同士の差や倍率に同じ規則がないか確かめよう。';
+    return '問題文から「何を求めるか」を先に確認し、必要な計算を一つずつ整理しよう。';
+  }
+  function mistakeAdviceFor(q,{timeout=false}={}){
+    const special=mistakeSpecialAdvice(),math=mathAdviceForQuestion(q);
+    if(timeout){
+      const base='時間切れでも、最初に何を求める問題かを整理すると次の計算が見つけやすい。';
+      return special?`${base} ${special}`:`${base} ${math}`;
+    }
+    return special?`${special} ${math}`:math;
+  }
+  function makeMistakeRecord(value,timeout=false){
+    const q=currentQuestion||{};
+    return{
+      q:questionDisplayText(q)||String(q.expression||'問題'),
+      selected:timeout?'時間切れ':value,
+      answer:q.answer,
+      advice:mistakeAdviceFor(q,{timeout}),
+      boss:!!bossPhase,
+      world:mode,
+      stage:stageIndex
+    };
+  }
+  function renderGameOverReview(){
+    const list=els.gameOverReviewList;if(!list)return;
+    list.replaceChildren();
+    const recent=stats.errors.slice(-3);
+    if(!recent.length){
+      const empty=document.createElement('p');empty.className='game-over-review-empty';empty.textContent='振り返る問題はありません。';list.appendChild(empty);return;
+    }
+    recent.forEach((err,i)=>{
+      const item=document.createElement('article');item.className='game-over-review-item';
+      const head=document.createElement('div');head.className='game-over-review-q';
+      const no=document.createElement('span');no.textContent=`${i+1}`;
+      const q=document.createElement('strong');q.textContent=String(err.q??'問題');head.append(no,q);
+      const answers=document.createElement('div');answers.className='game-over-review-answers';
+      const selected=document.createElement('span');selected.innerHTML='<small>あなたの答え</small>';
+      const selectedValue=document.createElement('b');selectedValue.textContent=String(err.selected??'');selected.appendChild(selectedValue);
+      const correct=document.createElement('span');correct.innerHTML='<small>正解</small>';
+      const correctValue=document.createElement('b');correctValue.textContent=String(err.answer??'');correct.appendChild(correctValue);
+      answers.append(selected,correct);
+      const advice=document.createElement('p');advice.className='game-over-review-advice';
+      const label=document.createElement('strong');label.textContent='POINT';
+      advice.append(label,document.createTextNode(` ${err.advice||'問題の条件を一つずつ確認しよう。'}`));
+      item.append(head,answers,advice);list.appendChild(item);
+    });
+  }
+
   async function showGameOver(){
     gameOverActive=true;locked=true;stopTimer();resetSpecialGauge();syncPauseButton();
     if(currentBgm)try{currentBgm.pause();}catch{}
     document.body.classList.add('game-over-active');
     const fromBoss=!!bossPhase;
-    els.gameOverRetryBtn.textContent=fromBoss?'ボスから':'ステージ最初から';
-    els.gameOverMessage.textContent=fromBoss?'ボス戦の最初からやりなおしますか？':'このステージの最初からやりなおしますか？';
+    els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';
+    els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';
+    renderGameOverReview();
     els.gameOverOverlay.hidden=false;
     const card=els.gameOverOverlay.querySelector('.game-over-card');
-    if(card){card.classList.remove('show');void card.offsetWidth;card.classList.add('show');}
+    if(card){card.scrollTop=0;card.classList.remove('show');void card.offsetWidth;card.classList.add('show');}
   }
   async function retryFromGameOver(){
     if(!gameOverActive)return;
     const retryBoss=!!bossPhase;
+    const latest=stats.errors[stats.errors.length-1];
+    if(['crimson','blue','silver','midori','end'].includes(mode)&&latest?.advice){
+      pendingReviewTip={key:`review-${mode}-${stats.errors.length}`,category:'前回のポイント',text:latest.advice};
+    }
     gameOverActive=false;els.gameOverOverlay.hidden=true;document.body.classList.remove('game-over-active');
     lives=3;locked=true;clearBattleFx();clearMonsterAnnouncement();
     if(retryBoss){await restartBossCheckpoint();return;}
@@ -3912,7 +4062,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(stageQuestion>=10){await enterBossPhase();return;}
       await beginNormalEncounter();return;
     }
-    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push({q:currentQuestion.expression,selected:timeout?'時間切れ':value,answer:currentQuestion.answer});lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1200);
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1200);
     if(lives<=0){
       stats.restarts++;
       await showGameOver();
