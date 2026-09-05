@@ -36,7 +36,7 @@
   const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
   let debugFullUnlock=false;
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
-  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,endClears:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
+  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,endClears:0,whiteBestQuestions:0,whiteBestDepth:0,whiteAttempts:0,whiteTotalCorrect:0,whiteBeyondSeen:0,whiteBeyondCorrect:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
   let save=loadSave();
 
   const FRONT_STAGES=[
@@ -121,6 +121,46 @@
   }
   const END_MONSTERS=allEndMonsterEntries();
 
+  // ---------- 白の世界 ----------
+  // ストーリー終了後のENDLESS CHALLENGE。既存6世界の記憶を背景/BGM/ボスとして再構成する。
+  // 終の世界の敵・BGMは抽選対象外。通常9問 + Q10のランダムボスを1 DEPTHとする。
+  const WHITE_BACKGROUND_POOL=[
+    ...FRONT_STAGES.map(s=>s.bg),...BACK_STAGES.map(s=>s.bg),...CRIMSON_STAGES.map(s=>s.bg),CRIMSON_LAST.bg,
+    ...BLUE_STAGES.map(s=>s.bg),...SILVER_STAGES.map(s=>s.bg),...MIDORI_STAGES.map(s=>s.bg)
+  ];
+  const WHITE_NORMAL_BGM_POOL=[...new Set([
+    ...FRONT_STAGES.map(s=>s.bgm),...BACK_STAGES.map(s=>s.bgm),...CRIMSON_STAGES.map(s=>s.bgm),
+    ...BLUE_STAGES.map(s=>s.bgm),...SILVER_STAGES.map(s=>s.bgm),...MIDORI_STAGES.map(s=>s.bgm)
+  ])];
+  const WHITE_BOSS_BGM_POOL=[...new Set([
+    ...FRONT_STAGES.map(s=>s.bossBgm),...BACK_STAGES.map(s=>s.bossBgm),...CRIMSON_STAGES.map(s=>s.bossBgm),CRIMSON_LAST.bossBgm,
+    ...BLUE_STAGES.map(s=>s.bossBgm),...SILVER_STAGES.map(s=>s.bossBgm),...MIDORI_STAGES.map(s=>s.bossBgm)
+  ])];
+  function whiteBossPool(){
+    const result=[];
+    const pushWorld=(world,stages)=>stages.forEach((st,i)=>result.push({id:`white-${world}-${i+1}`,world:'white',sourceWorld:world,sourceStage:i,name:st.boss[0],img:st.boss[1],boss:true,rarity:5,originalFinal:i===stages.length-1}));
+    pushWorld('front',FRONT_STAGES);pushWorld('back',BACK_STAGES);pushWorld('crimson',CRIMSON_STAGES);pushWorld('blue',BLUE_STAGES);pushWorld('silver',SILVER_STAGES);pushWorld('midori',MIDORI_STAGES);
+    result.push({id:'white-crimson-last',world:'white',sourceWorld:'crimson',sourceStage:5,name:CRIMSON_LAST.boss[0],img:CRIMSON_LAST.boss[1],boss:true,rarity:5,originalFinal:true,lastBoss:true});
+    return result;
+  }
+  const WHITE_BOSS_POOL=whiteBossPool();
+  let whiteDepth=1,whiteQuestionInDepth=0,whiteTotalCorrect=0,whiteCurrentBg=WHITE_BACKGROUND_POOL[0],whiteCurrentNormalBgm=WHITE_NORMAL_BGM_POOL[0],whiteCurrentBossBgm=WHITE_BOSS_BGM_POOL[0],whiteBoss=null;
+  let whiteRecentBossIds=[],whiteRecentMonsterIds=[],whiteLastBg='',whiteLastNormalBgm='',whiteLastBossBgm='',whiteLastCategory='',whiteRecentTemplates=[];
+  let whiteBeyondActive=false,whiteBeyondSeenRun=0,whiteBeyondCorrectRun=0,whiteBeyondUnlockShown=false;
+  function pickNotSame(pool,last){const candidates=pool.filter(v=>v!==last);return pick(candidates.length?candidates:pool);}
+  function chooseWhiteEnvironment(){
+    whiteCurrentBg=pickNotSame(WHITE_BACKGROUND_POOL,whiteLastBg);whiteLastBg=whiteCurrentBg;
+    whiteCurrentNormalBgm=pickNotSame(WHITE_NORMAL_BGM_POOL,whiteLastNormalBgm);whiteLastNormalBgm=whiteCurrentNormalBgm;
+    whiteCurrentBossBgm=pickNotSame(WHITE_BOSS_BGM_POOL,whiteLastBossBgm);whiteLastBossBgm=whiteCurrentBossBgm;
+  }
+  function chooseWhiteBoss(){
+    let pool=WHITE_BOSS_POOL.filter(b=>!whiteRecentBossIds.includes(b.id));if(!pool.length)pool=WHITE_BOSS_POOL;
+    whiteBoss={...pick(pool)};whiteRecentBossIds.push(whiteBoss.id);if(whiteRecentBossIds.length>3)whiteRecentBossIds.shift();return whiteBoss;
+  }
+  function whiteCurrentStage(){return{name:`DEPTH ${whiteDepth}`,key:`white-${whiteDepth}`,count:10,normalCount:9,bossCount:1,bgm:whiteCurrentNormalBgm,bossBgm:whiteCurrentBossBgm,bg:whiteCurrentBg,boss:[whiteBoss?.name||'MEMORY BOSS',whiteBoss?.img||FRONT_STAGES[0].boss[1]]};}
+  function whiteQuestionTime(depth=whiteDepth){if(depth<=2)return 60;if(depth===3)return 55;if(depth<=5)return 50;return 45;}
+  function whiteBeyondRate(){if(whiteTotalCorrect<=50)return 0;if(whiteTotalCorrect<=70)return .05;if(whiteTotalCorrect<=90)return .10;return .15;}
+
   const FRONT_MONSTER_NAMES=[
     [['ぷるるスライム',1],['きのこぞう',1],['リーフラット',2],['モリバット',2],['フラワーフェアリー',3],['白銀オオカミ',4],['虹羽ユニコーン',5]],
     [['いわムシ',1],['ケイブスライム',1],['クリスタルバット',2],['いわゴーレム',2],['宝石ミミック',3],['水晶騎士',4],['地底竜クリスタロス',5]],
@@ -175,6 +215,24 @@
   const BLUE_MONSTERS=buildMonsterCatalog(BLUE_MONSTER_NAMES,'blue');
   const SILVER_MONSTERS=buildMonsterCatalog(SILVER_MONSTER_NAMES,'silver');
   const MIDORI_MONSTERS=buildMonsterCatalog(MIDORI_MONSTER_NAMES,'midori');
+  const WHITE_NORMAL_SOURCE_CATALOGS={
+    front:FRONT_MONSTERS,back:BACK_MONSTERS,crimson:CRIMSON_MONSTERS,
+    blue:BLUE_MONSTERS,silver:SILVER_MONSTERS,midori:MIDORI_MONSTERS
+  };
+  function chooseWhiteNormalMonster(rng=Math.random){
+    const worlds=Object.keys(WHITE_NORMAL_SOURCE_CATALOGS);
+    const sourceWorld=worlds[Math.floor(rng()*worlds.length)]||'front';
+    const catalog=WHITE_NORMAL_SOURCE_CATALOGS[sourceWorld]||FRONT_MONSTERS;
+    const rarity=rarityRoll(rng());
+    let pool=catalog.filter(m=>m.rarity===rarity&&!whiteRecentMonsterIds.includes(m.id));
+    if(!pool.length)pool=catalog.filter(m=>m.rarity===rarity);
+    if(!pool.length)pool=catalog.filter(m=>!whiteRecentMonsterIds.includes(m.id));
+    if(!pool.length)pool=catalog;
+    const base=pool[Math.floor(rng()*pool.length)]||catalog[0];
+    whiteRecentMonsterIds.push(base.id);
+    if(whiteRecentMonsterIds.length>5)whiteRecentMonsterIds.shift();
+    return{...base,id:`white-memory-${base.id}`,world:'white',sourceWorld,sourceMonsterId:base.id,whiteMemoryMonster:true};
+  }
   const RARITY_WEIGHTS=[[1,.50],[2,.30],[3,.15],[4,.04],[5,.01]];
 
 
@@ -305,6 +363,12 @@
       merged.worldUnlockNotified=Array.isArray(raw.worldUnlockNotified)?raw.worldUnlockNotified:[];
       merged.worldUnlockNew=Array.isArray(raw.worldUnlockNew)?raw.worldUnlockNew:[];
       merged.worldUnlockVersion=Math.max(0,Number(raw.worldUnlockVersion)||0);
+      merged.whiteBestQuestions=Math.max(0,Number(raw.whiteBestQuestions)||0);
+      merged.whiteBestDepth=Math.max(0,Number(raw.whiteBestDepth)||0);
+      merged.whiteAttempts=Math.max(0,Number(raw.whiteAttempts)||0);
+      merged.whiteTotalCorrect=Math.max(0,Number(raw.whiteTotalCorrect)||0);
+      merged.whiteBeyondSeen=Math.max(0,Number(raw.whiteBeyondSeen)||0);
+      merged.whiteBeyondCorrect=Math.max(0,Number(raw.whiteBeyondCorrect)||0);
       inferMusicUnlocksFromSave(merged);
       return merged;
     }catch{const fallback={...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};inferMusicUnlocksFromSave(fallback);return fallback;}
@@ -419,14 +483,15 @@ const SECRET_RELICS=[
   {id:'end_book_graduation',name:'卒業証書',icon:'📜',flavor:'終の世界に現れるすべての強敵と出会い、時空河の図鑑を完成させた証。',notice:'終の世界のモンスター図鑑を完成させた証。'}
 ];
 const SECRET_RELIC_VERSION=6;
-const WORLD_UNLOCK_VERSION=5;
+const WORLD_UNLOCK_VERSION=6;
 const WORLD_UNLOCKS=[
   {world:'back',sourceId:'item-100',sourceName:'時空の鍵',name:'裏の世界',desc:'時空の裂け目に広がる、もうひとつの世界'},
   {world:'crimson',sourceId:'common_master',sourceName:'妖刀マサムネ',name:'紅の世界',desc:'妖怪と剣客が息づく、晩秋に染まった世界'},
   {world:'blue',sourceIds:['front_sr_master','world3_sr_master'],sourceName:'蒼穹の縁結びと黄泉の供物',name:'蒼の世界',desc:'ひと夏の記憶をたどる、蒼い夏の世界'},
   {world:'silver',sourceIds:['uncommon_master','front_ssr_master'],sourceName:'白銀の首輪と時空羅針盤',name:'銀の世界',desc:'永遠の雪と静寂に閉ざされた、白銀の世界'},
   {world:'midori',sourceIds:['back_sr_master','world4_sr_master','blue_sr_master'],sourceName:'クリプティック・コード、未来の結晶、鋼の黙示録',name:'翠の世界',desc:'島々と大船団を越えて進む、翠の海の世界'},
-  {world:'end',sourceIds:['rare_master','back_ssr_master','world3_ssr_master','midori_sr_arcenciel'],sourceName:'オブシディアンコア、旅立ちを祝すハルシオン、黒曜城、アルカンシェル',name:'終の世界',desc:'すべての支流が再び集まる、時空河の根源'}
+  {world:'end',sourceIds:['rare_master','back_ssr_master','world3_ssr_master','midori_sr_arcenciel'],sourceName:'オブシディアンコア、旅立ちを祝すハルシオン、黒曜城、アルカンシェル',name:'終の世界',desc:'すべての支流が再び集まる、時空河の根源'},
+  {world:'white',sourceIds:['world4_ssr_master','blue_ssr_master','midori_ssr_singularity','end_clear_broken_sword'],sourceName:'コランダムギア、トータルイクリプス、特異点座標、折れた聖剣',name:'白の世界',desc:'物語のその先で、自分の限界へ挑み続ける白い試練'}
 ];
 const secretRelicById=id=>SECRET_RELICS.find(r=>r.id===id);
 function hasSecretRelic(id){return debugFullUnlock||!!save.secretRelics?.includes(id);}
@@ -439,6 +504,7 @@ function isWorldActuallyUnlocked(world){
   if(world==='silver')return !!save.secretRelics?.includes('uncommon_master')&&!!save.secretRelics?.includes('front_ssr_master');
   if(world==='midori')return !!save.secretRelics?.includes('back_sr_master')&&!!save.secretRelics?.includes('world4_sr_master')&&!!save.secretRelics?.includes('blue_sr_master');
   if(world==='end')return ['rare_master','back_ssr_master','world3_ssr_master','midori_sr_arcenciel'].every(id=>!!save.secretRelics?.includes(id));
+  if(world==='white')return ['world4_ssr_master','blue_ssr_master','midori_ssr_singularity','end_clear_broken_sword'].every(id=>!!save.secretRelics?.includes(id));
   return false;
 }
 function worldUnlockByKey(world){return WORLD_UNLOCKS.find(w=>w.world===world);}
@@ -498,7 +564,7 @@ function initializeWorldUnlockState(){
     // a strengthened requirement (notably Silver v2) must be allowed to notify again
     // after the missing relic is obtained. Existing genuinely-unlocked worlds remain silent.
     save.worldUnlockNotified=save.worldUnlockNotified.filter(world=>isWorldActuallyUnlocked(world));
-    for(const w of WORLD_UNLOCKS)if(!['blue','midori','end'].includes(w.world)&&isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
+    for(const w of WORLD_UNLOCKS)if(!['blue','midori','end','white'].includes(w.world)&&isWorldActuallyUnlocked(w.world)&&!save.worldUnlockNotified.includes(w.world))save.worldUnlockNotified.push(w.world);
     save.worldUnlockNew=save.worldUnlockNew.filter(world=>isWorldActuallyUnlocked(world));
     save.worldUnlockVersion=WORLD_UNLOCK_VERSION;
     persistQuietly();
@@ -569,22 +635,28 @@ function markWorldVisited(world){
   function renderTitle(){
     document.body.dataset.mode=mode;
     els.titleGold.textContent=`${effectiveGold()} G`;
-    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':'終の世界';
+    els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':mode==='end'?'終の世界':'白の世界';
     els.titleTrackName.textContent=titleTrackLabel();
-    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':mode==='midori'?'小学4年生以降・思考問題':'既習算数を統合した発展問題';
+    if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':mode==='midori'?'小学4年生以降・思考問題':mode==='end'?'既習算数を統合した発展問題':'小学校算数・ENDLESS CHALLENGE';
     const longRun=mode==='crimson'||mode==='end';
-    if(els.titleQuestionCount)els.titleQuestionCount.textContent=longRun?'80':'75';
-    const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':mode==='end'?'5領域＋FINAL':'全5ステージ';
-    const restartTotal=longRun?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
+    if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='white'?'∞':longRun?'80':'75';
+    const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':mode==='end'?'5領域＋FINAL':mode==='white'?'10問ごとにDEPTH':'全5ステージ';
+    const restartTotal=mode==='white'?'∞':longRun?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
+    const ruleCells=[...document.querySelectorAll('.rule-grid>div')];
+    if(ruleCells.length>=4){
+      const t=ruleCells[0].querySelector('strong'),ts=ruleCells[0].querySelector('small'),life=ruleCells[2].querySelector('small');
+      if(t)t.textContent=mode==='white'?'60→45':'60';if(ts)ts.textContent=mode==='white'?'DEPTHで変化':'1もんの制限時間';if(life)life.textContent=mode==='white'?'回復なし':'3ミスでステージ再挑戦';
+    }
     if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;if(els.musicBtn)els.musicBtn.hidden=false;
-    els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
+    els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;els.shopBtn.hidden=false;els.collectionBtn.hidden=false;els.monsterBookBtn.hidden=false;if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
     if(mode==='front'){els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
     else if(mode==='back'){els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='BACK WORLD / ANOTHER QUEST';els.titleSubtitle.innerHTML='裏の世界を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');}
     else if(mode==='crimson'){els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
     else if(mode==='blue'){els.titleHero.src='./assets/blue_hero.png';els.titleEyebrow.textContent='BLUE SUMMER / FOURTH QUEST';els.titleSubtitle.innerHTML='青空の下、少年はひと夏の冒険へ。<br>ミステリーが潜む夏の終わりへ進んでいく。';setMenuButton(els.playBtn,'☀','蒼の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
     else if(mode==='silver'){els.titleHero.src='./assets/silver_hero.png';els.titleEyebrow.textContent='SILVER SNOW / FIFTH QUEST';els.titleSubtitle.innerHTML='永遠の雪に閉ざされた世界。<br>五つの地を越え、世界の果てで自由をつかめ。';setMenuButton(els.playBtn,'❄','銀の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
     else if(mode==='midori'){els.titleHero.src='./assets/midori_hero_pirate_captain.png';els.titleEyebrow.textContent='EMERALD SEAS / SIXTH QUEST';els.titleSubtitle.innerHTML='島々を巡り、航路を切りひらけ。<br>知恵と判断で、翠の海の最深部へ。';setMenuButton(els.playBtn,'⚓','翠の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
-    else{els.titleHero.src='./assets/end_title_party.png';els.titleEyebrow.textContent='TIME RIVER / SEVENTH QUEST';els.titleSubtitle.innerHTML='枝分かれした世界が、時空河へ還っていく。<br>過去の強敵を越え、すべての支流の最深部へ。';setMenuButton(els.playBtn,'∞','終の世界へ');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else if(mode==='end'){els.titleHero.src='./assets/end_title_party.png';els.titleEyebrow.textContent='TIME RIVER / SEVENTH QUEST';els.titleSubtitle.innerHTML='枝分かれした世界が、時空河へ還っていく。<br>過去の強敵を越え、すべての支流の最深部へ。';setMenuButton(els.playBtn,'∞','終の世界へ');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
+    else{els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='WHITE LIMIT / ENDLESS CHALLENGE';els.titleSubtitle.innerHTML='物語は終わった。ここから先は、自分自身への挑戦。<br>ライフが尽きるまで、算数を解き続けよう。';setMenuButton(els.playBtn,'◇','白の世界へ');els.shopBtn.hidden=true;setMenuButton(els.collectionBtn,'✦','コレクション');els.monsterBookBtn.hidden=true;}
     if(els.worldWarpBtn){setMenuButton(els.worldWarpBtn,'∞','世界を渡る');els.worldWarpBtn.classList.toggle('has-new-world',hasNewWorldWaiting());els.worldWarpBtn.setAttribute('aria-label',hasNewWorldWaiting()?'世界を渡る・新しい世界があります':'世界を渡る');}
   }
 
@@ -600,7 +672,7 @@ function markWorldVisited(world){
       {key:'silver',name:'銀の世界',short:'銀',desc:'永遠の雪と静寂に閉ざされた、白銀の世界',image:'silver_stage1.png',unlocked:isSilverWorldUnlocked()},
       {key:'midori',name:'翠の世界',short:'翠',desc:'島々と大船団を越えて進む、翠の海の世界',image:'midori_stage1_departure_port.png',unlocked:isMidoriWorldUnlocked()},
       {key:'end',name:'終の世界',short:'終',desc:'すべての支流が再び集まる、時空河の根源',image:'bg_boss.png',unlocked:isEndWorldUnlocked()},
-      {key:'white',name:'白の世界',short:'白',desc:'まだ見ぬ次の世界',image:'bg_boss.png',unlocked:false}
+      {key:'white',name:'白の世界',short:'白',desc:'物語のその先で、自分の限界へ挑み続ける白い試練',image:'bg_forest.png',unlocked:isWorldActuallyUnlocked('white')}
     ];
     let selectedIndex=Math.max(0,worlds.findIndex(w=>w.key===mode));
     els.worldWarpList.innerHTML=`
@@ -1043,13 +1115,14 @@ function markWorldVisited(world){
   function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
 
 
-  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:mode==='silver'?SILVER_STAGES:mode==='midori'?MIDORI_STAGES:buildEndStages();}
+  function getStages(){return mode==='front'?FRONT_STAGES:mode==='back'?BACK_STAGES:mode==='crimson'?CRIMSON_STAGES:mode==='blue'?BLUE_STAGES:mode==='silver'?SILVER_STAGES:mode==='midori'?MIDORI_STAGES:mode==='end'?buildEndStages():[whiteCurrentStage()];}
   function stageStartTotal(idx){return getStages().slice(0,idx).reduce((a,s)=>a+s.count,0);}
   function resetRun(){
     clearEndSpecialEffects();
     stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
-    document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent');
+    if(mode==='white'){whiteDepth=1;whiteQuestionInDepth=0;whiteTotalCorrect=0;whiteBoss=null;whiteRecentBossIds=[];whiteRecentMonsterIds=[];whiteLastCategory='';whiteRecentTemplates=[];whiteBeyondActive=false;whiteBeyondSeenRun=0;whiteBeyondCorrectRun=0;whiteBeyondUnlockShown=false;chooseWhiteEnvironment();}
+    document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent','white-challenge-active','white-beyond-active');
     if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};pendingReviewTip=null;const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();
   }
 
@@ -1066,7 +1139,7 @@ function markWorldVisited(world){
     const rarity=rarityRoll(rng());let pool=unlockedMonsters(rarity);if(!pool.length)pool=getMonsterCatalog().filter(m=>m.stage<=stageIndex);const unowned=pool.filter(m=>!isMonsterSeen(mode,m.id));const source=unowned.length&&rng()<.58?unowned:pool;return source[Math.floor(rng()*source.length)]||pool[0];
   }
   function registerMonster(monster){
-    if(!monster||debugFullUnlock)return;
+    if(!monster||debugFullUnlock||mode==='white')return;
     const list=save.monsterBook[mode];if(!list.includes(monster.id))list.push(monster.id);
     const counts=save.monsterEncounters[mode];counts[monster.id]=(counts[monster.id]||0)+1;persist();syncSecretRelics();
   }
@@ -1108,12 +1181,13 @@ function markWorldVisited(world){
     const show=!forceHide&&bossPhase&&!els.gameScreen.hidden;
     els.bossHpHud.hidden=!show;
     if(!show)return;
-    const remaining=Math.max(0,Math.min(5,5-bossQuestion));
-    const pct=remaining/5*100;
+    const totalHp=mode==='white'?1:5;
+    const remaining=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));
+    const pct=remaining/totalHp*100;
     els.bossHpFill.style.width=`${pct}%`;
     els.bossHpHud.classList.toggle('critical',remaining===1);
     els.bossHpHud.classList.toggle('empty',remaining===0);
-    els.bossHpHud.setAttribute('aria-label',`ボスHP ${remaining} / 5`);
+    els.bossHpHud.setAttribute('aria-label',`ボスHP ${remaining} / ${totalHp}`);
   }
   function monsterPlaceholder(monster,boss=false){
     const palette=boss?['#180008','#7e0923','#ff355f']:monster.rarity===5?['#1a0934','#ffbf27','#f44dff']:monster.rarity===4?['#180d32','#914cff','#6eeaff']:monster.rarity===3?['#10264b','#d9b64b','#fff1a6']:monster.rarity===2?['#09243b','#45bfff','#ddfaff']:['#20252c','#cfd7e0','#ffffff'];
@@ -1123,6 +1197,7 @@ function markWorldVisited(world){
     return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
   }
   function currentBoss(){
+    if(mode==='white')return whiteBoss||chooseWhiteBoss();
     if(mode==='end'){
       if(endFinalPhase)return{id:'boss-end-final',world:'end',sourceWorld:'front',stage:5,rarity:5,name:'ゆうしゃ',english:END_FINAL.bossEnglish||'THE HERO',img:END_FINAL.boss[1],boss:true,lastBoss:true,endFinalBoss:true};
       const source=currentEndSource(),c=END_REGION_CONFIG[source],[name,img]=currentStage().boss;return{id:`boss-end-${source}`,world:'end',sourceWorld:source,stage:stageIndex,rarity:5,name,img,baseName:c?.baseBossName||name,english:c?.bossEnglish||'',boss:true,endRegionBoss:true};
@@ -1847,7 +1922,241 @@ function markWorldVisited(world){
     return{expression:'まちがっているものは？',answer,choices:['A','B','C'],visualType:'mimesis-final',mimesisRows:rows,showPi:rows.some(r=>r.label==='円')};
   }
 
-  function currentStage(){if(mode==='end'&&endFinalPhase)return END_FINAL;return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
+
+  const WHITE_CATEGORY_INFO={
+    arithmetic:{group:'calc',label:'四則総合',advice:'計算の順序と途中の値を一つずつ確認しよう。'},
+    decimal:{group:'calc',label:'小数',advice:'小数点の位置をそろえ、何倍・何分の一になったか確認しよう。'},
+    fraction:{group:'calc',label:'分数',advice:'分母が違うときは通分し、約分できるか最後に確認しよう。'},
+    divisor:{group:'quantity',label:'倍数・約数',advice:'倍数と約数のどちらを探しているか、条件を先に整理しよう。'},
+    percent:{group:'quantity',label:'割合',advice:'「もとにする量」「比べる量」「割合」のどれを求めるか確認しよう。'},
+    ratio:{group:'quantity',label:'比',advice:'比の両方を同じ倍率で変えることを意識しよう。'},
+    speed:{group:'quantity',label:'速さ',advice:'速さ・時間・道のりのどれを求めるか確認し、時間の単位もそろえよう。'},
+    geometry:{group:'visual',label:'図形',advice:'半径と直径、面積と周りの長さなど、求める量を取り違えないようにしよう。'},
+    units:{group:'visual',label:'単位・縮尺',advice:'計算する前に単位をそろえよう。縮尺では地図上と実際の長さを区別しよう。'},
+    data:{group:'visual',label:'データ',advice:'平均は「合計÷個数」。欠けた値は先に必要な合計を求めよう。'},
+    pattern:{group:'think',label:'規則・場合の数',advice:'並び方の規則を見つけ、同じ数え方を重複していないか確認しよう。'},
+    logic:{group:'think',label:'条件整理',advice:'条件を一つずつ使い、当てはまらない候補を消していこう。'}
+  };
+  const WHITE_CATEGORIES=Object.keys(WHITE_CATEGORY_INFO);
+  function whiteLevel(depth=whiteDepth,boss=false){
+    const r=Math.random();let level;
+    if(depth<=1)level=r<.8?'basic':'standard';
+    else if(depth===2)level=r<.35?'basic':r<.90?'standard':'mixed';
+    else if(depth===3)level=r<.10?'basic':r<.60?'standard':'mixed';
+    else if(depth===4)level=r<.30?'standard':r<.85?'mixed':'master';
+    else if(depth===5)level=r<.10?'standard':r<.65?'mixed':'master';
+    else if(depth===6)level=r<.45?'mixed':'master';
+    else if(depth===7)level=r<.30?'mixed':'master';
+    else level=r<(depth===8?.20:.15)?'mixed':'master';
+    if(boss){const order=['basic','standard','mixed','master'];level=order[Math.min(3,order.indexOf(level)+1)];}
+    return level;
+  }
+  function whiteCategory(depth=whiteDepth){
+    const weights=depth<=2?{calc:35,quantity:30,visual:25,think:10}:depth<=4?{calc:25,quantity:35,visual:25,think:15}:depth<=6?{calc:20,quantity:35,visual:25,think:20}:{calc:20,quantity:30,visual:25,think:25};
+    const groupPick=()=>{let r=Math.random()*100;for(const g of ['calc','quantity','visual','think']){r-=weights[g];if(r<=0)return g;}return'think';};
+    for(let i=0;i<12;i++){const g=groupPick(),pool=WHITE_CATEGORIES.filter(c=>WHITE_CATEGORY_INFO[c].group===g&&c!==whiteLastCategory);if(pool.length){const c=pick(pool);whiteLastCategory=c;return c;}}
+    const c=pick(WHITE_CATEGORIES.filter(x=>x!==whiteLastCategory));whiteLastCategory=c;return c;
+  }
+  function whiteChoices(answer,wrongs=[]){
+    const vals=[];const add=v=>{if(v===undefined||v===null)return;const key=String(v);if(key!==String(answer)&&!vals.some(x=>String(x)===key))vals.push(v);};wrongs.forEach(add);
+    if(typeof answer==='number'){
+      const delta=Math.max(1,Math.round(Math.abs(answer)*.1));[answer+1,answer-1,answer+delta,Math.max(0,answer-delta),answer*2,answer/2].forEach(v=>add(Number.isInteger(answer)?Math.round(v):normalizeChoiceNumber(v)));
+    }
+    if(typeof answer==='string'&&answer.includes('/'))makeFractionChoices(answer).forEach(add);
+    while(vals.length<2)add(typeof answer==='number'?answer+vals.length+2:`${answer}?${vals.length+1}`);
+    return shuffle([answer,...vals.slice(0,2)]);
+  }
+  function whiteQuestion(expression,answer,wrongs,meta={}){return{expression,answer,choices:whiteChoices(answer,wrongs),...meta};}
+  function wfrac(n,d){const g=gcd(Math.abs(n),Math.abs(d));n/=g;d/=g;return d===1?n:`${n}/${d}`;}
+  function whiteArithmetic(level){
+    const t=pick(level==='basic'?['add','sub','mul']:level==='standard'?['div','order','reverse']:level==='mixed'?['order2','reverse2','three']:['order3','reverse3','multi']);
+    if(t==='add'){const a=rand(18,96),b=rand(7,68),ans=a+b;return whiteQuestion(`${a}+${b}`,ans,[a-b,ans-10],{templateId:'arith-add'});}
+    if(t==='sub'){const a=rand(45,160),b=rand(8,a-5),ans=a-b;return whiteQuestion(`${a}−${b}`,ans,[a+b,ans+10],{templateId:'arith-sub'});}
+    if(t==='mul'){const a=rand(3,12),b=rand(3,12),ans=a*b;return whiteQuestion(`${a}×${b}`,ans,[a+b,(a-1)*b],{templateId:'arith-mul'});}
+    if(t==='div'){const b=rand(3,12),q=rand(4,18),a=b*q;return whiteQuestion(`${a}÷${b}`,q,[b,a-b],{templateId:'arith-div'});}
+    if(t==='order'){const a=rand(8,20),b=rand(2,8),c=rand(2,9),ans=a+b*c;return whiteQuestion(`${a}+${b}×${c}`,ans,[(a+b)*c,a+b+c],{templateId:'arith-order'});}
+    if(t==='reverse'){const x=rand(12,45),a=rand(6,20),sum=x+a;return whiteQuestion(`□+${a}=${sum}　□は？`,x,[sum+a,sum-a-1],{templateId:'arith-reverse'});}
+    if(t==='order2'){const a=rand(40,90),b=rand(2,7),c=rand(4,12),ans=a-b*c;return whiteQuestion(`${a}−${b}×${c}`,ans,[(a-b)*c,a-b-c],{templateId:'arith-order2'});}
+    if(t==='reverse2'){const x=rand(8,30),m=rand(2,6),add=rand(4,18),total=x*m+add;return whiteQuestion(`□×${m}+${add}=${total}　□は？`,x,[(total-add),Math.floor(total/m)],{templateId:'arith-reverse2'});}
+    if(t==='three'){const a=rand(15,45),b=rand(6,20),c=rand(4,16),ans=a+b-c;return whiteQuestion(`${a}+${b}−${c}`,ans,[a+b+c,a-b+c],{templateId:'arith-three'});}
+    if(t==='order3'){const a=rand(3,9),b=rand(12,36),c=rand(2,6),d=rand(5,20),ans=a*(b/c)+d;return whiteQuestion(`${a}×(${b}÷${c})+${d}`,ans,[a*b/c-d,(a*b)/(c+d)],{templateId:'arith-order3'});}
+    if(t==='reverse3'){const x=rand(10,40),m=rand(2,5),sub=rand(5,20),total=x*m-sub;return whiteQuestion(`${m}×□−${sub}=${total}　□は？`,x,[(total+sub)/m+1,total/m],{templateId:'arith-reverse3'});}
+    const a=rand(120,360),b=rand(2,6),c=rand(15,60),ans=a/b+c;return whiteQuestion(`${a}÷${b}+${c}`,ans,[a/(b+c),a/b-c],{templateId:'arith-multi'});
+  }
+  function whiteDecimal(level){
+    const t=pick(level==='basic'?['add','sub']:level==='standard'?['mul','div','unit']:level==='mixed'?['multi','unit2','reverse']:['multi2','percentBridge','reverse2']);
+    if(t==='add'){const a=rand(12,95)/10,b=rand(11,89)/10,ans=normalizeChoiceNumber(a+b);return whiteQuestion(`${a}+${b}`,ans,[normalizeChoiceNumber(ans+.1),normalizeChoiceNumber(a+b*10)],{templateId:'dec-add'});}
+    if(t==='sub'){const b=rand(11,49)/10,a=normalizeChoiceNumber(b+rand(12,70)/10),ans=normalizeChoiceNumber(a-b);return whiteQuestion(`${a}−${b}`,ans,[normalizeChoiceNumber(ans+.1),normalizeChoiceNumber(a+b)],{templateId:'dec-sub'});}
+    if(t==='mul'){const a=rand(12,75)/10,b=pick([.2,.4,.5,.8,1.2,1.5]),ans=normalizeChoiceNumber(a*b);return whiteQuestion(`${a}×${b}`,ans,[normalizeChoiceNumber(ans*10),normalizeChoiceNumber(ans/10)],{templateId:'dec-mul'});}
+    if(t==='div'){const d=pick([.2,.4,.5,.8,1.2,1.5]),q=pick([2,3,4,5,6,8,10]),a=normalizeChoiceNumber(d*q);return whiteQuestion(`${a}÷${d}`,q,[normalizeChoiceNumber(q/10),q*10],{templateId:'dec-div'});}
+    if(t==='unit'){const l=rand(12,48)/10,used=rand(2,9)/10,ans=Math.round((l-used)*1000);return whiteQuestion(`${l}Lから${used}L使った。残りは何mL？`,ans,[Math.round((l+used)*1000),normalizeChoiceNumber(l-used)],{templateId:'dec-unit'});}
+    if(t==='multi'){const a=rand(12,48)/10,b=rand(11,39)/10,c=pick([.5,1.5,2.5]),ans=normalizeChoiceNumber((a+b)*c);return whiteQuestion(`(${a}+${b})×${c}`,ans,[normalizeChoiceNumber(a+b*c),normalizeChoiceNumber((a+b)/c)],{templateId:'dec-multi'});}
+    if(t==='unit2'){const km=rand(12,48)/10,m=rand(150,950),ans=Math.round(km*1000-m);return whiteQuestion(`${km}kmの道を${m}m進んだ。残りは何m？`,ans,[Math.round(km*1000+m),Math.round(km*100-m)],{templateId:'dec-unit2'});}
+    if(t==='reverse'){const x=rand(12,65)/10,a=rand(11,45)/10,total=normalizeChoiceNumber(x+a);return whiteQuestion(`□+${a}=${total}　□は？`,x,[normalizeChoiceNumber(total+a),normalizeChoiceNumber(x+.1)],{templateId:'dec-reverse'});}
+    if(t==='multi2'){const a=rand(12,55)/10,b=pick([.25,.5,.75,1.25]),c=rand(10,40)/10,ans=normalizeChoiceNumber(a*b+c);return whiteQuestion(`${a}×${b}+${c}`,ans,[normalizeChoiceNumber((a+c)*b),normalizeChoiceNumber(a*(b+c))],{templateId:'dec-multi2'});}
+    if(t==='percentBridge'){const l=pick([1.2,1.5,1.8,2.4,2.5]),p=pick([20,25,40,50,60,75]),ans=Math.round(l*1000*p/100);return whiteQuestion(`${l}Lの${p}%は何mL？`,ans,[Math.round(l*1000-p),Math.round(l*10*p)],{templateId:'dec-percent-bridge'});}
+    const x=rand(12,45)/10,m=pick([1.5,2.5,4]),add=rand(5,25)/10,total=normalizeChoiceNumber(x*m+add);return whiteQuestion(`□×${m}+${add}=${total}　□は？`,x,[normalizeChoiceNumber(total/m),normalizeChoiceNumber((total-add)/m+.1)],{templateId:'dec-reverse2'});
+  }
+  function whiteFraction(level){
+    const t=pick(level==='basic'?['same','amount']:level==='standard'?['unlike','amount','compare']:level==='mixed'?['unlike2','remain','ratioBridge']:['combo','reverse','percentBridge']);
+    if(t==='same'){const d=pick([5,6,7,8,9,10]),a=rand(1,d-2),b=rand(1,d-a-1),ans=wfrac(a+b,d);return whiteQuestion(`${a}/${d}+${b}/${d}`,ans,[`${a+b}/${d+1}`,wfrac(Math.abs(a-b)||1,d)],{templateId:'frac-same'});}
+    if(t==='amount'){const d=pick([3,4,5,6,8]),n=rand(1,d-1),unit=pick([24,30,36,40,48,60,72]),base=unit-(unit%d),ans=base*n/d;return whiteQuestion(`${base}の${n}/${d}は？`,ans,[base/d,base*n],{templateId:'frac-amount'});}
+    if(t==='unlike'){const d1=pick([2,3,4,5,6]),d2=pick([3,4,5,6,8,10]);if(d1===d2)return whiteFraction(level);const n1=1,n2=1,ans=wfrac(n1*d2+n2*d1,d1*d2);return whiteQuestion(`1/${d1}+1/${d2}`,ans,[`2/${d1+d2}`,wfrac(Math.abs(d2-d1),d1*d2)],{templateId:'frac-unlike'});}
+    if(t==='compare'){const a=pick(['2/3','3/4','4/5']),b=pick(['5/8','7/10','5/6']);const [an,ad]=a.split('/').map(Number),[bn,bd]=b.split('/').map(Number),ans=an/ad>bn/bd?a:b;return{expression:`${a} と ${b}。大きい方は？`,answer:ans,choices:shuffle([a,b,'同じ']),templateId:'frac-compare'};}
+    if(t==='unlike2'){const a=pick([[2,3],[3,4],[5,6]]),b=pick([[1,4],[2,5],[3,8]]),ans=wfrac(a[0]*b[1]-b[0]*a[1],a[1]*b[1]);if(String(ans).startsWith('-')||ans===0)return whiteFraction(level);return whiteQuestion(`${a[0]}/${a[1]}−${b[0]}/${b[1]}`,ans,[wfrac(a[0]-b[0],a[1]+b[1]),wfrac(a[0]*b[1]+b[0]*a[1],a[1]*b[1])],{templateId:'frac-unlike2'});}
+    if(t==='remain'){const total=pick([48,60,72,80,96]),f=pick([[3,8],[5,12],[2,5],[3,4]]),used=total*f[0]/f[1];if(!Number.isInteger(used))return whiteFraction(level);return whiteQuestion(`${total}個の${f[0]}/${f[1]}を使った。残りは？`,total-used,[used,total*f[1]/f[0]],{templateId:'frac-remain'});}
+    if(t==='ratioBridge'){const total=pick([60,72,84,96]),f=pick([[2,3],[3,4],[5,6]]),ans=total*f[0]/f[1];if(!Number.isInteger(ans))return whiteFraction(level);return whiteQuestion(`全体${total}のうち${f[0]}/${f[1]}。その個数は？`,ans,[total-ans,total/f[1]],{templateId:'frac-ratio-bridge'});}
+    if(t==='combo'){const d=pick([6,8,10,12]),a=rand(1,2),b=rand(1,2),c=1;const ans=wfrac(a+b-c,d);return whiteQuestion(`${a}/${d}+${b}/${d}−${c}/${d}`,ans,[wfrac(a+b+c,d),wfrac(Math.abs(a-b)+c,d)],{templateId:'frac-combo'});}
+    if(t==='reverse'){const d=pick([3,4,5,6,8]),n=rand(1,d-1),ans=pick([24,30,36,40,48,60,72]),part=ans*n/d;if(!Number.isInteger(part))return whiteFraction(level);return whiteQuestion(`ある数の${n}/${d}が${part}。ある数は？`,ans,[part*d,part/n],{templateId:'frac-reverse'});}
+    if(t==='percentBridge'){const f=pick([[1,4,25],[1,2,50],[3,4,75],[1,5,20],[2,5,40]]);return whiteQuestion(`${f[0]}/${f[1]}を百分率で表すと？`,`${f[2]}%`,[`${f[2]/10}%`,`${100-f[2]}%`],{templateId:'frac-percent-bridge'});}
+    const d=pick([6,8,10,12]),a=rand(1,Math.max(1,d/2-1)),b=rand(1,Math.max(1,d/2-1)),c=rand(1,Math.max(1,d-a-b));const ans=wfrac(a+b-c,d);if(String(ans).startsWith('-')||ans===0)return whiteFraction(level);return whiteQuestion(`${a}/${d}+${b}/${d}−${c}/${d}`,ans,[wfrac(a+b+c,d),wfrac(a-b+c,d)],{templateId:'frac-combo'});
+  }
+  function whiteDivisor(level){
+    const t=pick(level==='basic'?['factor','multiple']:level==='standard'?['gcd','lcm','count']:level==='mixed'?['cycle','divide','condition']:['cycle2','packing','condition2']);
+    const G=(a,b)=>gcd(a,b),L=(a,b)=>a*b/G(a,b);
+    if(t==='factor'){const n=pick([18,20,24,28,30,36,40,42]),f=[];for(let i=1;i<=n;i++)if(n%i===0)f.push(i);const ans=f.length;return whiteQuestion(`${n}の約数は全部で何個？`,ans,[ans-1,ans+2],{templateId:'div-factor'});}
+    if(t==='multiple'){const n=pick([4,6,8,9,12]),k=rand(5,12),ans=n*k;return whiteQuestion(`${n}の${k}番目の倍数は？`,ans,[n*(k-1),n+k],{templateId:'div-multiple'});}
+    if(t==='gcd'){const a=pick([18,24,30,36,42,48]),b=pick([24,30,36,54,60,72]),ans=G(a,b);return whiteQuestion(`${a}と${b}の最大公約数は？`,ans,[Math.min(a,b),G(a,b)+1],{templateId:'div-gcd'});}
+    if(t==='lcm'){const a=pick([4,6,8,9,10,12]),b=pick([6,8,12,15,18]),ans=L(a,b);return whiteQuestion(`${a}と${b}の最小公倍数は？`,ans,[a*b,G(a,b)],{templateId:'div-lcm'});}
+    if(t==='count'){const n=pick([3,4,5,6,8]),limit=pick([60,72,90,100,120]),ans=Math.floor(limit/n);return whiteQuestion(`1から${limit}までに${n}の倍数はいくつ？`,ans,[ans-1,n],{templateId:'div-count'});}
+    if(t==='cycle'){const a=pick([4,6,8,10]),b=pick([6,9,12,15]),ans=L(a,b);return whiteQuestion(`Aは${a}分ごと、Bは${b}分ごと。同時のあと次に同時になるのは何分後？`,ans,[G(a,b),a+b],{templateId:'div-cycle'});}
+    if(t==='divide'){const n=pick([24,36,48,60,72]),a=pick([18,30,42,54]),ans=G(n,a);return whiteQuestion(`${n}個と${a}個を余りなく同じ数ずつ最大の組に分ける。組数は？`,ans,[L(n,a),ans+1],{templateId:'div-divide'});}
+    if(t==='condition'){const lo=20,hi=80,m1=pick([4,6,8]),m2=pick([3,5,7]),c=[];for(let x=lo;x<=hi;x++)if(x%m1===0&&x%m2===0)c.push(x);const ans=pick(c);return{expression:`${lo}〜${hi}で、${m1}と${m2}の両方の倍数はどれ？`,answer:ans,choices:shuffle([ans,ans+m1<=hi?ans+m1:ans-m1,ans+m2<=hi?ans+m2:ans-m2]),templateId:'div-condition'};}
+    if(t==='cycle2'){const a=pick([6,8,10,12]),b=pick([9,12,15,18]),c=pick([4,5,6]),ans=L(L(a,b),c);return whiteQuestion(`Aは${a}分、Bは${b}分、Cは${c}分ごと。次に3つが同時になるのは何分後？`,ans,[L(a,b),a+b+c],{templateId:'div-cycle2'});}
+    if(t==='packing'){const a=pick([48,60,72,84]),b=pick([36,54,66,90]),g=G(a,b);return whiteQuestion(`${a}個と${b}個を、どちらも余らない同じ数の袋に最大何袋に分けられる？`,g,[L(a,b),g-1],{templateId:'div-packing'});}
+    const a=pick([6,8,9,12]),b=pick([10,14,15,18]),l=L(a,b);return whiteQuestion(`${a}の倍数でも${b}の倍数でもある最小の数は？`,l,[a*b,G(a,b)],{templateId:'div-condition2'});
+  }
+  function whitePercent(level){
+    const t=pick(level==='basic'?['part','rate']:level==='standard'?['discount','whole','increase']:level==='mixed'?['remain','discount2','unit']:['successive','reverseDiscount','mixed']);
+    if(t==='part'){const base=pick([80,120,160,200,240,300,400]),p=pick([10,20,25,40,50,75]),ans=base*p/100;return whiteQuestion(`${base}の${p}%は？`,ans,[p,base-ans],{templateId:'pct-part'});}
+    if(t==='rate'){const base=pick([40,50,80,120]),p=pick([20,25,40,50,60,75]),part=base*p/100;return whiteQuestion(`${base}のうち${part}。何%？`,`${p}%`,[`${part}%`,`${100-p}%`],{templateId:'pct-rate'});}
+    if(t==='discount'){const price=pick([800,1200,1600,2000,2400,3000]),p=pick([10,20,25,30,40]),ans=price*(100-p)/100;return whiteQuestion(`${price}円の${p}%引き。支払う金額は？`,ans,[price*p/100,price-p],{templateId:'pct-discount'});}
+    if(t==='whole'){const p=pick([20,25,40,50,60,75]),whole=pick([80,120,160,200,240,300]),part=whole*p/100;return whiteQuestion(`全体の${p}%が${part}。全体は？`,whole,[part*100/p+10,part],{templateId:'pct-whole'});}
+    if(t==='increase'){const base=pick([200,400,600,800,1000]),p=pick([10,20,25,50]),ans=base*(100+p)/100;return whiteQuestion(`${base}を${p}%増やすと？`,ans,[base*p/100,base-p],{templateId:'pct-increase'});}
+    if(t==='remain'){const total=pick([120,160,200,240,300]),p=pick([25,40,60,75]),used=total*p/100,ans=total-used;return whiteQuestion(`${total}個の${p}%を使った。残りは？`,ans,[used,total-p],{templateId:'pct-remain'});}
+    if(t==='discount2'){const price=pick([1200,1600,2000,2400,3200]),p=pick([20,25,30]),ans=price-price*p/100;return whiteQuestion(`${price}円の商品を${p}%引き。値引き額ではなく支払額は？`,ans,[price*p/100,price-p],{templateId:'pct-discount2'});}
+    if(t==='unit'){const l=pick([1.2,1.5,1.8,2.4]),p=pick([25,40,50,75]),ans=Math.round(l*1000*p/100);return whiteQuestion(`${l}Lの${p}%は何mL？`,ans,[Math.round(l*1000)-p,Math.round(l*10*p)],{templateId:'pct-unit'});}
+    if(t==='successive'){const price=pick([1000,2000,3000,4000]),p1=pick([10,20,25]),p2=pick([10,20]),ans=price*(100-p1)/100*(100-p2)/100;return whiteQuestion(`${price}円を${p1}%引き、その後さらに${p2}%引き。支払額は？`,ans,[price*(100-p1-p2)/100,price-price*(p1+p2)/100],{templateId:'pct-successive'});}
+    if(t==='reverseDiscount'){const p=pick([20,25,40]),original=pick([1200,1600,2000,2400,3000]),sale=original*(100-p)/100;return whiteQuestion(`${p}%引きで${sale}円。元の値段は？`,original,[sale*100/p,sale+p],{templateId:'pct-reverse-discount'});}
+    const total=pick([1200,1600,2000,2400]),p=pick([25,40,60]),part=total*p/100,used=part/2;return whiteQuestion(`${total}mLの${p}%を取り分け、その半分を使った。使った量は？mL`,used,[part,total-used],{templateId:'pct-mixed'});
+  }
+  function whiteRatio(level){
+    const t=pick(level==='basic'?['equal','missing']:level==='standard'?['split','one']:level==='mixed'?['chain','split2','scale']:['chain2','three','mixed']);
+    if(t==='equal'){const a=rand(2,8),b=rand(a+1,12),m=rand(2,5);return{expression:`${a}:${b} と同じ比は？`,answer:`${a*m}:${b*m}`,choices:shuffle([`${a*m}:${b*m}`,`${a*m}:${b+m}`,`${a*m}:${b*m+1}`]),templateId:'ratio-equal'};}
+    if(t==='missing'){const a=rand(2,8),b=rand(a+1,12),m=rand(2,5),ans=b*m;return whiteQuestion(`${a}:${b}=${a*m}:□　□は？`,ans,[b+m,a*m],{templateId:'ratio-missing'});}
+    if(t==='split'){const a=pick([2,3,4]),b=pick([3,5,7]),unit=pick([6,8,10,12]),total=(a+b)*unit,ans=a*unit;return whiteQuestion(`${total}を${a}:${b}に分ける。小さい方は？`,ans,[b*unit,total/(a+b)],{templateId:'ratio-split'});}
+    if(t==='one'){const a=pick([2,3,4,5]),b=pick([3,5,6,7]),left=pick([12,18,20,24,30]),m=left/a;if(!Number.isInteger(m))return whiteRatio(level);return whiteQuestion(`${a}:${b}で、${a}にあたる量が${left}。${b}にあたる量は？`,b*m,[left+b,left/a],{templateId:'ratio-one'});}
+    if(t==='chain'){const a=3,b=5,b2=10,c=7;return{expression:`A:B=${a}:${b}、B:C=${b2}:${c}。A:Cは？`,answer:'6:7',choices:['6:7','3:7','6:5'],templateId:'ratio-chain'};}
+    if(t==='split2'){const r1=pick([3,4]),r2=pick([5,7]),total=pick([160,240,320,480]),unit=total/(r1+r2);if(!Number.isInteger(unit))return whiteRatio(level);return whiteQuestion(`${total}mLを${r1}:${r2}に分ける。多い方は？mL`,r2*unit,[r1*unit,unit],{templateId:'ratio-split2'});}
+    if(t==='scale'){const scale=pick([2,3,4]),a=rand(4,10),b=rand(5,12);return{expression:`${a}:${b}を両方${scale}倍した比は？`,answer:`${a*scale}:${b*scale}`,choices:[`${a*scale}:${b*scale}`,`${a+scale}:${b+scale}`,`${a*scale}:${b}`],templateId:'ratio-scale'};}
+    if(t==='chain2'){return{expression:'A:B=2:3、B:C=6:5。A:Cは？',answer:'4:5',choices:['4:5','2:5','4:3'],templateId:'ratio-chain2'};}
+    if(t==='three'){const unit=pick([6,8,10]),total=9*unit;return whiteQuestion(`${total}を2:3:4に分ける。最大の量は？`,4*unit,[3*unit,2*unit],{templateId:'ratio-three'});}
+    return{expression:'赤:青=3:5。青:黄=10:7。赤:黄は？',answer:'6:7',choices:['6:7','3:7','6:5'],templateId:'ratio-mixed'};
+  }
+  function whiteSpeed(level){
+    const t=pick(level==='basic'?['distance','speed']:level==='standard'?['minutes','time','remain']:level==='mixed'?['convert','twoStep','averageLike']:['fractionTime','percentRemain','roundTrip']);
+    if(t==='distance'){const v=pick([30,40,50,60,70,80]),h=pick([2,3,4]),ans=v*h;return whiteQuestion(`時速${v}kmで${h}時間。何km進む？`,ans,[v+h,v],{templateId:'speed-distance'});}
+    if(t==='speed'){const h=pick([2,3,4]),v=pick([30,40,50,60]),d=v*h;return whiteQuestion(`${d}kmを${h}時間。時速何km？`,v,[d*h,d-h],{templateId:'speed-speed'});}
+    if(t==='minutes'){const v=pick([40,48,60,72,80]),min=pick([15,30,45]),ans=v*min/60;return whiteQuestion(`時速${v}kmで${min}分。何km進む？`,ans,[v*min,ans*2],{templateId:'speed-minutes'});}
+    if(t==='time'){const v=pick([30,40,50,60]),h=pick([2,3,4]),d=v*h;return whiteQuestion(`${d}kmを時速${v}kmで進む。何時間？`,h,[d/v*60,v/d],{templateId:'speed-time'});}
+    if(t==='remain'){const v=pick([40,60,80]),min=30,total=pick([50,70,90,110]),gone=v*min/60,ans=total-gone;if(ans<=0)return whiteSpeed(level);return whiteQuestion(`全体${total}km。時速${v}kmで${min}分進んだ。残りは？km`,ans,[gone,total+gone],{templateId:'speed-remain'});}
+    if(t==='convert'){const mpm=pick([80,100,120,150]),min=pick([12,15,20,25]),ans=mpm*min/1000;return whiteQuestion(`分速${mpm}mで${min}分。何km進む？`,ans,[mpm*min,ans*100],{templateId:'speed-convert'});}
+    if(t==='twoStep'){const d=pick([1.8,2.4,3.0,3.6]),min=pick([12,15,20]),target=pick([30,40,45]),ans=normalizeChoiceNumber(d/min*target);return whiteQuestion(`${d}kmを${min}分で進む。同じ速さで${target}分なら何km？`,ans,[normalizeChoiceNumber(d*target),normalizeChoiceNumber(d/min)],{templateId:'speed-two-step'});}
+    if(t==='averageLike'){const v=pick([60,72,80]),m=45,ans=v*m/60;return whiteQuestion(`時速${v}kmで45分進んだ。道のりは？km`,ans,[v,ans*60],{templateId:'speed-45'});}
+    if(t==='fractionTime'){const v=pick([48,60,72]),f=pick([[1,4],[1,2],[3,4]]),ans=v*f[0]/f[1];return whiteQuestion(`時速${v}kmで${f[0]}/${f[1]}時間。何km？`,ans,[v*f[1]/f[0],v-ans],{templateId:'speed-fraction-time'});}
+    if(t==='percentRemain'){const total=pick([80,100,120]),p=pick([25,40,50]),travel=total*p/100,ans=total-travel;return whiteQuestion(`全体${total}kmの${p}%を進んだ。残りは？km`,ans,[travel,total-p],{templateId:'speed-percent-remain'});}
+    const one=pick([30,40,50]),out=pick([2,3]),back=pick([2,3]),ans=one*out+one*back;return whiteQuestion(`時速${one}kmで${out}時間進み、同じ速さで${back}時間戻った。移動した道のりの合計は？km`,ans,[one*Math.abs(out-back),one*(out+back+1)],{templateId:'speed-roundtrip'});
+  }
+  function whiteGeometry(level){
+    const t=pick(level==='basic'?['rect','triangle','angle']:level==='standard'?['circle','volume','missingAngle']:level==='mixed'?['cut','circleRemain','box']:['compound','scaleArea','angle2']);
+    if(t==='rect'){const w=rand(6,18),h=rand(4,14),ans=w*h;return whiteQuestion(`たて${h}cm、横${w}cmの長方形。面積は？cm²`,ans,[2*(w+h),w+h],{templateId:'geo-rect'});}
+    if(t==='triangle'){const b=pick([8,10,12,14,16]),h=pick([6,8,10,12]),ans=b*h/2;return whiteQuestion(`底辺${b}cm、高さ${h}cmの三角形。面積は？cm²`,ans,[b*h,b+h],{templateId:'geo-triangle'});}
+    if(t==='angle'){const a=rand(30,80),b=rand(30,80),ans=180-a-b;if(ans<=0)return whiteGeometry(level);return whiteQuestion(`三角形の2つの角が${a}°と${b}°。残りは？`,ans,[360-a-b,180-a+b],{templateId:'geo-angle'});}
+    if(t==='circle'){const r=pick([3,4,5,6,8,10]),ans=normalizeChoiceNumber(r*r*3.14);return whiteQuestion(`半径${r}cmの円。面積は？cm²（円周率3.14）`,ans,[normalizeChoiceNumber(2*r*3.14),normalizeChoiceNumber(r*3.14)],{templateId:'geo-circle'});}
+    if(t==='volume'){const a=rand(3,10),b=rand(3,10),c=rand(3,8),ans=a*b*c;return whiteQuestion(`${a}cm×${b}cm×${c}cmの直方体。体積は？cm³`,ans,[a*b+c,2*(a*b+b*c+c*a)],{templateId:'geo-volume'});}
+    if(t==='missingAngle'){const a=rand(50,120),ans=180-a;return whiteQuestion(`一直線上の2つの角の一方が${a}°。もう一方は？`,ans,[360-a,90-a],{templateId:'geo-line-angle'});}
+    if(t==='cut'){const w=pick([12,14,16,18]),h=pick([8,10,12]),cw=pick([2,3,4]),ch=pick([2,3,4]),ans=w*h-cw*ch;return whiteQuestion(`${w}×${h}cmの長方形から${cw}×${ch}cmを切り取る。残りの面積は？cm²`,ans,[w*h,cw*ch],{templateId:'geo-cut'});}
+    if(t==='circleRemain'){const r=pick([4,5,6]),side=r*2,square=side*side,circle=normalizeChoiceNumber(r*r*3.14),ans=normalizeChoiceNumber(square-circle);return whiteQuestion(`一辺${side}cmの正方形から半径${r}cmの円を切り取る。残りは？cm²`,ans,[circle,square],{templateId:'geo-circle-remain'});}
+    if(t==='box'){const a=pick([8,10,12]),b=pick([6,8,10]),h=pick([4,5,6]),ans=a*b*h;return whiteQuestion(`底面${a}cm×${b}cm、高さ${h}cmの直方体。体積は？cm³`,ans,[a*b,a*b+h],{templateId:'geo-box'});}
+    if(t==='compound'){const a=pick([12,16,18]),b=pick([8,10,12]),c=pick([4,6]),d=pick([3,5]),ans=a*b+c*d;return whiteQuestion(`${a}×${b}cmと${c}×${d}cmの長方形を重ねずにつなぐ。面積は？cm²`,ans,[a*b-c*d,a*b],{templateId:'geo-compound'});}
+    if(t==='scaleArea'){const w=pick([4,5,6]),h=pick([3,4,5]),m=pick([2,3]),ans=w*h*m*m;return whiteQuestion(`${w}×${h}cmの長方形を縦横とも${m}倍に拡大。面積は？cm²`,ans,[w*h*m,w*h+m],{templateId:'geo-scale-area'});}
+    const a=pick([70,80,95,110]),b=pick([40,55,65]),ans=360-a*2-b;if(ans<=0)return whiteGeometry(level);return whiteQuestion(`四角形の角が${a}°、${a}°、${b}°。残りは？`,ans,[180-a-b,360-a-b],{templateId:'geo-angle2'});
+  }
+  function whiteUnits(level){
+    const t=pick(level==='basic'?['km','liter','mass']:level==='standard'?['time','area','scale']:level==='mixed'?['scale2','volume','mixed']:['mapSpeed','areaScale','multiUnit']);
+    if(t==='km'){const km=rand(12,75)/10,ans=Math.round(km*1000);return whiteQuestion(`${km}kmは何m？`,ans,[Math.round(km*100),km],{templateId:'unit-km'});}
+    if(t==='liter'){const l=rand(12,48)/10,ans=Math.round(l*1000);return whiteQuestion(`${l}Lは何mL？`,ans,[Math.round(l*100),l],{templateId:'unit-liter'});}
+    if(t==='mass'){const kg=rand(12,65)/10,ans=Math.round(kg*1000);return whiteQuestion(`${kg}kgは何g？`,ans,[Math.round(kg*100),kg],{templateId:'unit-mass'});}
+    if(t==='time'){const h=pick([1.5,2.25,2.5,3.5]),ans=h*60;return whiteQuestion(`${h}時間は何分？`,ans,[h*100,h*60+10],{templateId:'unit-time'});}
+    if(t==='area'){const m2=pick([1,2,3,4,5]),ans=m2*10000;return whiteQuestion(`${m2}m²は何cm²？`,ans,[m2*100,m2*1000],{templateId:'unit-area'});}
+    if(t==='scale'){const cm=pick([2,3,4,5,6]),per=pick([100,200,500]),ans=cm*per;return whiteQuestion(`地図1cmが実際${per}m。地図${cm}cmは実際何m？`,ans,[cm+per,cm*per/10],{templateId:'unit-scale'});}
+    if(t==='scale2'){const actual=pick([600,800,1000,1200,1500]),per=pick([100,200,300]),ans=actual/per;if(!Number.isInteger(ans))return whiteUnits(level);return whiteQuestion(`地図1cmが実際${per}m。実際${actual}mは地図で何cm？`,ans,[actual/per*10,actual-per],{templateId:'unit-scale2'});}
+    if(t==='volume'){const l=pick([1.2,1.5,2,2.4,3]),ans=l*1000;return whiteQuestion(`${l}Lの容器は何cm³？`,ans,[l*100,l],{templateId:'unit-volume'});}
+    if(t==='mixed'){const km=pick([1.2,1.5,1.8,2.4]),m=pick([200,300,450,600]),ans=Math.round(km*1000+m);return whiteQuestion(`${km}km+${m}mは合計何m？`,ans,[Math.round(km*1000-m),Math.round(km*100+m)],{templateId:'unit-mixed'});}
+    if(t==='mapSpeed'){const cm=pick([3,4,5]),per=pick([200,300,400]),actual=cm*per,min=pick([10,15,20]),ans=actual/min;return whiteQuestion(`地図1cm=${per}m。${cm}cmの道を${min}分で進む。分速何m？`,ans,[actual,cm/min],{templateId:'unit-map-speed'});}
+    if(t==='areaScale'){const cm=pick([2,3,4]),per=pick([10,20,50]),ans=(cm*per)**2;return whiteQuestion(`地図上の一辺${cm}cm、1cm=${per}mの正方形。実際の面積は？m²`,ans,[(cm*cm)*per,cm*per],{templateId:'unit-area-scale'});}
+    const l=pick([1.5,2.4,3.2]),used=pick([250,400,600]),ans=Math.round(l*1000-used);return whiteQuestion(`${l}Lから${used}mL使った。残りは何mL？`,ans,[Math.round(l*1000+used),Math.round(l*100-used)],{templateId:'unit-multi'});
+  }
+  function whiteData(level){
+    const t=pick(level==='basic'?['avg','range']:level==='standard'?['missing','add']:level==='mixed'?['remove','weighted','table']:['target','combine','change']);
+    if(t==='avg'){const a=rand(10,30),b=rand(10,30),c=rand(10,30),sum=a+b+c,adj=(3-sum%3)%3,c2=c+adj,ans=(a+b+c2)/3;return whiteQuestion(`${a}, ${b}, ${c2} の平均は？`,ans,[a+b+c2,ans+1],{templateId:'data-avg'});}
+    if(t==='range'){const vals=shuffle([rand(8,15),rand(16,22),rand(23,30),rand(31,40)]),ans=Math.max(...vals)-Math.min(...vals);return whiteQuestion(`${vals.join('、')} の最大と最小の差は？`,ans,[Math.max(...vals),Math.min(...vals)],{templateId:'data-range'});}
+    if(t==='missing'){const avg=pick([15,18,20,24]),vals=[rand(10,25),rand(10,25),rand(10,25)],ans=avg*4-vals.reduce((a,b)=>a+b,0);if(ans<5||ans>40)return whiteData(level);return whiteQuestion(`4人の平均${avg}点。3人が${vals.join('、')}点。残り1人は？`,ans,[avg*4,avg],{templateId:'data-missing'});}
+    if(t==='add'){const n=4,avg=pick([15,18,20,24]),newVal=pick([20,25,30,35]),ans=(n*avg+newVal)/(n+1);if(!Number.isInteger(ans))return whiteData(level);return whiteQuestion(`${n}人の平均${avg}点。${newVal}点の1人を加えると平均は？`,ans,[avg+newVal,ans+1],{templateId:'data-add'});}
+    if(t==='remove'){const avg=pick([18,20,22,24]),n=5,removed=pick([10,15,20,25,30]),ans=(avg*n-removed)/(n-1);if(!Number.isInteger(ans)||ans<0)return whiteData(level);return whiteQuestion(`${n}人の平均${avg}点。${removed}点の1人を除くと残りの平均は？`,ans,[avg,avg*n-removed],{templateId:'data-remove'});}
+    if(t==='weighted'){const aN=2,bN=3,aAvg=pick([15,20,25]),bAvg=pick([20,25,30]),ans=(aN*aAvg+bN*bAvg)/(aN+bN);if(!Number.isInteger(ans))return whiteData(level);return whiteQuestion(`2人の平均${aAvg}点と3人の平均${bAvg}点。5人全体の平均は？`,ans,[(aAvg+bAvg)/2,aN*aAvg+bN*bAvg],{templateId:'data-weighted'});}
+    if(t==='table'){const mon=rand(12,20),tue=rand(18,28),wed=rand(22,32),ans=Math.max(mon,tue,wed)-Math.min(mon,tue,wed);return whiteQuestion(`月${mon}、火${tue}、水${wed}。最も多い日と少ない日の差は？`,ans,[Math.max(mon,tue,wed),Math.min(mon,tue,wed)],{templateId:'data-table'});}
+    if(t==='target'){const target=pick([20,24,25,30]),vals=[rand(15,30),rand(15,30),rand(15,30),rand(15,30)],ans=target*5-vals.reduce((a,b)=>a+b,0);if(ans<0||ans>50)return whiteData(level);return whiteQuestion(`5回の平均を${target}にしたい。4回が${vals.join('、')}。5回目は？`,ans,[target*5,target],{templateId:'data-target'});}
+    if(t==='combine'){const aN=3,bN=2,aAvg=pick([18,20,24,26]),bAvg=pick([15,25,30]),ans=(aN*aAvg+bN*bAvg)/5;if(!Number.isInteger(ans))return whiteData(level);return whiteQuestion(`3人平均${aAvg}点と2人平均${bAvg}点。全体平均は？`,ans,[(aAvg+bAvg)/2,aN*aAvg+bN*bAvg],{templateId:'data-combine'});}
+    const n=5,avg=pick([18,20,22]),plus=pick([5,10]),ans=avg+plus/n;return whiteQuestion(`5人の合計点が${plus}点増えた。平均は元の${avg}点から何点になる？`,ans,[avg+plus,plus/n],{templateId:'data-change'});
+  }
+  function whitePattern(level){
+    const t=pick(level==='basic'?['seq','sum']:level==='standard'?['nth','pairs','path']:level==='mixed'?['period','path2','choose']:['nth2','period2','choose2']);
+    if(t==='seq'){const a=rand(2,8),d=rand(2,6),ans=a+3*d;return whiteQuestion(`${a}, ${a+d}, ${a+2*d}, □　□は？`,ans,[a+4*d,ans-1],{templateId:'pat-seq'});}
+    if(t==='sum'){const n=pick([6,8,10,12]),ans=n*(n+1)/2;return whiteQuestion(`1+2+…+${n} は？`,ans,[n*n,n*(n-1)/2],{templateId:'pat-sum'});}
+    if(t==='nth'){const a=rand(2,6),d=rand(2,5),n=pick([10,12,15,18]),ans=a+(n-1)*d;return whiteQuestion(`${a}, ${a+d}, ${a+2*d}, … の${n}番目は？`,ans,[a+n*d,n*d],{templateId:'pat-nth'});}
+    if(t==='pairs'){const n=pick([5,6,7,8]),ans=n*(n-1)/2;return whiteQuestion(`${n}人から2人組を1組選ぶ。何通り？`,ans,[n*2,n*(n-1)],{templateId:'pat-pairs'});}
+    if(t==='path'){return whiteQuestion('右に3回、上に2回動く最短経路は何通り？',10,[6,12],{templateId:'pat-path'});}
+    if(t==='period'){const p=pick([3,4,5,6]),n=pick([20,25,32,41]),ans=((n-1)%p)+1;return whiteQuestion(`${p}個の色を順に繰り返す。${n}番目は何番目の色？`,ans,[n%p||p,p],{templateId:'pat-period'});}
+    if(t==='path2'){return whiteQuestion('右に3回、上に3回動く最短経路は何通り？',20,[9,12],{templateId:'pat-path2'});}
+    if(t==='choose'){const n=pick([6,7,8]),all=n*(n-1)/2,ans=all-1;return whiteQuestion(`${n}人から2人を選ぶ。ただしAとBの組は選べない。何通り？`,ans,[all,all-2],{templateId:'pat-choose'});}
+    if(t==='nth2'){const a=pick([3,5,7]),d=pick([4,5,6]),n=pick([20,24,30]),ans=a+(n-1)*d;return whiteQuestion(`${a}, ${a+d}, ${a+2*d}, … の${n}番目は？`,ans,[a+n*d,(n-1)*d],{templateId:'pat-nth2'});}
+    if(t==='period2'){const p1=pick([4,6,8]),p2=pick([6,9,12]),ans=p1*p2/gcd(p1,p2);return whiteQuestion(`${p1}回ごとの印と${p2}回ごとの印。次に重なるのは何回目？`,ans,[gcd(p1,p2),p1+p2],{templateId:'pat-period2'});}
+    const n=pick([7,8,9]),all=n*(n-1)/2,ans=all-2;return whiteQuestion(`${n}人から2人を選ぶ。指定された2組だけ選べない。何通り？`,ans,[all,all-1],{templateId:'pat-choose2'});
+  }
+  function whiteLogic(level){
+    const t=pick(level==='basic'?['box','order']:level==='standard'?['condition','reverse']:level==='mixed'?['order2','condition2','twoEq']:['logic3','reverse2','eliminate']);
+    if(t==='box'){const x=rand(10,40),a=rand(5,20),sum=x+a;return whiteQuestion(`□+${a}=${sum}。□は？`,x,[sum+a,x+1],{templateId:'logic-box'});}
+    if(t==='order')return{expression:'AはBより先、CはBより後。正しい順は？',answer:'A→B→C',choices:['A→B→C','B→A→C','A→C→B'],templateId:'logic-order'};
+    if(t==='condition'){const choices=[42,48,46],ans=48;return{expression:'40より大きく50より小さい、6と4の両方の倍数は？',answer:ans,choices:shuffle(choices),templateId:'logic-condition'};}
+    if(t==='reverse'){const x=rand(8,30),m=pick([2,3,4]),add=rand(4,15),total=x*m+add;return whiteQuestion(`□×${m}+${add}=${total}。□は？`,x,[(total-add),Math.floor(total/m)],{templateId:'logic-reverse'});}
+    if(t==='order2')return{expression:'AはCより前。BはAより後でCより前。正しい順は？',answer:'A→B→C',choices:['A→B→C','B→A→C','A→C→B'],templateId:'logic-order2'};
+    if(t==='condition2'){const choices=[36,42,48],ans=48;return{expression:'40より大きく50より小さい、8の倍数は？',answer:ans,choices,templateId:'logic-condition2'};}
+    if(t==='twoEq'){const x=rand(5,15),y=x+rand(3,8),sum=x+y,diff=y-x;return whiteQuestion(`2つの数の和が${sum}、差が${diff}。大きい方は？`,y,[x,sum],{templateId:'logic-twoeq'});}
+    if(t==='logic3')return{expression:'AはBより先。CはAより後でBより先。DはCより後。正しい順は？',answer:'A→C→B→D',choices:['A→C→B→D','C→A→B→D','A→B→C→D'],templateId:'logic-logic3'};
+    if(t==='reverse2'){const x=rand(12,40),m=pick([2,3,4]),sub=rand(5,20),total=x*m-sub;return whiteQuestion(`${m}×□−${sub}=${total}。□は？`,x,[total/m,(total+sub)/m+1],{templateId:'logic-reverse2'});}
+    return{expression:'「偶数」「30より大きい」「5の倍数」の3条件をすべて満たすのは？',answer:40,choices:[35,40,42],templateId:'logic-eliminate'};
+  }
+  function makeWhiteCategoryQuestion(category,level){
+    const map={arithmetic:whiteArithmetic,decimal:whiteDecimal,fraction:whiteFraction,divisor:whiteDivisor,percent:whitePercent,ratio:whiteRatio,speed:whiteSpeed,geometry:whiteGeometry,units:whiteUnits,data:whiteData,pattern:whitePattern,logic:whiteLogic};
+    const q=(map[category]||whiteArithmetic)(level);q.category=category;q.level=level;q.advice=q.advice||WHITE_CATEGORY_INFO[category]?.advice||'問題の条件を一つずつ確認しよう。';return q;
+  }
+  function makeWhiteQuestion(depth=whiteDepth,{boss=false}={}){
+    const level=whiteLevel(depth,boss);let q=null;
+    for(let i=0;i<10;i++){const category=whiteCategory(depth);q=makeWhiteCategoryQuestion(category,level);if(!whiteRecentTemplates.includes(q.templateId))break;}
+    if(q?.templateId){whiteRecentTemplates.push(q.templateId);if(whiteRecentTemplates.length>10)whiteRecentTemplates.shift();}
+    if(boss)q={...q,bossQuestion:true,advice:`ボス問題でも基本は同じ。${q.advice}`};return q;
+  }
+  function makeWhiteBeyondQuestion(){
+    const type=pick(['negative','letter','equation','bridge']);
+    if(type==='negative'){const a=rand(-9,-2),b=rand(3,12),ans=a+b;return whiteQuestion(`${a}+${b}`,ans,[b-a,Math.abs(ans)],{templateId:'beyond-negative',category:'beyond',advice:'負の数は0より小さい数。数直線上の位置を思い浮かべよう。',beyond:true});}
+    if(type==='letter'){const a=rand(2,7),x=rand(2,8),c=rand(1,9),ans=a*x+c;return whiteQuestion(`x=${x} のとき、${a}x+${c} は？`,ans,[a+x+c,ans-c],{templateId:'beyond-letter',category:'beyond',advice:'文字に入る数が分かっているときは、その数を代入して計算しよう。',beyond:true});}
+    if(type==='equation'){const x=rand(3,15),a=rand(4,12),total=x+a;return whiteQuestion(`x+${a}=${total}　xは？`,x,[total+a,total-a-1],{templateId:'beyond-equation',category:'beyond',advice:'小学校の「□」がxに変わっただけ。逆算して考えよう。',beyond:true});}
+    const x=rand(3,12),m=pick([2,3,4]),total=x*m;return whiteQuestion(`${m}x=${total}　xは？`,x,[total-m,total],{templateId:'beyond-bridge',category:'beyond',advice:'3×□=12と同じ考え方で、文字を□だと思って逆算しよう。',beyond:true});
+  }
+
+  function currentStage(){if(mode==='white')return whiteCurrentStage();if(mode==='end'&&endFinalPhase)return END_FINAL;return (mode==='crimson'&&crimsonLastPhase)?CRIMSON_LAST:getStages()[stageIndex];}
+
   function sameDigitLength(a,b){return String(Math.abs(a)).length===String(Math.abs(b)).length;}
   function answerKey(v){return typeof v==='number'?String(v):String(v);}
   function answersEqual(a,b){return answerKey(a)===answerKey(b);}
@@ -2060,6 +2369,7 @@ function markWorldVisited(world){
     // bosses use the separate corruption system instead.  In Crimson, STAGE 1-5 are
     // ordinary stage bosses and the independent Genma encounter is the true final boss.
     if(!bossPhase||mode==='end')return '';
+    if(mode==='white')return whiteBoss?.originalFinal?'final':'regular';
     if(mode==='crimson')return crimsonLastPhase?'final':'regular';
     if(!['front','back','blue','silver','midori'].includes(mode))return '';
     return stageIndex===4?'final':'regular';
@@ -2071,7 +2381,7 @@ function markWorldVisited(world){
     els.enemyActor.classList.toggle('world-boss-aura',active);
     els.enemyActor.classList.toggle('world-final-boss-aura',tier==='final');
     if(active){
-      document.body.dataset.bossAuraWorld=mode;
+      document.body.dataset.bossAuraWorld=mode==='white'?(whiteBoss?.sourceWorld||'front'):mode;
       document.body.dataset.bossAuraTier=tier;
     }else{
       document.body.removeAttribute('data-boss-aura-world');
@@ -2081,18 +2391,19 @@ function markWorldVisited(world){
     if(tier==='final')document.body.dataset.finalBossWorld=mode;else document.body.removeAttribute('data-final-boss-world');
   }
   function renderGame(){
-    const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=(mode==='end'&&endFinalPhase)?'final':stageIndex;
-    if((mode==='crimson'&&crimsonLastPhase)||(mode==='end'&&endFinalPhase)){els.progressText.textContent=`${Math.min(80,totalProgress)} / 80`;els.progressFill.style.width=`${Math.min(100,(totalProgress-75)/5*100)}%`;els.stageLabel.textContent=mode==='end'?'FINAL':'LAST BOSS';els.stageName.textContent=s.name;}else{els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}
+    const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=mode==='white'?`depth-${whiteDepth}`:(mode==='end'&&endFinalPhase)?'final':stageIndex;
+    if(mode==='white'){els.progressText.textContent=`${whiteQuestionInDepth} / 10`;els.progressFill.style.width=`${Math.min(100,whiteQuestionInDepth/10*100)}%`;els.stageLabel.textContent=`DEPTH ${whiteDepth}`;els.stageName.textContent=bossPhase?'BOSS QUESTION':'ENDLESS CHALLENGE';}
+    else if((mode==='crimson'&&crimsonLastPhase)||(mode==='end'&&endFinalPhase)){els.progressText.textContent=`${Math.min(80,totalProgress)} / 80`;els.progressFill.style.width=`${Math.min(100,(totalProgress-75)/5*100)}%`;els.stageLabel.textContent=mode==='end'?'FINAL':'LAST BOSS';els.stageName.textContent=s.name;}else{els.progressText.textContent=`${stageProgress} / 15`;els.progressFill.style.width=`${stageProgress/15*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}
     els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'♥':'♡').join(' ');els.timerText.textContent=timeLeft;fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
     const blueAdult=isBlueAdultPhase();const battleBgFile=isBlueStage5()?(blueAdult?'blue_stage5_after.png':'blue_stage5_before.png'):s.bg;els.battleBg.style.backgroundImage=`url('./assets/${battleBgFile}')`;
-    let heroWorld=mode;if(mode==='end')heroWorld=currentEndHeroWorld();document.body.dataset.heroWorld=heroWorld;
-    els.heroImage.src=mode==='end'?`./assets/${END_HERO_FILES[heroWorld]}`:mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):mode==='silver'?'./assets/silver_hero.png':'./assets/midori_hero_pirate_captain.png';
-    els.heroName.textContent=mode==='end'?END_HERO_NAMES[heroWorld]:mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):mode==='silver'?'銀狼の少女':'海賊船長';
+    let heroWorld=mode;if(mode==='end')heroWorld=currentEndHeroWorld();if(mode==='white')heroWorld='front';document.body.dataset.heroWorld=heroWorld;
+    els.heroImage.src=mode==='white'?'./assets/hero.png':mode==='end'?`./assets/${END_HERO_FILES[heroWorld]}`:mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):mode==='silver'?'./assets/silver_hero.png':'./assets/midori_hero_pirate_captain.png';
+    els.heroName.textContent=mode==='white'?'ゆうしゃ':mode==='end'?END_HERO_NAMES[heroWorld]:mode==='front'?'ゆうしゃ':mode==='back'?'魔法少女':mode==='crimson'?'流浪の剣士':mode==='blue'?(blueAdult?'青年':'少年'):mode==='silver'?'銀狼の少女':'海賊船長';
     const en=bossPhase?currentBoss():currentMonster;if(en){applyEnemyFacing(en);setEnemyNameDisplay(en);fitSingleLineText(els.enemyName,{maxWidthRatio:.31,minPx:9});}else setEnemyNameDisplay(null);
     const endCorrupted=mode==='end'&&bossPhase&&!!en?.boss;if(endCorrupted){document.body.classList.add('end-boss-corruption-active');document.body.dataset.endBossWorld=en.sourceWorld||'front';els.enemyActor.classList.add('end-corrupted-boss');}else{document.body.classList.remove('end-boss-corruption-active');document.body.removeAttribute('data-end-boss-world');els.enemyActor.classList.remove('end-corrupted-boss');}
     syncWorldBossAura();
     const choiceCaption=document.querySelector('.question-panel .choice-caption');
-    if(choiceCaption)choiceCaption.textContent=['crimson','blue','silver','midori','end'].includes(mode)?'答えを選ぼう':'こたえを えらぼう';
+    if(choiceCaption)choiceCaption.textContent=['crimson','blue','silver','midori','end','white'].includes(mode)?'答えを選ぼう':'こたえを えらぼう';
     updateBossHpHud();
   }
 
@@ -2124,7 +2435,7 @@ function markWorldVisited(world){
   }
   function playSE(a){if(!soundOn)return;try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
   function stopSE(a){try{a.pause();a.currentTime=0;}catch{}}
-  function activeHeroWorld(){return mode==='end'?currentEndHeroWorld():mode;}
+  function activeHeroWorld(){return mode==='end'?currentEndHeroWorld():mode==='white'?'front':mode;}
   function playAttackSE(){
     if(!soundOn)return;
     const hw=activeHeroWorld();
@@ -2432,7 +2743,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     [...els.choices.children].forEach(b=>b.disabled=true);
     document.body.classList.add('special-assist-active');
     specialGauge=0;updateSpecialHud();
-    const heroFile=mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='midori'?'midori_hero_pirate_captain.png':'silver_hero.png';
+    const heroFile=mode==='white'?'hero.png':mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='midori'?'midori_hero_pirate_captain.png':'silver_hero.png';
     await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
     const target=pick(wrongButtons);
     playFinisherSE();
@@ -2576,10 +2887,10 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);
   }
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
-  function battleQuestionTime(){if(mode==='end'&&endFinalPhase)return [45,20,40,40,30][Math.max(0,Math.min(4,bossQuestion))];return 60;}
+  function battleQuestionTime(){if(mode==='white')return whiteBeyondActive?60:whiteQuestionTime();if(mode==='end'&&endFinalPhase)return [45,20,40,40,30][Math.max(0,Math.min(4,bossQuestion))];return 60;}
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
-    currentQuestion=bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
+    currentQuestion=mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase)applyEndFinalQuestionModifier();syncPauseButton();updateSpecialHud();
   }
 
@@ -2806,6 +3117,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   };
   const END_FINAL_SPECIAL={type:'end-final-convergence',name:'時空終式・五界収束',time:30};
   function currentBossSpecial(){
+    if(mode==='white')return null;
     if(mode==='end'){
       if(endFinalPhase)return END_FINAL_SPECIAL;
       return END_BOSS_SPECIALS[currentEndSource()]||null;
@@ -3826,7 +4138,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     return '問題文から「何を求めるか」を先に確認し、必要な計算を一つずつ整理しよう。';
   }
   function mistakeAdviceFor(q,{timeout=false}={}){
-    const special=mistakeSpecialAdvice(),math=mathAdviceForQuestion(q);
+    const special=mistakeSpecialAdvice(),math=q?.advice||mathAdviceForQuestion(q);
     if(timeout){
       const base='時間切れでも、最初に何を求める問題かを整理すると次の計算が見つけやすい。';
       return special?`${base} ${special}`:`${base} ${math}`;
@@ -3875,8 +4187,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(currentBgm)try{currentBgm.pause();}catch{}
     document.body.classList.add('game-over-active');
     const fromBoss=!!bossPhase;
-    els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';
-    els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';
+    const titleEl=$('gameOverTitle'),kicker=els.gameOverOverlay?.querySelector('.game-over-card>small'),note=els.gameOverOverlay?.querySelector('.game-over-note');
+    if(mode==='white'){if(kicker)kicker.textContent='WHITE WORLD / CHALLENGE COMPLETE';if(titleEl)titleEl.textContent='CHALLENGE COMPLETE';els.gameOverRetryBtn.textContent='もう一度挑戦';els.gameOverMessage.textContent=`今回 ${whiteTotalCorrect}問正解｜到達 DEPTH ${whiteDepth}｜BEST ${Math.max(save.whiteBestQuestions||0,whiteTotalCorrect)}問｜BEYOND ${whiteBeyondCorrectRun}/${whiteBeyondSeenRun}`;if(note)note.textContent='白の世界はライフ回復なし。記録は保存されています。もう一度、最初のDEPTHから挑戦できます。';}
+    else{if(kicker)kicker.textContent='GAME OVER / REVIEW';if(titleEl)titleEl.textContent='今回の振り返り';els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';if(note)note.innerHTML=`タイトルに戻ると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>${mode==='crimson'||mode==='end'?'80':'75'}</span> からになります。`;}
     renderGameOverReview();
     els.gameOverOverlay.hidden=false;
     const card=els.gameOverOverlay.querySelector('.game-over-card');
@@ -3884,6 +4197,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   async function retryFromGameOver(){
     if(!gameOverActive)return;
+    if(mode==='white'){gameOverActive=false;els.gameOverOverlay.hidden=true;document.body.classList.remove('game-over-active');await startWhiteChallenge();return;}
     const retryBoss=!!bossPhase;
     const latest=stats.errors[stats.errors.length-1];
     if(['crimson','blue','silver','midori','end'].includes(mode)&&latest?.advice){
@@ -3931,10 +4245,85 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);enqueuePendingSecretRelicNotices({showNow:true});
   }
 
-  async function startAdventure(){resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);}
+  function ensureWhiteMemoryFx(){
+    const battlefield=document.querySelector('.battlefield');if(!battlefield)return null;let fx=$('whiteMemoryFx');
+    if(!fx){fx=document.createElement('div');fx.id='whiteMemoryFx';fx.className='white-memory-fx';fx.setAttribute('aria-hidden','true');fx.innerHTML='<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>';battlefield.appendChild(fx);}return fx;
+  }
+  function pulseWhiteMemoryFx(){
+    const fx=ensureWhiteMemoryFx();if(!fx)return;fx.classList.remove('answer-pulse');void fx.offsetWidth;fx.classList.add('answer-pulse');setTimeout(()=>fx.classList.remove('answer-pulse'),720);
+  }
+  async function showWhiteBanner(kicker,title,ms=1200){
+    const battlefield=document.querySelector('.battlefield');if(!battlefield)return;let fx=$('whiteChallengeBanner');if(!fx){fx=document.createElement('div');fx.id='whiteChallengeBanner';fx.className='white-challenge-banner';battlefield.appendChild(fx);}fx.innerHTML=`<small>${kicker}</small><strong>${title}</strong>`;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');await sleep(ms);fx.classList.remove('show');
+  }
+  async function beginWhiteNormalEncounter(){
+    bossPhase=false;bossQuestion=0;clearBossAction();
+    currentMonster=chooseWhiteNormalMonster();renderGame();clearQuestionUi();
+    if(!(await stageEnemyVisual(currentMonster)))return;
+    await showMonsterEntrance(currentMonster);
+    prepareQuestion();startTimer(whiteQuestionTime());
+  }
+  async function showWhiteDepthIntro(){
+    locked=true;stopTimer();bossPhase=false;bossQuestion=0;whiteBoss=null;currentMonster=null;currentQuestion=null;chooseWhiteEnvironment();renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
+    els.stagePreview.style.backgroundImage=`url('./assets/${whiteCurrentBg}')`;els.stageOverlayLabel.textContent=`DEPTH ${whiteDepth}`;els.stageOverlayName.textContent=whiteDepth===1?'ENDLESS CHALLENGE':'NEXT DEPTH';els.stageOverlay.hidden=false;requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
+    await sleep(1250);await sceneBlackout(async()=>{els.stageOverlay.hidden=true;renderGame();clearQuestionUi();},{fadeIn:480,hold:100,fadeOut:620});
+    ensureWhiteMemoryFx();await playStageBgm();await runBattleCountdown();await beginWhiteNormalEncounter();
+  }
+  async function startWhiteChallenge(){
+    resetRun();document.body.classList.add('white-challenge-active');ensureWhiteMemoryFx();if(!debugFullUnlock){save.whiteAttempts=(save.whiteAttempts||0)+1;persistQuietly();}
+    await transitionTo(()=>{showOnly(els.gameScreen);renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);},'normal',1300);await showWhiteDepthIntro();
+  }
+  async function beginWhiteBoss(){
+    locked=true;stopTimer();clearQuestionUi();await stopBgmFade(650);bossPhase=true;bossQuestion=0;chooseWhiteBoss();renderGame();enemyVisualToken++;concealEnemyVisual(true);await showBossEntrance(false,0);
+  }
+  async function completeWhiteDepth(){
+    stopTimer();clearBossAction();els.answerMark.hidden=true;runFinisherMotion();await sleep(820);els.enemyActor.classList.add('boss-defeat');await sleep(1150);enemyVisualToken++;concealEnemyVisual(true);els.enemyActor.classList.remove('boss-defeat','finisher-hit');
+    await stopBgmFade(500);await showWhiteBanner(`DEPTH ${whiteDepth} CLEAR`,'次の記憶へ',1100);
+    if(whiteTotalCorrect===50&&!whiteBeyondUnlockShown){whiteBeyondUnlockShown=true;await showWhiteBanner('BEYOND UNLOCKED','算数の、その先へ。',1700);}
+    whiteDepth++;whiteQuestionInDepth=0;bossPhase=false;bossQuestion=0;whiteBoss=null;resetSpecialGauge();await showWhiteDepthIntro();
+  }
+  async function maybeWhiteBeyond(){
+    if(whiteTotalCorrect>=50&&!whiteBeyondUnlockShown){whiteBeyondUnlockShown=true;await showWhiteBanner('BEYOND UNLOCKED','算数の、その先へ。',1700);}
+    const rate=whiteBeyondRate();if(!rate||Math.random()>=rate)return false;
+    currentMonster=null;enemyVisualToken++;concealEnemyVisual(true);renderGame();
+    whiteBeyondActive=true;whiteBeyondSeenRun++;if(!debugFullUnlock){save.whiteBeyondSeen=(save.whiteBeyondSeen||0)+1;persistQuietly();}
+    document.body.classList.add('white-beyond-active');await showWhiteBanner('BEYOND QUESTION','算数の、その先へ。',1050);prepareQuestion();startTimer(60);return true;
+  }
+  async function continueWhiteAfterQuestion(){
+    if(await maybeWhiteBeyond())return;
+    if(whiteQuestionInDepth>=9){await beginWhiteBoss();return;}
+    await beginWhiteNormalEncounter();
+  }
+  async function finishWhiteBeyond(ok){
+    if(ok){whiteBeyondCorrectRun++;if(!debugFullUnlock){save.whiteBeyondCorrect=(save.whiteBeyondCorrect||0)+1;persistQuietly();}}
+    whiteBeyondActive=false;document.body.classList.remove('white-beyond-active');await sleep(750);
+    if(whiteQuestionInDepth>=9){await beginWhiteBoss();return;}await beginWhiteNormalEncounter();
+  }
+  function persistWhiteResult(){
+    if(debugFullUnlock)return;save.whiteBestQuestions=Math.max(save.whiteBestQuestions||0,whiteTotalCorrect);save.whiteBestDepth=Math.max(save.whiteBestDepth||0,whiteDepth);save.whiteTotalCorrect=(save.whiteTotalCorrect||0)+whiteTotalCorrect;persistQuietly();
+  }
+  async function resolveWhiteAnswer(value,timeout=false){
+    if(locked)return;locked=true;stopTimer();updateSpecialHud();const q=currentQuestion;[...els.choices.children].forEach(b=>{b.disabled=true;const bv=b.dataset.answerValue??b.textContent;if(answersEqual(bv,q.answer))b.classList.add('correct');if(value!==null&&answersEqual(bv,value)&&!answersEqual(value,q.answer))b.classList.add('wrong');});
+    const ok=!timeout&&answersEqual(value,q.answer);
+    if(whiteBeyondActive){
+      if(ok){els.feedbackText.textContent='BEYOND CLEAR！';showAnswerMark(true);playSE(correctSE);}else{els.feedbackText.textContent=timeout?`時間切れ。答えは ${q.answer}（ライフは減りません）`:`答えは ${q.answer}（ライフは減りません）`;showAnswerMark(false);playSE(wrongSE);stats.errors.push(makeMistakeRecord(value,timeout));}
+      await finishWhiteBeyond(ok);return;
+    }
+    if(ok){
+      comboStreak++;adjustSpecialGauge(20);els.feedbackText.textContent='正解！';showAnswerMark(true);playSE(correctSE);
+      if(bossPhase){bossQuestion=1;whiteQuestionInDepth=10;whiteTotalCorrect++;renderGame();await sleep(450);await completeWhiteDepth();return;}
+      pulseWhiteMemoryFx();runAttackMotion();await sleep(800);whiteQuestionInDepth++;whiteTotalCorrect++;renderGame();await continueWhiteAfterQuestion();return;
+    }
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`時間切れ！ 正解は ${q.answer}`:`残念！ 正解は ${q.answer}`;renderGame();await sleep(1050);
+    if(lives<=0){persistWhiteResult();await showGameOver();return;}
+    // 白のボスは1問突破型。失敗しても同じボスに別問題で再挑戦する。
+    prepareQuestion();startTimer(whiteQuestionTime());
+  }
+
+  async function startAdventure(){if(mode==='white'){await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);}
   async function nextQuestion(){if(bossPhase){prepareQuestion();const spec=currentBossSpecial();startTimer(bossQuestion===4&&spec?.time?spec.time:60);}else{await beginNormalEncounter();}}
 
   async function resolveAnswer(value,timeout=false){
+    if(mode==='white'){await resolveWhiteAnswer(value,timeout);return;}
     if(locked)return;locked=true;stopTimer();updateSpecialHud();[...els.choices.children].forEach(b=>{b.disabled=true;const bv=b.dataset.answerValue??b.textContent;if(answersEqual(bv,currentQuestion.answer))b.classList.add('correct');if(value!==null&&answersEqual(bv,value)&&!answersEqual(value,currentQuestion.answer))b.classList.add('wrong');});
     const ok=!timeout&&answersEqual(value,currentQuestion.answer);
     if(ok&&bossPhase&&bossQuestion===4&&bossSpecialSequence){
@@ -4232,7 +4621,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   els.pauseConfirmTitleBtn.onclick=returnTitleFromPause;
   els.gameOverRetryBtn.onclick=retryFromGameOver;
   els.gameOverTitleBtn.onclick=returnTitleFromGameOver;
-  els.replayBtn.onclick=async()=>{resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
+  els.replayBtn.onclick=async()=>{if(mode==='white'){els.resultOverlay.hidden=true;await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
   els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{document.body.classList.remove('end-final-postclear-active');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);enqueuePendingSecretRelicNotices({showNow:true});};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;const next=rewardFollowupQueue.shift();if(next)setTimeout(()=>presentRewardNotice(next),180);};
 
@@ -4256,7 +4645,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalQuestion,newEndRoute,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalQuestion,newEndRoute,WHITE_BOSS_POOL,WHITE_BACKGROUND_POOL,WHITE_NORMAL_BGM_POOL,WHITE_BOSS_BGM_POOL,makeWhiteQuestion,makeWhiteBeyondQuestion,whiteQuestionTime,whiteBeyondRate,startWhiteChallenge,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 

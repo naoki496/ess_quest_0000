@@ -2086,3 +2086,69 @@ body.end-final-defeat-active .actor.enemy.end-final-defeat .actor-sprite{animati
 .game-over-review-advice{max-width:none!important;margin:0!important;padding:7px 8px;border-left:3px solid rgba(255,207,98,.72);border-radius:5px;background:rgba(255,205,89,.06);color:#dce6f2!important;font-size:.70rem!important;line-height:1.55!important}.game-over-review-advice strong{color:#ffd66f;font:900 .58rem/1 Arial,sans-serif;letter-spacing:.08em}.game-over-review-empty{margin:4px 0!important;color:#aebed2!important;text-align:center}
 @media (orientation:portrait){.game-over-card{width:min(560px,94vw);max-height:94dvh;padding:18px 16px}.game-over-card h2{font-size:2.15rem}.game-over-review{padding:10px}.game-over-review-q>strong{font-size:.80rem}.game-over-review-advice{font-size:.67rem!important}.game-over-note{margin-top:0!important}}
 @media (orientation:landscape) and (max-height:500px){.game-over-overlay{padding:8px}.game-over-card{width:min(920px,94vw);max-height:95dvh;padding:10px 14px}.game-over-card h2{font-size:1.45rem;margin:3px 0 5px}.game-over-card>p#gameOverMessage{font-size:.63rem;margin-bottom:6px}.game-over-review{margin-bottom:7px;padding:7px}.game-over-review-head{margin-bottom:5px;padding-bottom:4px}.game-over-review-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.game-over-review-item{padding:6px}.game-over-review-q{grid-template-columns:17px minmax(0,1fr);gap:5px}.game-over-review-q>span{width:17px;height:17px;font-size:.55rem}.game-over-review-q>strong{font-size:.64rem;line-height:1.25}.game-over-review-answers{gap:4px;margin:5px 0}.game-over-review-answers>span{display:block;padding:4px 5px}.game-over-review-answers small{display:block;font-size:.49rem}.game-over-review-answers b{font-size:.62rem}.game-over-review-advice{padding:5px 6px;font-size:.54rem!important;line-height:1.35!important}.game-over-note{margin:0 0 6px!important;font-size:.50rem!important}.game-over-card .pause-actions .menu-btn{min-height:31px;font-size:.63rem}}
+
+/* ======================================================================
+   白の世界 / ENDLESS CHALLENGE
+   既存世界の背景を「記憶」として再利用。白一色の被膜ではなく、
+   淡い金・水色・紫の光粒で白の世界らしさを加える。
+   ====================================================================== */
+body[data-mode="white"] .title-bg,
+body[data-mode="white"] .sub-bg{background-image:url('./assets/bg_forest.png');filter:saturate(.76) brightness(.66) contrast(.96)}
+body[data-mode="white"] .title-shade{background:linear-gradient(90deg,rgba(15,18,28,.84),rgba(63,70,86,.12) 50%,rgba(12,15,25,.72)),linear-gradient(180deg,rgba(220,235,255,.03),rgba(8,11,19,.42))}
+body[data-mode="white"] .title-shell{background:linear-gradient(180deg,rgba(24,29,41,.93),rgba(10,13,21,.98));border-color:rgba(215,228,248,.44);box-shadow:0 24px 70px rgba(0,0,0,.58),0 0 38px rgba(145,199,255,.10),inset 0 0 0 1px rgba(255,255,255,.05)}
+body[data-mode="white"] .title-mode-plate,
+body[data-mode="white"] .title-track,
+body[data-mode="white"] .title-wallet{border-color:rgba(199,220,245,.30);background:rgba(22,28,40,.86)}
+body[data-mode="white"] .title-track span,
+body[data-mode="white"] .title-wallet span{color:#c8d9ef}
+body[data-mode="white"] .title-copy h1{color:#e8eff9;text-shadow:0 3px 0 rgba(20,27,41,.85),0 0 24px rgba(129,200,255,.17)}
+body[data-mode="white"] .title-copy h1 span{color:#cddaf1}
+body[data-mode="white"] .eyebrow{color:#b9cee7}
+body[data-mode="white"] .title-caption{color:#c6d6e9}
+body[data-mode="white"] .title-logo-gem,
+body[data-mode="white"] .title-divider b{color:#d7e6f5}
+body[data-mode="white"] .title-divider i{background:linear-gradient(90deg,transparent,#9fbddd)}
+body[data-mode="white"] .title-divider i:last-child{background:linear-gradient(90deg,#9fbddd,transparent)}
+body[data-mode="white"] .rule-grid>div{border-color:rgba(194,215,239,.20)}
+body[data-mode="white"] .rule-icon,
+body[data-mode="white"] .rule-grid strong{color:#dce9f6}
+body[data-mode="white"] .panel-gold{border-color:rgba(203,221,242,.38)}
+body[data-mode="white"] .title-art img{filter:drop-shadow(0 16px 26px rgba(0,0,0,.42)) drop-shadow(0 0 17px rgba(160,211,255,.15))}
+body[data-mode="white"] .battle-corner::before,
+body[data-mode="white"] .battle-corner::after{background:#c9d9ec;box-shadow:0 0 9px rgba(141,198,255,.40)}
+body[data-mode="white"] .progress-bar>i{background:linear-gradient(90deg,#8eb8df,#d9e5f2 52%,#c7afe8)}
+body[data-mode="white"] .hud{border-color:rgba(196,218,240,.40)}
+body[data-mode="white"] .question-panel{border-color:rgba(198,220,242,.42);box-shadow:0 16px 40px rgba(0,0,0,.34),0 0 20px rgba(133,190,237,.08)}
+body[data-mode="white"] .choice-caption{color:#cbdced}
+body[data-mode="white"] .special-meter>i{background:linear-gradient(90deg,#8bbbe4,#dbe8f6,#c3a7e3)}
+
+.white-memory-fx{position:absolute;z-index:14;inset:0;overflow:hidden;pointer-events:none;mix-blend-mode:screen;opacity:.72}
+.white-memory-fx i{position:absolute;width:5px;height:5px;border-radius:50%;background:#9edcff;box-shadow:0 0 7px currentColor,0 0 15px currentColor;opacity:.48;animation:whiteMemoryFloat 8s linear infinite}
+.white-memory-fx i:nth-child(1){left:8%;top:82%;color:#98dfff;animation-duration:8.6s;animation-delay:-2s}
+.white-memory-fx i:nth-child(2){left:20%;top:67%;color:#e3c580;width:4px;height:4px;animation-duration:10.2s;animation-delay:-6s}
+.white-memory-fx i:nth-child(3){left:36%;top:89%;color:#b9a2e8;width:6px;height:6px;animation-duration:9.4s;animation-delay:-4s}
+.white-memory-fx i:nth-child(4){left:49%;top:72%;color:#a7e9dd;animation-duration:11s;animation-delay:-1s}
+.white-memory-fx i:nth-child(5){left:61%;top:91%;color:#d7bc82;width:4px;height:4px;animation-duration:8.9s;animation-delay:-5s}
+.white-memory-fx i:nth-child(6){left:73%;top:64%;color:#9ccfff;width:6px;height:6px;animation-duration:10.8s;animation-delay:-7s}
+.white-memory-fx i:nth-child(7){left:86%;top:84%;color:#c2a6eb;animation-duration:9.8s;animation-delay:-3s}
+.white-memory-fx i:nth-child(8){left:93%;top:58%;color:#b4e2f6;width:4px;height:4px;animation-duration:12s;animation-delay:-8s}
+@keyframes whiteMemoryFloat{0%{transform:translate3d(0,28px,0) scale(.75);opacity:0}16%{opacity:.55}72%{opacity:.42}100%{transform:translate3d(16px,-300px,0) scale(1.28);opacity:0}}
+
+.white-challenge-banner{position:absolute;z-index:104;left:50%;top:50%;min-width:min(580px,82vw);max-width:90vw;padding:18px 28px;text-align:center;transform:translate(-50%,-50%) scale(.93);opacity:0;pointer-events:none;border:1px solid rgba(195,220,244,.46);border-radius:12px;background:linear-gradient(180deg,rgba(20,27,40,.94),rgba(10,13,24,.97));box-shadow:0 20px 60px rgba(0,0,0,.48),0 0 28px rgba(124,187,236,.12)}
+.white-challenge-banner small{display:block;color:#9fc2e0;font-weight:800;letter-spacing:.20em;font-size:.72rem}
+.white-challenge-banner strong{display:block;margin-top:5px;color:#eef5fb;font-size:clamp(1.2rem,4vw,2.25rem);letter-spacing:.08em;text-shadow:0 0 16px rgba(139,199,239,.18)}
+.white-challenge-banner.show{animation:whiteChallengeBanner 1.15s ease both}
+body.white-beyond-active .white-challenge-banner{border-color:rgba(192,158,238,.56);box-shadow:0 20px 60px rgba(0,0,0,.48),0 0 34px rgba(164,111,229,.15)}
+body.white-beyond-active .white-challenge-banner small{color:#c9a9ef}
+body.white-beyond-active .white-challenge-banner strong{color:#f1e7ff}
+@keyframes whiteChallengeBanner{0%{opacity:0;transform:translate(-50%,-50%) scale(.90)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}76%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-53%) scale(1.02)}}
+body[data-mode="white"].white-beyond-active .question-panel{border-color:rgba(194,157,235,.54);box-shadow:0 16px 40px rgba(0,0,0,.34),0 0 28px rgba(164,113,226,.12)}
+body[data-mode="white"].white-beyond-active .question-cap{color:#d6b8f2}
+
+@media (prefers-reduced-motion:reduce){.white-memory-fx i,.white-challenge-banner.show{animation:none!important}.white-memory-fx i{opacity:.22}.white-challenge-banner.show{opacity:1;transform:translate(-50%,-50%)}}
+/* White normal questions have no target monster. A correct answer energizes the
+   memory-space particles instead of making the hero swing at empty space. */
+.white-memory-fx.answer-pulse{animation:whiteMemoryAnswerPulse .70s ease-out both}
+.white-memory-fx.answer-pulse i{box-shadow:0 0 10px currentColor,0 0 25px currentColor;opacity:.76}
+@keyframes whiteMemoryAnswerPulse{0%{filter:brightness(1);transform:scale(1)}35%{filter:brightness(1.35);transform:scale(1.012)}100%{filter:brightness(1);transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.white-memory-fx.answer-pulse{animation:none!important;filter:brightness(1.15)}}
