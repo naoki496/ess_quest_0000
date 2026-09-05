@@ -51,7 +51,7 @@
     {name:'浅草寺 仲見世通り',key:'asakusa',count:15,normalCount:10,bossCount:5,bgm:'my war.mp3',bossBgm:'boss.mp3',bg:'back_asakusa.png',boss:['百灯鬼カグラ・極','boss_back_2.png']},
     {name:'東京スカイツリー',key:'skytree',count:15,normalCount:10,bossCount:5,bgm:'inside out.mp3',bossBgm:'boss.mp3',bg:'back_skytree.png',boss:['電波竜スカイノイズ','boss_back_3.png']},
     {name:'新宿 東京都庁',key:'tocho',count:15,normalCount:10,bossCount:5,bgm:'COKE.mp3',bossBgm:'boss.mp3',bg:'back_tocho.png',boss:['機甲騎将クロム・ゼロ','boss_back_4.png']},
-    {name:'魔王の部屋',key:'backboss',count:15,normalCount:10,bossCount:5,bgm:'FUSE.mp3',bossBgm:'DUEL.mp3',bg:'back_boss.png',boss:['星晶魔導騎・アステリア','boss_back_5.png']}
+    {name:'都庁屋上',key:'backboss',count:15,normalCount:10,bossCount:5,bgm:'FUSE.mp3',bossBgm:'DUEL.mp3',bg:'back_boss.png',boss:['星晶魔導騎・アステリア','boss_back_5.png']}
   ];
 
 
@@ -2197,12 +2197,12 @@ function markWorldVisited(world){
     return shuffle([ans,...wrong.slice(0,2)]);
   }
   // Battle-facing correction. PNG files stay untouched; mirroring is presentation-only.
-  // These source images already face toward the hero (left), so they remain unmirrored.
-  const BATTLE_KEEP_ORIGINAL_FACING=new Set([
-    'monster_front_1_1_2.png','monster_front_1_4_6.png','monster_front_1_5_7.png','boss_front_1.png',
-    'monster_front_2_5_14.png','boss_front_2.png',
-    'monster_front_3_4_20.png','monster_front_5_1_30.png',
-    'monster_back_1_2_4.png','monster_back_2_5_14.png'
+  // Default is ALWAYS the source artwork's original facing. Only a sprite that has been
+  // visually confirmed to face away from the hero is explicitly opted into mirroring.
+  // This prevents frontal/already-correct/asymmetric art from being mirrored merely because
+  // it belongs to the Light/Back world. Add future corrections here by exact asset filename.
+  const BATTLE_FLIP_FACING=new Set([
+    'monster_back_4_1_22.png' // ケーブルワーム: source art faces away from the hero.
   ]);
   const BATTLE_SPRITE_SCALE={
     // Genma's formal sprite deliberately carries much larger top/bottom transparent
@@ -2220,7 +2220,7 @@ function markWorldVisited(world){
     'boss_crimson_last.png':'11%'
   };
   function applyEnemyFacing(en){
-    if(!els.enemySprite)return;const facingWorld=en?.sourceWorld||en?.world;const keepOriginal=!!en&&((facingWorld==='crimson'||facingWorld==='silver'||facingWorld==='blue'||facingWorld==='midori')||BATTLE_KEEP_ORIGINAL_FACING.has(en.img));els.enemySprite.classList.toggle('flip-facing',!!en&&!keepOriginal);els.enemySprite.classList.toggle('bottom-safe-knight',!!en&&en.img==='monster_front_4_2_25.png');els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));els.enemySprite.style.setProperty('--enemy-y',en?(BATTLE_SPRITE_OFFSET_Y[en.img]||'0%'):'0%');
+    if(!els.enemySprite)return;const shouldFlip=!!en&&BATTLE_FLIP_FACING.has(String(en.img||''));els.enemySprite.classList.toggle('flip-facing',shouldFlip);els.enemySprite.classList.toggle('bottom-safe-knight',!!en&&en.img==='monster_front_4_2_25.png');els.enemySprite.style.setProperty('--enemy-scale',String(en?(BATTLE_SPRITE_SCALE[en.img]||1):1));els.enemySprite.style.setProperty('--enemy-y',en?(BATTLE_SPRITE_OFFSET_Y[en.img]||'0%'):'0%');
   }
 
   // Enemy image lifecycle: never replace a visible enemy's src in place.  The old
@@ -2661,7 +2661,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     els.mapTitle.textContent=mode==='front'?'ぼうけんの ちず':mode==='back'?'ウラのせかい':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'FAIRWAY':'終の世界';
     els.mapImage.src=mode==='front'?'./assets/world_map_v3_clean.png':mode==='back'?'./assets/back_map.png':mode==='crimson'?'./assets/crimson_map.png':mode==='blue'?'./assets/blue_map.png':mode==='silver'?'./assets/silver_map.png':mode==='midori'?`./assets/midori_fairway_map_${Math.max(1,Math.min(5,stageIndex+1))}.png`:'./assets/end_world_map.png';
     els.mapImage.alt=mode==='midori'?`翠の世界 FAIRWAY 航海図・STAGE ${stageIndex+1}`:mode==='end'?'終の世界・時空河マップ':'ワールドマップ';
-    const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'],mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','時空の最深部へ向かいます…'],mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'],mapLinesBlue=['昔ながらの田舎町へ向かいます…','山の秘密基地へ進みます…','夏祭りの灯りへ向かいます…','夕暮れの公園へ進みます…','あの家へ帰ります…'],mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'],mapLinesMidori=['出航の港島へ向かいます…','翠海の群島へ船を進めます…','翠深の遺跡島へ上陸します…','黒帆大船団へ突入します…','大渦の秘宝島へ向かいます…'];
+    const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'],mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','都庁屋上へ向かいます…'],mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'],mapLinesBlue=['昔ながらの田舎町へ向かいます…','山の秘密基地へ進みます…','夏祭りの灯りへ向かいます…','夕暮れの公園へ進みます…','あの家へ帰ります…'],mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'],mapLinesMidori=['出航の港島へ向かいます…','翠海の群島へ船を進めます…','翠深の遺跡島へ上陸します…','黒帆大船団へ突入します…','大渦の秘宝島へ向かいます…'];
     const mapLinesEnd=buildEndStages().map((st,i)=>i===0?'翠の海の先から、大時空支流へ入ります…':`${st.name}へ時空河を進みます…`);
     const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mode==='blue'?mapLinesBlue:mode==='silver'?mapLinesSilver:mode==='midori'?mapLinesMidori:mapLinesEnd;els.mapMessage.textContent=lines[stageIndex]||(initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
     const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}if(els.mapVisual)els.mapVisual.disabled=true;if(els.mapNextBtn)els.mapNextBtn.disabled=true;els.mapOverlay.hidden=false;
@@ -3017,7 +3017,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       art.style.setProperty('--cutin-height',`${focus.height}%`);
       art.style.setProperty('--cutin-side',`${focus.side}%`);
       c.style.setProperty('--cutin-duration',`${duration}ms`);
-      const originalFacing=side==='enemy'&&(imgFile.includes('_crimson_')||BATTLE_KEEP_ORIGINAL_FACING.has(imgFile));
+      const originalFacing=side==='enemy'&&!BATTLE_FLIP_FACING.has(imgFile);
       const reducedFlash=mode==='midori'||mode==='end';
       c.className=`boss-cutin active ${side==='hero'?'hero-cutin':'enemy-cutin'} ${variant==='assist'?'assist-cutin':'finisher-cutin'}${originalFacing?' cutin-original-facing':''}${reducedFlash?' reduced-flash':''}`;
       c.hidden=false;
@@ -4486,7 +4486,18 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   async function beginEndFinalBoss(){
     endFinalPhase=true;bossPhase=true;bossQuestion=0;currentMonster=null;currentQuestion=null;lives=3;clearBossAction();unlockCurrentBossMusic();
-    await sceneBlackout(async()=>{showOnly(els.gameScreen);document.body.dataset.mode='end';document.body.dataset.stage='final';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);},{fadeIn:520,hold:220,fadeOut:700});await playStageBgm();await runBattleCountdown();await showBossEntrance(true,0);
+    // FINAL has no road encounters, but it should still receive the same stage-title beat
+    // as every other area before the boss appears. Keep the battlefield empty while the
+    // card reads "FINAL / まおうの へや", then transition into the countdown and boss.
+    await sceneBlackout(async()=>{
+      showOnly(els.gameScreen);document.body.dataset.mode='end';document.body.dataset.stage='final';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);prepareStageOverlay();
+    },{fadeIn:520,hold:220,fadeOut:700});
+    await sleep(1500);
+    await sceneBlackout(async()=>{
+      els.stageOverlay.hidden=true;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
+    },{fadeIn:520,hold:160,fadeOut:700});
+    await sleep(260);
+    await playStageBgm();await runBattleCountdown();await showBossEntrance(true,0);
   }
 
   async function runEndFinalDefeatSequence(){
@@ -4640,7 +4651,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   window.__SANSU_TEST__={
     get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,bossSpecialSequence:bossSpecialSequence&&{...bossSpecialSequence},currentQuestion:currentQuestion&&{...currentQuestion},paused,gameOverActive,specialGauge,comboStreak,specialActive};},
     rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,
-    showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_KEEP_ORIGINAL_FACING,
+    showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_FLIP_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
