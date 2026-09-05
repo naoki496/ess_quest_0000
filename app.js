@@ -240,18 +240,18 @@
 
 
   const els={
-    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),dataManagementScreen:$('dataManagementScreen'),gameScreen:$('gameScreen'),
+    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),titleGradeGuide:$('titleGradeGuide'),
-    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),dataManagementBtn:$('dataManagementBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
-    dataStatusMain:$('dataStatusMain'),dataStatusBackup:$('dataStatusBackup'),dataStatusCorrupt:$('dataStatusCorrupt'),dataManagementNotice:$('dataManagementNotice'),dataDeleteBtn:$('dataDeleteBtn'),dataManagementBackBtn:$('dataManagementBackBtn'),dataDeleteConfirm:$('dataDeleteConfirm'),dataDeleteCancelBtn:$('dataDeleteCancelBtn'),dataDeleteConfirmBtn:$('dataDeleteConfirmBtn'),
+    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
     musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicWorldTabs:$('musicWorldTabs'),musicWorldStatus:$('musicWorldStatus'),musicWorldTitle:$('musicWorldTitle'),musicUnlockCount:$('musicUnlockCount'),musicUnlockFill:$('musicUnlockFill'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicElapsed:$('musicElapsed'),musicDuration:$('musicDuration'),musicSeek:$('musicSeek'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     worldWarpList:$('worldWarpList'),worldWarpBackBtn:$('worldWarpBackBtn'),
+    dataManagementScreen:$('dataManagementScreen'),dataManagementBtn:$('dataManagementBtn'),dataManagementBackBtn:$('dataManagementBackBtn'),dataStatusMain:$('dataStatusMain'),dataStatusBackup:$('dataStatusBackup'),dataStatusCorrupt:$('dataStatusCorrupt'),dataManagementNotice:$('dataManagementNotice'),dataDeleteBtn:$('dataDeleteBtn'),dataDeleteConfirm:$('dataDeleteConfirm'),dataDeleteCancelBtn:$('dataDeleteCancelBtn'),dataDeleteConfirmBtn:$('dataDeleteConfirmBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
-    progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),
-    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
+    progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),hudModeToggleBtn:$('hudModeToggleBtn'),
+    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),enemyRingHud:$('enemyRingHud'),enemyRingSegments:$('enemyRingSegments'),enemyRingText:$('enemyRingText'),enemyRingLabel:$('enemyRingLabel'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapVisual:$('mapVisual'),mapImage:$('mapImage'),mapTipCategory:$('mapTipCategory'),mapTipText:$('mapTipText'),mapMessage:$('mapMessage'),mapNextBtn:$('mapNextBtn'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
@@ -259,7 +259,7 @@
     rewardOverlay:$('rewardOverlay'),rewardCard:$('rewardCard'),rewardKicker:$('rewardKicker'),rewardIcon:$('rewardIcon'),rewardName:$('rewardName'),rewardText:$('rewardText'),rewardOkBtn:$('rewardOkBtn'),transitionFx:$('transitionFx'),pauseOverlay:$('pauseOverlay'),pauseMenu:$('pauseMenu'),pauseConfirm:$('pauseConfirm'),pauseResumeBtn:$('pauseResumeBtn'),pauseTitleBtn:$('pauseTitleBtn'),pauseCancelTitleBtn:$('pauseCancelTitleBtn'),pauseConfirmTitleBtn:$('pauseConfirmTitleBtn'),battleCountdownOverlay:$('battleCountdownOverlay'),battleCountdownText:$('battleCountdownText'),gameOverOverlay:$('gameOverOverlay'),gameOverMessage:$('gameOverMessage'),gameOverReviewList:$('gameOverReviewList'),gameOverRetryBtn:$('gameOverRetryBtn'),gameOverTitleBtn:$('gameOverTitleBtn')
   };
 
-  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
+  let mode='front',stageIndex=0,stageQuestion=0,totalProgress=0,lives=3,timeLeft=60,timerLimit=60,timerId=null,locked=true,soundOn=true,bossPhase=false,bossQuestion=0,currentMonster=null,bossActionActive=false,bossSpecialSequence=null,paused=false,pauseRestoreLocked=false,pauseBgmShouldResume=false,countCuePlayed=false,gameOverActive=false,specialGauge=0,comboStreak=0,specialActive=false,crimsonLastPhase=false;
   let crimsonSpecialIntervals=[],crimsonSpecialTimeouts=[],crimsonMoonShiftBusy=false,silverSpecialBusy=false,blueSpecialBusy=false,silverSnowballCycleToken=0,silverBeastCycleToken=0,blueMemoryDim=0,blueAdultState=false;
   let midoriSpecialState=null;
   let endSpecialTimers=[],endSpecialState=null,endFinalModifierTimer=null;
@@ -284,8 +284,8 @@
   const frontFinisherSE=new Audio('./assets/omote_h.mp3'),backFinisherSE=new Audio('./assets/ura_h.mp3');
   const countSE=new Audio('./assets/count.mp3'),buttonSE=new Audio('./assets/button.mp3');
   const cancelSE=new Audio('./assets/cancel.mp3'),start321SE=new Audio('./assets/start_321.mp3'),start0SE=new Audio('./assets/start_0.mp3'),clearSE=new Audio('./assets/clear.mp3');
-  const ALL_SE=[correctSE,wrongSE,swordSE,magicSE,gunSE,midoriFinisherSE,sirenSE,endCorruptionNoiseSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE];
-  ALL_SE.forEach(a=>a.preload='auto');
+  gunSE.preload='auto';midoriFinisherSE.preload='auto';
+  [sirenSE,cutinSE,endCorruptionNoiseSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(a=>a.preload='auto');
 
   // BGM collection: only tracks already used by the current game are listed.
   // Title-screen tracks are deliberately excluded until the title BGM issue is resolved.
@@ -351,17 +351,6 @@
   const battlefield=document.querySelector('.battlefield');
   if(battlefield&&els.attackEffect?.parentElement!==battlefield)battlefield.appendChild(els.attackEffect);
 
-  function parseStoredSave(rawText){
-    if(typeof rawText!=='string'||!rawText.trim())return null;
-    try{
-      const parsed=JSON.parse(rawText);
-      if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return null;
-      return parsed;
-    }catch{return null;}
-  }
-  function freshSave(){
-    return{...DEFAULT_SAVE,owned:[100],monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
-  }
   function normalizeSave(raw={}){
     const merged={...DEFAULT_SAVE,...raw};
     merged.owned=Array.isArray(raw.owned)?raw.owned:[100];
@@ -385,63 +374,39 @@
     inferMusicUnlocksFromSave(merged);
     return merged;
   }
-  function safelyStoreCorrupt(rawText){
-    if(typeof rawText!=='string'||!rawText)return;
-    try{localStorage.setItem(SAVE_CORRUPT_KEY,rawText);}catch{}
+  function parseStoredSave(raw){
+    if(typeof raw!=='string'||!raw.trim())return null;
+    try{const value=JSON.parse(raw);return value&&typeof value==='object'&&!Array.isArray(value)?value:null;}catch{return null;}
   }
+  function freshSave(){return normalizeSave({});}
   function loadSave(){
-    let mainRaw=null,backupRaw=null;
-    try{mainRaw=localStorage.getItem(STORAGE_KEY);}catch{}
-    const mainParsed=parseStoredSave(mainRaw);
-    if(mainParsed){
-      try{if(!localStorage.getItem(SAVE_BACKUP_KEY))localStorage.setItem(SAVE_BACKUP_KEY,mainRaw);}catch{}
-      return normalizeSave(mainParsed);
-    }
-    if(mainRaw)safelyStoreCorrupt(mainRaw);
-    try{backupRaw=localStorage.getItem(SAVE_BACKUP_KEY);}catch{}
-    const backupParsed=parseStoredSave(backupRaw);
-    if(backupParsed){
-      try{localStorage.setItem(STORAGE_KEY,backupRaw);}catch{}
-      return normalizeSave(backupParsed);
-    }
-    const fallback=freshSave();inferMusicUnlocksFromSave(fallback);return fallback;
+    try{
+      const mainRaw=localStorage.getItem(STORAGE_KEY),main=parseStoredSave(mainRaw);
+      if(main){
+        const backupRaw=localStorage.getItem(SAVE_BACKUP_KEY);
+        if(!parseStoredSave(backupRaw))try{localStorage.setItem(SAVE_BACKUP_KEY,mainRaw);}catch{}
+        return normalizeSave(main);
+      }
+      if(mainRaw!==null){
+        try{localStorage.setItem(SAVE_CORRUPT_KEY,mainRaw);}catch{}
+        const backupRaw=localStorage.getItem(SAVE_BACKUP_KEY),backup=parseStoredSave(backupRaw);
+        if(backup){try{localStorage.setItem(STORAGE_KEY,backupRaw);}catch{}return normalizeSave(backup);}
+      }
+      const backupRaw=localStorage.getItem(SAVE_BACKUP_KEY),backup=parseStoredSave(backupRaw);
+      if(backup){try{localStorage.setItem(STORAGE_KEY,backupRaw);}catch{}return normalizeSave(backup);}
+    }catch{}
+    return freshSave();
   }
-  function writeSaveWithBackup(){
+  function writeSaveSnapshot(){
     if(debugFullUnlock)return;
     try{
-      const nextRaw=JSON.stringify(save);
-      const currentRaw=localStorage.getItem(STORAGE_KEY);
-      if(parseStoredSave(currentRaw))localStorage.setItem(SAVE_BACKUP_KEY,currentRaw);
-      localStorage.setItem(STORAGE_KEY,nextRaw);
+      const existing=localStorage.getItem(STORAGE_KEY);
+      if(parseStoredSave(existing))localStorage.setItem(SAVE_BACKUP_KEY,existing);
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(save));
     }catch{}
   }
-  function persist(){writeSaveWithBackup();renderTitle();}
-  function persistQuietly(){writeSaveWithBackup();}
-  function saveStorageStatus(){
-    const status={main:false,backup:false,corrupt:false};
-    try{status.main=!!localStorage.getItem(STORAGE_KEY);status.backup=!!localStorage.getItem(SAVE_BACKUP_KEY);status.corrupt=!!localStorage.getItem(SAVE_CORRUPT_KEY);}catch{}
-    return status;
-  }
-  function renderDataManagement(){
-    const st=saveStorageStatus();
-    if(els.dataStatusMain)els.dataStatusMain.textContent=st.main?'保存済み':'なし';
-    if(els.dataStatusBackup)els.dataStatusBackup.textContent=st.backup?'あり（自動）':'なし';
-    if(els.dataStatusCorrupt)els.dataStatusCorrupt.textContent=st.corrupt?'あり（復旧用に退避）':'なし';
-    if(els.dataDeleteBtn)els.dataDeleteBtn.disabled=!(st.main||st.backup||st.corrupt);
-  }
-  function openDataManagement(){
-    renderDataManagement();
-    if(els.dataManagementNotice){els.dataManagementNotice.hidden=true;els.dataManagementNotice.textContent='';}
-    showOnly(els.dataManagementScreen);
-  }
-  function showDataDeleteConfirm(){if(els.dataDeleteConfirm)els.dataDeleteConfirm.hidden=false;}
-  function hideDataDeleteConfirm(){if(els.dataDeleteConfirm)els.dataDeleteConfirm.hidden=true;}
-  function deleteAllSaveData(){
-    try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(SAVE_BACKUP_KEY);localStorage.removeItem(SAVE_CORRUPT_KEY);}catch{}
-    save=freshSave();inferMusicUnlocksFromSave(save);mode='front';
-    hideDataDeleteConfirm();renderDataManagement();renderTitle();
-    if(els.dataManagementNotice){els.dataManagementNotice.textContent='このブラウザ内のセーブデータをすべて削除しました。';els.dataManagementNotice.hidden=false;}
-  }
+  function persist(){writeSaveSnapshot();renderTitle();}
+  function persistQuietly(){writeSaveSnapshot();}
   function isItemOwned(id){return debugFullUnlock||save.owned.includes(id);}
   function effectiveGold(){return debugFullUnlock?99999:save.gold;}
   function effectiveOwnedCount(){return debugFullUnlock?100:save.owned.length;}
@@ -821,7 +786,7 @@ function markWorldVisited(world){
         nodes[selectedIndex].classList.add('departing');
         await sleep(430);
         markWorldVisited(w.key);mode=w.key;
-        await transitionTo(()=>{renderTitle();showOnly(els.titleScreen);},mode==='back'?'back':'normal',1500);
+        await transitionTo(()=>{renderTitle();showOnly(els.titleScreen);},mode,1500);
       };
     };
     els.worldWarpList.onkeydown=e=>{
@@ -1002,7 +967,7 @@ function markWorldVisited(world){
     await transitionTo(()=>{
       if(opening){musicWorld=isMusicWorldVisible(mode)?mode:'front';musicSelectedWorld=musicWorld;musicTrackIndex=-1;stopMusicPlayer();renderMusicPlayer();els.musicOverlay.hidden=false;document.body.classList.add('music-overlay-open');}
       else{stopMusicPlayer();musicTrackIndex=-1;musicSelectedWorld=musicWorld;els.musicOverlay.hidden=true;document.body.classList.remove('music-overlay-open');renderTitle();}
-    },mode==='back'?'back':'normal',1450);
+    },mode,1450);
     await sleep(70);curtain.className='scene-curtain leaving';await sleep(420);curtain.hidden=true;curtain.className='scene-curtain';
   }
   async function openMusicPlayer(){if(!els.musicOverlay.hidden)return;await transitionMusicOverlay(true);}
@@ -1071,19 +1036,19 @@ function markWorldVisited(world){
   async function debugJumpToStage(world,index){
     if(!debugFullUnlock)return;
     closeDebugPanel();mode=world;resetRun();if(world==='end')endRunRoute=['midori','crimson','silver','back','blue'];crimsonLastPhase=false;endFinalPhase=false;stageIndex=Math.max(0,Math.min(4,index));totalProgress=stageStartTotal(stageIndex);
-    primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);
+    primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode,1500);await showMapSequence(true,true);
   }
   async function debugJumpToBossFifth(world,index){
     if(!debugFullUnlock)return;
     closeDebugPanel();mode=world;resetRun();if(world==='end')endRunRoute=['midori','crimson','silver','back','blue'];crimsonLastPhase=false;endFinalPhase=false;stageIndex=Math.max(0,Math.min(4,index));stageQuestion=10;bossPhase=true;bossQuestion=4;if(mode==='blue'&&stageIndex===4)blueAdultState=true;
     totalProgress=stageStartTotal(stageIndex)+stageNormalCount(stageIndex)+4;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
-    await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;bossPhase=true;bossQuestion=4;currentMonster=null;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},mode==='back'?'back':'normal',1250);
+    await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage=stageIndex;bossPhase=true;bossQuestion=4;currentMonster=null;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},mode,1250);
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,4);
   }
   async function debugJumpToCrimsonLast(question=0){
     if(!debugFullUnlock)return;
     closeDebugPanel();resetRun();mode='crimson';crimsonLastPhase=true;stageIndex=4;stageQuestion=10;bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(question)||0));totalProgress=75+bossQuestion;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
-    await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},'normal',1250);
+    await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},mode,1250);
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,bossQuestion);
   }
   async function debugJumpToEndFinal(question=0){
@@ -1110,16 +1075,11 @@ function markWorldVisited(world){
     target.addEventListener('pointercancel',clearHold);target.addEventListener('pointerleave',clearHold);
   }
 
-  const TRANSITION_WORLD_CLASSES=['front','back','crimson','blue','silver','midori','end','white'];
-  function transitionWorldClass(kind='normal'){
-    if(kind!=='normal'&&TRANSITION_WORLD_CLASSES.includes(kind))return kind;
-    return TRANSITION_WORLD_CLASSES.includes(mode)?mode:'front';
-  }
   async function transitionTo(swap,kind='normal',ms=1500){
-    const duration=Math.max(ms,1400),coverAt=Math.round(duration*0.46),worldClass=transitionWorldClass(kind);
+    const duration=Math.max(ms,1400),coverAt=Math.round(duration*0.46),themes=['front','back','crimson','blue','silver','midori','end','white'];
     els.transitionFx.style.setProperty('--transition-ms',`${duration}ms`);
-    els.transitionFx.classList.remove('active',...TRANSITION_WORLD_CLASSES);
-    els.transitionFx.classList.add(worldClass);
+    els.transitionFx.classList.remove('active',...themes);
+    const theme=themes.includes(kind)?kind:(themes.includes(mode)?mode:'front');els.transitionFx.classList.add(theme);
     els.transitionFx.hidden=false;
     void els.transitionFx.offsetWidth;
     els.transitionFx.classList.add('active');
@@ -1130,6 +1090,29 @@ function markWorldVisited(world){
     els.transitionFx.hidden=true;
   }
   async function transition(kind='normal',ms=1500){return transitionTo(null,kind,ms);}
+
+  function saveStorageStatus(key){
+    try{const raw=localStorage.getItem(key);if(raw===null)return{present:false,valid:false};return{present:true,valid:!!parseStoredSave(raw)};}catch{return{present:false,valid:false};}
+  }
+  function renderDataManagement(){
+    const main=saveStorageStatus(STORAGE_KEY),backup=saveStorageStatus(SAVE_BACKUP_KEY);
+    let corrupt=false;try{corrupt=localStorage.getItem(SAVE_CORRUPT_KEY)!==null;}catch{}
+    if(els.dataStatusMain)els.dataStatusMain.textContent=main.present?(main.valid?'保存あり':'破損を検出'):'保存なし';
+    if(els.dataStatusBackup)els.dataStatusBackup.textContent=backup.present?(backup.valid?'復旧用あり':'使用不可'):'なし';
+    if(els.dataStatusCorrupt){els.dataStatusCorrupt.textContent=corrupt?'退避あり':'なし';els.dataStatusCorrupt.closest('div')?.toggleAttribute('hidden',!corrupt);}
+  }
+  async function openDataManagement(){
+    renderDataManagement();if(els.dataManagementNotice){els.dataManagementNotice.hidden=true;els.dataManagementNotice.textContent='';}
+    await transitionTo(()=>showOnly(els.dataManagementScreen),mode,1250);
+  }
+  async function closeDataManagement(){await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1200);}
+  function openDataDeleteConfirm(){if(els.dataDeleteConfirm)els.dataDeleteConfirm.hidden=false;}
+  function closeDataDeleteConfirm(){if(els.dataDeleteConfirm)els.dataDeleteConfirm.hidden=true;}
+  async function deleteAllSaveData(){
+    try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(SAVE_BACKUP_KEY);localStorage.removeItem(SAVE_CORRUPT_KEY);}catch{}
+    save=freshSave();syncSecretRelics();closeDataDeleteConfirm();renderDataManagement();
+    if(els.dataManagementNotice){els.dataManagementNotice.textContent='このブラウザ内のセーブデータをすべて削除しました。';els.dataManagementNotice.hidden=false;}
+  }
 
   function renderShop(filter='all'){
     els.shopGold.textContent=`${effectiveGold()} G`;
@@ -1300,7 +1283,7 @@ function markWorldVisited(world){
     const totalHp=mode==='white'?1:5;
     const remaining=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));
     const pct=remaining/totalHp*100;
-    els.bossHpFill.style.width=`${pct}%`;
+    els.bossHpFill.style.width=`${pct}%`;els.bossHpHud.style.setProperty('--meter-pct',pct);
     els.bossHpHud.classList.toggle('critical',remaining===1);
     els.bossHpHud.classList.toggle('empty',remaining===0);
     els.bossHpHud.setAttribute('aria-label',`ボスHP ${remaining} / ${totalHp}`);
@@ -1364,22 +1347,21 @@ function markWorldVisited(world){
       return endNumericQuestion(`${n}人から2人を選ぶ。${condition}。何通り？`,answer,[all,n*(n-1),Math.max(1,answer-1)]);
     }
     if(k===7){
-      if(hard)return endNumericQuestion('右に3回、上に3回動く最短経路は何通り？',20,[9,12,18]);
-      return endNumericQuestion('右に3回、上に2回動く最短経路は何通り？',10,[6,8,12]);
+      const right=hard?pick([3,4,5]):pick([2,3,4]),up=hard?pick([3,4]):pick([2,3]),answer=combination(right+up,right);
+      return endNumericQuestion(`右に${right}回、上に${up}回動く最短経路は何通り？`,answer,[right*up,Math.max(1,answer-right),answer+up]);
     }
     if(k===8){
       const lo=hard?40:20,hi=hard?70:40,mul=hard?6:4,candidates=[];for(let x=lo+1;x<hi;x++)if(x%2===0&&x%mul===0)candidates.push(x);
       const answer=pick(candidates);let wrong1=answer+2<hi?answer+2:answer-2;if(wrong1%mul===0)wrong1+=(wrong1+2<hi?2:-2);let wrong2=answer+1<hi?answer+1:answer-1;if(wrong2%2===0)wrong2+=(wrong2+1<hi?1:-1);
       return{expression:`偶数で、${lo}より大きく${hi}より小さく、${mul}の倍数。どれ？`,answer,choices:shuffle([answer,wrong1,wrong2])};
     }
-    const bank=hard?[
-      {expression:'AはBより先。CはAより後でBより先。DはCより後。正しい順は？',answer:'A→C→B→D',choices:['A→C→B→D','C→A→B→D','A→B→C→D']},
-      {expression:'赤・青・緑の箱。宝は赤ではない。青には鍵がある。宝と鍵は別の箱。宝は？',answer:'緑',choices:['赤','青','緑']}
-    ]:[
-      {expression:'AはBより前。CはAより後でBより前。正しい順は？',answer:'A→C→B',choices:['A→C→B','C→A→B','B→C→A']},
-      {expression:'赤・青・緑の箱。宝は赤でも青でもない。宝は？',answer:'緑',choices:['赤','青','緑']}
-    ];
-    return{...pick(bank)};
+    if(Math.random()<.5){
+      const labels=shuffle(hard?['A','B','C','D']:['A','B','C']);
+      if(hard){const[a,b,c,d]=labels,answer=`${a}→${c}→${b}→${d}`;return{expression:`${a}は${b}より先。${c}は${a}より後で${b}より先。${d}は${c}より後。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}→${d}`,`${a}→${b}→${c}→${d}`])};}
+      const[a,b,c]=labels,answer=`${a}→${c}→${b}`;return{expression:`${a}は${b}より前。${c}は${a}より後で${b}より前。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}`,`${b}→${c}→${a}`])};
+    }
+    const colors=shuffle(['赤','青','緑']),answer=colors[2];
+    return{expression:hard?`${colors[0]}・${colors[1]}・${colors[2]}の箱。宝は${colors[0]}ではない。${colors[1]}には鍵があり、宝と鍵は別。宝は？`:`${colors[0]}・${colors[1]}・${colors[2]}の箱。宝は${colors[0]}でも${colors[1]}でもない。宝は？`,answer,choices:shuffle(colors)};
   }
   function makeEndCrimsonQuestion(step=stageQuestion){
     const raw=Math.max(0,Number(step)||0),hard=raw>=10,k=raw%10;
@@ -1459,8 +1441,18 @@ function markWorldVisited(world){
     if(k===8){const a=rand(hard?500:200,hard?1200:800),b=rand(20,90),c=pick([3,4,5,6]),d=rand(10,50),answer=a-(b-d)*c;return endNumericQuestion(`${a} − (${b} − ${d}) × ${c}`,answer,[(a-b+d)*c,a-b-d*c,a-(b+d)*c]);}
     const x=rand(hard?30:12,hard?100:60),a=pick([4,5,6,8]),b=rand(10,40),total=x*a-b,answer=x;return endNumericQuestion(`ある数を${a}倍して${b}引くと${total}。元の数は？`,answer,[(total+b)/a+1,total/a,(total-b)/a]);
   }
+  function endRouteDifficultyRank(){return mode==='end'&&!endFinalPhase?Math.max(0,Math.min(4,stageIndex)):0;}
+  function endEffectiveStep(step,boss=false,rank=endRouteDifficultyRank()){
+    const q=Math.max(0,Number(step)||0)%10,r=Math.max(0,Math.min(4,Number(rank)||0));
+    if(boss){const bossOrder=[[4,5,6,7,8],[5,6,7,8,9],[6,7,8,9,8],[7,8,9,8,9],[8,9,7,8,9]][r];return 10+bossOrder[Math.max(0,Math.min(4,Number(step)||0))];}
+    if(r===0)return q;
+    if(r===1)return q<5?q:10+q;
+    if(r===2)return 10+q;
+    const order=r===3?[2,3,4,5,6,7,8,9,8,9]:[4,5,6,7,8,9,6,7,8,9];
+    return 10+order[q];
+  }
   function makeEndQuestion(sourceWorld=currentEndSource(),step=(bossPhase?bossQuestion:stageQuestion)){
-    const effective=(bossPhase?10:0)+Math.max(0,Number(step)||0);
+    const effective=endEffectiveStep(step,bossPhase,endRouteDifficultyRank());
     if(sourceWorld==='midori')return makeEndMidoriQuestion(effective);
     if(sourceWorld==='silver')return makeEndSilverQuestion(effective);
     if(sourceWorld==='blue')return makeEndBlueQuestion(effective);
@@ -1540,6 +1532,7 @@ function markWorldVisited(world){
 
 
   function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a||1;}
+  function combination(n,k){k=Math.min(k,n-k);let v=1;for(let i=1;i<=k;i++)v=v*(n-k+i)/i;return Math.round(v);}
   function normFraction(n,d){if(d<0){n=-n;d=-d;}const g=gcd(n,d);return{n:n/g,d:d/g};}
   function fractionKey(f){const x=normFraction(f.n,f.d);return `${x.n}/${x.d}`;}
   function parseFractionKey(v){const m=String(v).match(/^(-?\d+)\/(\d+)$/);return m?{n:Number(m[1]),d:Number(m[2])}:null;}
@@ -1845,9 +1838,15 @@ function markWorldVisited(world){
   }
   function ratioQuestion(level='basic'){
     if(level==='equal'){
-      const bank=[['6:10','9:15'],['8:12','10:15'],['12:18','2:3'],['10:16','15:24']];const [base,answer]=pick(bank);
-      const wrong=answer==='2:3'?['3:4','4:5']:answer==='9:15'?['9:12','12:15']:answer==='10:15'?['12:15','8:10']:['15:20','20:24'];
-      return{expression:`${base} と同じ比は？`,answer,choices:shuffle([answer,...wrong])};
+      for(let i=0;i<300;i++){
+        const a=rand(2,9),b=rand(3,12);if(a===b||gcd(a,b)!==1)continue;
+        const baseScale=rand(2,5),answerScale=rand(2,6);if(baseScale===answerScale)continue;
+        const base=`${a*baseScale}:${b*baseScale}`,answer=`${a*answerScale}:${b*answerScale}`;
+        const wrong1=`${a*answerScale}:${b*answerScale+answerScale}`;
+        const wrong2=`${a*answerScale+answerScale}:${b*answerScale}`;
+        return{expression:`${base} と同じ比は？`,answer,choices:shuffle([answer,wrong1,wrong2])};
+      }
+      return ratioQuestion('missing');
     }
     if(level==='missing'){
       for(let i=0;i<500;i++){const a=rand(1,8),b=rand(2,9);if(a===b||gcd(a,b)!==1)continue;const k=rand(2,7);if(Math.random()<.5){const text=`${a*k}:${b*k} = □:${b}`;return{expression:text,displayExpression:text,answer:a,choices:compactNumericChoices(a,[a+1,Math.max(1,a-1),b])};}const text=`${a*k}:${b*k} = ${a}:□`;return{expression:text,displayExpression:text,answer:b,choices:compactNumericChoices(b,[b+1,Math.max(1,b-1),a])};}
@@ -1929,27 +1928,32 @@ function markWorldVisited(world){
   }
   function midoriCountingQuestion(qn=0){
     const k=((Number(qn)||0)%10+10)%10;
-    if(k<=2){const hats=pick([2,3,4]),shoes=pick([2,3]);const ans=hats*shoes;return{expression:`帽子${hats}種類と靴${shoes}種類。1つずつ選ぶ組合せは？通り`,answer:ans,choices:compactNumericChoices(ans,[hats+shoes,Math.max(hats,shoes),ans-1])};}
-    if(k<=4){const n=pick([3,4]);const ans=n===3?6:24;return{expression:`${n}人を1列に並べる。並び方は？通り`,answer:ans,choices:compactNumericChoices(ans,[n*n,n*(n-1),ans/2])};}
-    if(k<=6){const n=pick([4,5,6]),ans=n*(n-1)/2;return{expression:`${n}人から2人を選ぶ。選び方は？通り`,answer:ans,choices:compactNumericChoices(ans,[n*2,n*(n-1),ans+1])};}
-    if(k===7){return{expression:'右に2回、上に2回動く最短の道順は？通り',answer:6,choices:[4,6,8]};}
-    if(k===8){return{expression:'A・B・C・Dから2人選ぶ。AとBを同時に選ばない。何通り？',answer:5,choices:[4,5,6]};}
-    return{expression:'赤・青・緑の3色から2色を選ぶ。順番は考えない。何通り？',answer:3,choices:[3,6,9]};
+    if(k<=2){const hats=pick([2,3,4,5]),shoes=pick([2,3,4]);const ans=hats*shoes;return{expression:`帽子${hats}種類と靴${shoes}種類。1つずつ選ぶ組合せは？通り`,answer:ans,choices:compactNumericChoices(ans,[hats+shoes,Math.max(hats,shoes),ans-1])};}
+    if(k<=4){const n=pick([3,4,5]);const ans=[1,1,2,6,24,120][n];return{expression:`${n}人を1列に並べる。並び方は？通り`,answer:ans,choices:compactNumericChoices(ans,[n*n,n*(n-1),Math.max(1,ans/2)])};}
+    if(k<=6){const n=pick([4,5,6,7]),ans=combination(n,2);return{expression:`${n}人から2人を選ぶ。選び方は？通り`,answer:ans,choices:compactNumericChoices(ans,[n*2,n*(n-1),ans+1])};}
+    if(k===7){const right=pick([2,3,4]),up=pick([2,3,4]),ans=combination(right+up,right);return{expression:`右に${right}回、上に${up}回動く最短の道順は？通り`,answer:ans,choices:compactNumericChoices(ans,[right*up,ans-(right>2?right:1),ans+(up>2?up:2)])};}
+    if(k===8){const n=pick([4,5,6,7,8,9]),all=combination(n,2),ans=all-1;return{expression:`${n}人から2人選ぶ。ただし指定された1組は同時に選べない。何通り？`,answer:ans,choices:compactNumericChoices(ans,[all,Math.max(1,all-2),n])};}
+    const colors=pick([3,4,5,6,7,8]),ans=combination(colors,2);return{expression:`${colors}色から2色を選ぶ。順番は考えない。何通り？`,answer:ans,choices:compactNumericChoices(ans,[colors*2,colors*(colors-1),Math.max(1,ans-1)])};
   }
   function midoriLogicQuestion(qn=0){
-    const bank=[
-      {expression:'アキラはユウタより前。ミキはアキラより後でユウタより前。正しい順は？',answer:'アキラ→ミキ→ユウタ',choices:['アキラ→ミキ→ユウタ','ミキ→アキラ→ユウタ','ユウタ→ミキ→アキラ']},
-      {expression:'30より大きく50より小さい。4で割り切れ、6では割り切れない数は？',answer:40,choices:[36,40,48]},
-      {expression:'AはBより高い。CはAより高い。いちばん高いのは？',answer:'C',choices:['A','B','C']},
-      {expression:'箱Aは赤、箱Bは青ではない。赤は1箱だけ。箱Bの色は？',answer:'緑',choices:['赤','青','緑']},
-      {expression:'偶数で、20より大きく30より小さく、3の倍数。どれ？',answer:24,choices:[22,24,28]},
-      {expression:'A→Cより、A→B→Cの方が2km長い。A→Cが7kmならA→B→Cは？km',answer:9,choices:[5,7,9]},
-      {expression:'3つの箱。宝は「赤ではない」「青でもない」。宝の箱は？',answer:'緑',choices:['赤','青','緑']},
-      {expression:'月・火・水の3日。雨は火ではない。晴れは月。雨の日は？',answer:'水',choices:['月','火','水']},
-      {expression:'Aは3位ではない。BはAより後。Cが1位。Aは何位？',answer:'2位',choices:['1位','2位','3位']},
-      {expression:'ある数に5を足すと18。さらに2倍すると？',answer:36,choices:[26,31,36]}
-    ];
-    return {...bank[((Number(qn)||0)%bank.length+bank.length)%bank.length]};
+    const k=((Number(qn)||0)%10+10)%10;
+    if(k===0){
+      const names=shuffle(['アキラ','ユウタ','ミキ','ソラ','レイ']).slice(0,3),[a,b,c]=names,answer=`${a}→${c}→${b}`;
+      return{expression:`${a}は${b}より前。${c}は${a}より後で${b}より前。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}`,`${a}→${b}→${c}`])};
+    }
+    if(k===1){
+      for(let i=0;i<200;i++){const div=pick([3,4,5,6,8]),reject=pick([4,6,7,9,10]);if(div===reject)continue;const lo=pick([20,30,40,50]),hi=lo+pick([20,24,30]),cand=[];for(let x=lo+1;x<hi;x++)if(x%div===0&&x%reject!==0)cand.push(x);if(!cand.length)continue;const answer=pick(cand),wrong=shuffle([...Array(hi-lo-1)].map((_,j)=>lo+1+j).filter(x=>x!==answer&&(x%div!==0||x%reject===0))).slice(0,2);if(wrong.length===2)return{expression:`${lo}より大きく${hi}より小さい。${div}で割り切れ、${reject}では割り切れない数は？`,answer,choices:shuffle([answer,...wrong])};}
+    }
+    if(k===2){const labels=shuffle(['A','B','C']),[a,b,c]=labels;return{expression:`${a}は${b}より高い。${c}は${a}より高い。いちばん高いのは？`,answer:c,choices:shuffle(labels)};}
+    if(k===3){const colors=shuffle(['赤','青','緑']),[only,notColor,answer]=colors;return{expression:`箱Aは${only}。箱Bは${notColor}ではない。${only}は1箱だけ。箱Bの色は？`,answer,choices:shuffle(colors)};}
+    if(k===4){
+      for(let i=0;i<300;i++){const multiple=pick([3,4,5,6,8]),lo=pick([12,18,20,24,30,36]),hi=lo+pick([10,12,14,18]),cand=[];for(let x=lo+1;x<hi;x++)if(x%2===0&&x%multiple===0)cand.push(x);if(cand.length!==1)continue;const answer=cand[0],wrong=shuffle([...Array(hi-lo-1)].map((_,j)=>lo+1+j).filter(x=>x!==answer)).slice(0,2);const conditions=['偶数である',`${lo}より大きく${hi}より小さい`,`${multiple}の倍数である`];return{expression:`偶数で、${lo}より大きく${hi}より小さく、${multiple}の倍数。どれ？`,answer,choices:shuffle([answer,...wrong]),conditions};}
+    }
+    if(k===5){const direct=rand(5,18),extra=rand(2,8),answer=direct+extra;return{expression:`A→Cより、A→B→Cの方が${extra}km長い。A→Cが${direct}kmならA→B→Cは？km`,answer,choices:compactNumericChoices(answer,[direct,Math.max(1,direct-extra),answer+extra])};}
+    if(k===6){const colors=shuffle(['赤','青','緑']),answer=colors[2];return{expression:`3つの箱。宝は「${colors[0]}ではない」「${colors[1]}でもない」。宝の箱は？`,answer,choices:shuffle(colors)};}
+    if(k===7){const days=shuffle(['月','火','水']),sunny=days[0],notRain=days[1],answer=days[2];return{expression:`月・火・水の3日。雨は${notRain}ではない。晴れは${sunny}。雨の日は？`,answer,choices:shuffle(['月','火','水'])};}
+    if(k===8){const order=shuffle(['A','B','C','D']),[first,second,third,fourth]=order,target=pick([second,third,fourth]),rank=order.indexOf(target)+1,answer=`${rank}位`;return{expression:`${first}が1位。${second}は${third}より前、${third}は${fourth}より前。${target}は何位？`,answer,choices:shuffle(['2位','3位','4位'])};}
+    const x=rand(5,24),add=rand(3,12),mult=pick([2,3,4]),answer=(x+add)*mult;return{expression:`ある数に${add}を足すと${x+add}。さらに${mult}倍すると？`,answer,choices:compactNumericChoices(answer,[x*mult,(x+add)+mult,answer-mult])};
   }
   function makeMidoriQuestion(idx){
     const qn=bossPhase?bossQuestion:stageQuestion;
@@ -1999,13 +2003,12 @@ function markWorldVisited(world){
   function makeSilverFinalBossQuestion(step=bossQuestion){
     const phase=Math.max(0,Math.min(4,Number(step)||0));
     if(phase===0){
-      const bank=[
-        {expression:'6:10 と同じ比は？',answer:'9:15',choices:['9:15','9:12','12:15']},
-        {expression:'12:18 と同じ比は？',answer:'2:3',choices:['2:3','3:4','4:5']},
-        {expression:'8:12 と同じ比は？',answer:'10:15',choices:['10:15','12:15','8:10']},
-        {expression:'10:16 と同じ比は？',answer:'15:24',choices:['15:24','15:20','20:24']}
-      ];
-      const q=pick(bank);return{...q,displayExpression:q.expression};
+      for(let i=0;i<300;i++){
+        const a=rand(2,9),b=rand(3,12);if(a===b||gcd(a,b)!==1)continue;const s1=rand(2,5),s2=rand(2,6);if(s1===s2)continue;
+        const expression=`${a*s1}:${b*s1} と同じ比は？`,answer=`${a*s2}:${b*s2}`,wrong1=`${a*s2}:${b*s2+s2}`,wrong2=`${a*s2+s2}:${b*s2}`;
+        return{expression,displayExpression:expression,answer,choices:shuffle([answer,wrong1,wrong2])};
+      }
+      return ratioQuestion('equal');
     }
     if(phase===1){
       if(Math.random()<.5){
@@ -2016,25 +2019,24 @@ function markWorldVisited(world){
       return{expression:`円周${circumference}cmの円。直径は？（円周率は3.14）`,answer:d,choices,visualType:'mimesis-circle',circleKind:'circumference',circleValue:`${circumference}cm`,circleAsk:'直径は？'};
     }
     if(phase===2){
-      const tableBank=[
-        {answer:'比例',x:[2,4,8],y:[6,12,24]},{answer:'比例',x:[3,6,12],y:[12,24,48]},{answer:'比例',x:[2,5,10],y:[8,20,40]},
-        {answer:'反比例',x:[2,4,8],y:[24,12,6]},{answer:'反比例',x:[3,6,12],y:[24,12,6]},{answer:'反比例',x:[2,5,10],y:[30,12,6]},
-        {answer:'どちらでもない',x:[2,4,8],y:[6,10,14]},{answer:'どちらでもない',x:[3,6,12],y:[8,14,20]},{answer:'どちらでもない',x:[2,5,10],y:[7,12,18]}
-      ];
-      const q=pick(tableBank);return{expression:'この関係は？',answer:q.answer,choices:['比例','反比例','どちらでもない'],visualType:'mimesis-table',tableX:q.x,tableY:q.y};
+      const answer=pick(['比例','反比例','どちらでもない']),base=pick([2,3,4]),m1=pick([2,3]),m2=pick([2,3]),x=[base,base*m1,base*m1*m2];let y;
+      if(answer==='比例'){const k=pick([2,3,4,5]);y=x.map(v=>v*k);}
+      else if(answer==='反比例'){const product=x[2]*pick([6,8,10,12]);y=x.map(v=>product/v);if(y.some(v=>!Number.isInteger(v)))return makeSilverFinalBossQuestion(phase);}
+      else{const k=pick([2,3,4]),offset=pick([1,2,5]);y=x.map((v,i)=>v*k+offset*(i+1));}
+      return{expression:'この関係は？',answer,choices:['比例','反比例','どちらでもない'],visualType:'mimesis-table',tableX:x,tableY:y};
     }
     if(phase===3){
       const relation=Math.random()<.5?'比例':'反比例',m=pick([2,3,4]),upward=Math.random()<.5,base=rand(2,6),from=upward?base:base*m,to=upward?base*m:base,xFactor=upward?m:1/m,yFactor=relation==='比例'?xFactor:1/xFactor,answer=yFactor>=1?`${m}倍`:`1/${m}倍`;
       return{expression:`xとyは${relation}。x：${from} → ${to}。yは？`,displayExpression:`xとyは${relation}　x：${from} → ${to}　yは？`,answer,choices:[`${m}倍`,`1/${m}倍`,'変わらない']};
     }
-    // FINAL only: same conceptual task as agreed, but values are intentionally one step heavier.
-    const templates={
-      ratio:{label:'比',true:['12:18 = 26:39','14:21 = 22:33','15:24 = 35:56','18:30 = 27:45'],false:['12:18 = 26:36','14:21 = 22:30','15:24 = 35:54','18:30 = 27:42']},
-      circle:{label:'円',true:['半径8cm → 面積200.96cm²','半径9cm → 面積254.34cm²','直径18cm → 円周56.52cm','直径24cm → 円周75.36cm'],false:['半径8cm → 面積100.48cm²','半径9cm → 面積56.52cm²','直径18cm → 円周28.26cm','直径24cm → 円周37.68cm']},
-      direct:{label:'比例',true:['x 6→18 ｜ y 14→42','x 8→20 ｜ y 12→30','x 9→27 ｜ y 11→33','x 12→30 ｜ y 16→40'],false:['x 6→18 ｜ y 14→40','x 8→20 ｜ y 12→28','x 9→27 ｜ y 11→30','x 12→30 ｜ y 16→36']},
-      inverse:{label:'反比例',true:['x 6→18 ｜ y 42→14','x 8→20 ｜ y 45→18','x 9→27 ｜ y 36→12','x 12→30 ｜ y 40→16'],false:['x 6→18 ｜ y 42→16','x 8→20 ｜ y 45→20','x 9→27 ｜ y 36→14','x 12→30 ｜ y 40→18']}
+    // FINAL only: same conceptual task, but each statement is generated anew so repeated clears do not expose a finite bank.
+    const makers={
+      ratio(isFalse){for(let i=0;i<100;i++){const a=rand(2,9),b=rand(a+1,14),m=rand(2,5),left=`${a}:${b}`,rb=b*m+(isFalse?pick([-2,-1,1,2]):0);if(rb<=0||(!isFalse&&rb!==b*m)||(isFalse&&a*m* b===a*rb))continue;return{label:'比',text:`${left} = ${a*m}:${rb}`};}return{label:'比',text:isFalse?'12:18 = 26:36':'12:18 = 26:39'};},
+      circle(isFalse){if(Math.random()<.5){const r=rand(5,12),area=round2(r*r*3.14),shown=isFalse?round2(area+pick([3.14,6.28,9.42])):area;return{label:'円',text:`半径${r}cm → 面積${shown}cm²`};}const d=pick([10,12,14,16,18,20,22,24]),circ=round2(d*3.14),shown=isFalse?round2(circ+pick([3.14,6.28,9.42])):circ;return{label:'円',text:`直径${d}cm → 円周${shown}cm`};},
+      direct(isFalse){const x1=rand(4,12),m=pick([2,3,4]),x2=x1*m,y1=rand(6,20),correct=y1*m,y2=isFalse?correct+pick([-3,-2,-1,1,2,3]):correct;return{label:'比例',text:`x ${x1}→${x2} ｜ y ${y1}→${y2}`};},
+      inverse(isFalse){const x1=pick([3,4,5,6,8,10]),m=pick([2,3,4]),x2=x1*m,y2=rand(4,15),y1=y2*m,shown=isFalse?Math.max(1,y2+pick([-2,-1,1,2])):y2;return{label:'反比例',text:`x ${x1}→${x2} ｜ y ${y1}→${shown}`};}
     };
-    const fields=shuffle(Object.keys(templates)).slice(0,3),falseField=pick(fields),rows=shuffle(fields.map(key=>{const t=templates[key],isFalse=key===falseField;return{label:t.label,text:pick(isFalse?t.false:t.true),isFalse};})).map((row,i)=>({...row,letter:['A','B','C'][i]})),answer=rows.find(r=>r.isFalse).letter;
+    const fields=shuffle(Object.keys(makers)).slice(0,3),falseField=pick(fields),rows=shuffle(fields.map(key=>({...makers[key](key===falseField),isFalse:key===falseField}))).map((row,i)=>({...row,letter:['A','B','C'][i]})),answer=rows.find(r=>r.isFalse).letter;
     return{expression:'まちがっているものは？',answer,choices:['A','B','C'],visualType:'mimesis-final',mimesisRows:rows,showPi:rows.some(r=>r.label==='円')};
   }
 
@@ -2074,7 +2076,7 @@ function markWorldVisited(world){
     const c=pick(WHITE_CATEGORIES.filter(x=>x!==whiteLastCategory));whiteLastCategory=c;return c;
   }
   function whiteChoices(answer,wrongs=[]){
-    const vals=[];const add=v=>{if(v===undefined||v===null)return;const key=String(v);if(key!==String(answer)&&!vals.some(x=>String(x)===key))vals.push(v);};wrongs.forEach(add);
+    const vals=[];const add=v=>{if(v===undefined||v===null)return;if(typeof v==='number'&&!Number.isFinite(v))return;if(typeof answer==='number'&&answer>=0&&typeof v==='number'&&v<0)return;const key=String(v);if(key!==String(answer)&&!vals.some(x=>String(x)===key))vals.push(v);};wrongs.forEach(add);
     if(typeof answer==='number'){
       const delta=Math.max(1,Math.round(Math.abs(answer)*.1));[answer+1,answer-1,answer+delta,Math.max(0,answer-delta),answer*2,answer/2].forEach(v=>add(Number.isInteger(answer)?Math.round(v):normalizeChoiceNumber(v)));
     }
@@ -2092,12 +2094,12 @@ function markWorldVisited(world){
     if(t==='div'){const b=rand(3,12),q=rand(4,18),a=b*q;return whiteQuestion(`${a}÷${b}`,q,[b,a-b],{templateId:'arith-div'});}
     if(t==='order'){const a=rand(8,20),b=rand(2,8),c=rand(2,9),ans=a+b*c;return whiteQuestion(`${a}+${b}×${c}`,ans,[(a+b)*c,a+b+c],{templateId:'arith-order'});}
     if(t==='reverse'){const x=rand(12,45),a=rand(6,20),sum=x+a;return whiteQuestion(`□+${a}=${sum}　□は？`,x,[sum+a,sum-a-1],{templateId:'arith-reverse'});}
-    if(t==='order2'){const a=rand(40,90),b=rand(2,7),c=rand(4,12),ans=a-b*c;return whiteQuestion(`${a}−${b}×${c}`,ans,[(a-b)*c,a-b-c],{templateId:'arith-order2'});}
+    if(t==='order2'){const b=rand(2,7),c=rand(4,12),ans=rand(8,55),a=b*c+ans;return whiteQuestion(`${a}−${b}×${c}`,ans,[(a-b)*c,a-b-c],{templateId:'arith-order2'});}
     if(t==='reverse2'){const x=rand(8,30),m=rand(2,6),add=rand(4,18),total=x*m+add;return whiteQuestion(`□×${m}+${add}=${total}　□は？`,x,[(total-add),Math.floor(total/m)],{templateId:'arith-reverse2'});}
     if(t==='three'){const a=rand(15,45),b=rand(6,20),c=rand(4,16),ans=a+b-c;return whiteQuestion(`${a}+${b}−${c}`,ans,[a+b+c,a-b+c],{templateId:'arith-three'});}
-    if(t==='order3'){const a=rand(3,9),b=rand(12,36),c=rand(2,6),d=rand(5,20),ans=a*(b/c)+d;return whiteQuestion(`${a}×(${b}÷${c})+${d}`,ans,[a*b/c-d,(a*b)/(c+d)],{templateId:'arith-order3'});}
+    if(t==='order3'){const a=rand(3,9),c=rand(2,6),q=rand(4,12),b=c*q,d=rand(5,20),ans=a*q+d;return whiteQuestion(`${a}×(${b}÷${c})+${d}`,ans,[a*q-d,(a*b)/(c+d)],{templateId:'arith-order3'});}
     if(t==='reverse3'){const x=rand(10,40),m=rand(2,5),sub=rand(5,20),total=x*m-sub;return whiteQuestion(`${m}×□−${sub}=${total}　□は？`,x,[(total+sub)/m+1,total/m],{templateId:'arith-reverse3'});}
-    const a=rand(120,360),b=rand(2,6),c=rand(15,60),ans=a/b+c;return whiteQuestion(`${a}÷${b}+${c}`,ans,[a/(b+c),a/b-c],{templateId:'arith-multi'});
+    const b=rand(2,6),q=rand(25,90),a=b*q,c=rand(15,60),ans=q+c;return whiteQuestion(`${a}÷${b}+${c}`,ans,[a/(b+c),q-c],{templateId:'arith-multi'});
   }
   function whiteDecimal(level){
     const t=pick(level==='basic'?['add','sub']:level==='standard'?['mul','div','unit']:level==='mixed'?['multi','unit2','reverse']:['multi2','percentBridge','reverse2']);
@@ -2119,7 +2121,7 @@ function markWorldVisited(world){
     if(t==='amount'){const d=pick([3,4,5,6,8]),n=rand(1,d-1),unit=pick([24,30,36,40,48,60,72]),base=unit-(unit%d),ans=base*n/d;return whiteQuestion(`${base}の${n}/${d}は？`,ans,[base/d,base*n],{templateId:'frac-amount'});}
     if(t==='unlike'){const d1=pick([2,3,4,5,6]),d2=pick([3,4,5,6,8,10]);if(d1===d2)return whiteFraction(level);const n1=1,n2=1,ans=wfrac(n1*d2+n2*d1,d1*d2);return whiteQuestion(`1/${d1}+1/${d2}`,ans,[`2/${d1+d2}`,wfrac(Math.abs(d2-d1),d1*d2)],{templateId:'frac-unlike'});}
     if(t==='compare'){const a=pick(['2/3','3/4','4/5']),b=pick(['5/8','7/10','5/6']);const [an,ad]=a.split('/').map(Number),[bn,bd]=b.split('/').map(Number),ans=an/ad>bn/bd?a:b;return{expression:`${a} と ${b}。大きい方は？`,answer:ans,choices:shuffle([a,b,'同じ']),templateId:'frac-compare'};}
-    if(t==='unlike2'){const a=pick([[2,3],[3,4],[5,6]]),b=pick([[1,4],[2,5],[3,8]]),ans=wfrac(a[0]*b[1]-b[0]*a[1],a[1]*b[1]);if(String(ans).startsWith('-')||ans===0)return whiteFraction(level);return whiteQuestion(`${a[0]}/${a[1]}−${b[0]}/${b[1]}`,ans,[wfrac(a[0]-b[0],a[1]+b[1]),wfrac(a[0]*b[1]+b[0]*a[1],a[1]*b[1])],{templateId:'frac-unlike2'});}
+    if(t==='unlike2'){const a=pick([[2,3],[3,4],[5,6]]),b=pick([[1,4],[2,5],[3,8]]),ans=wfrac(a[0]*b[1]-b[0]*a[1],a[1]*b[1]);if(String(ans).startsWith('-')||ans===0)return whiteFraction(level);return whiteQuestion(`${a[0]}/${a[1]}−${b[0]}/${b[1]}`,ans,[wfrac(Math.abs(a[0]-b[0])||1,a[1]+b[1]),wfrac(a[0]*b[1]+b[0]*a[1],a[1]*b[1])],{templateId:'frac-unlike2'});}
     if(t==='remain'){const total=pick([48,60,72,80,96]),f=pick([[3,8],[5,12],[2,5],[3,4]]),used=total*f[0]/f[1];if(!Number.isInteger(used))return whiteFraction(level);return whiteQuestion(`${total}個の${f[0]}/${f[1]}を使った。残りは？`,total-used,[used,total*f[1]/f[0]],{templateId:'frac-remain'});}
     if(t==='ratioBridge'){const total=pick([60,72,84,96]),f=pick([[2,3],[3,4],[5,6]]),ans=total*f[0]/f[1];if(!Number.isInteger(ans))return whiteFraction(level);return whiteQuestion(`全体${total}のうち${f[0]}/${f[1]}。その個数は？`,ans,[total-ans,total/f[1]],{templateId:'frac-ratio-bridge'});}
     if(t==='combo'){const d=pick([6,8,10,12]),a=rand(1,2),b=rand(1,2),c=1;const ans=wfrac(a+b-c,d);return whiteQuestion(`${a}/${d}+${b}/${d}−${c}/${d}`,ans,[wfrac(a+b+c,d),wfrac(Math.abs(a-b)+c,d)],{templateId:'frac-combo'});}
@@ -2137,7 +2139,7 @@ function markWorldVisited(world){
     if(t==='count'){const n=pick([3,4,5,6,8]),limit=pick([60,72,90,100,120]),ans=Math.floor(limit/n);return whiteQuestion(`1から${limit}までに${n}の倍数はいくつ？`,ans,[ans-1,n],{templateId:'div-count'});}
     if(t==='cycle'){const a=pick([4,6,8,10]),b=pick([6,9,12,15]),ans=L(a,b);return whiteQuestion(`Aは${a}分ごと、Bは${b}分ごと。同時のあと次に同時になるのは何分後？`,ans,[G(a,b),a+b],{templateId:'div-cycle'});}
     if(t==='divide'){const n=pick([24,36,48,60,72]),a=pick([18,30,42,54]),ans=G(n,a);return whiteQuestion(`${n}個と${a}個を余りなく同じ数ずつ最大の組に分ける。組数は？`,ans,[L(n,a),ans+1],{templateId:'div-divide'});}
-    if(t==='condition'){const lo=20,hi=80,m1=pick([4,6,8]),m2=pick([3,5,7]),c=[];for(let x=lo;x<=hi;x++)if(x%m1===0&&x%m2===0)c.push(x);const ans=pick(c);return{expression:`${lo}〜${hi}で、${m1}と${m2}の両方の倍数はどれ？`,answer:ans,choices:shuffle([ans,ans+m1<=hi?ans+m1:ans-m1,ans+m2<=hi?ans+m2:ans-m2]),templateId:'div-condition'};}
+    if(t==='condition'){const lo=20,hi=80,m1=pick([4,6,8]),m2=pick([3,5,7]),valid=[],invalid=[];for(let x=lo;x<=hi;x++){if(x%m1===0&&x%m2===0)valid.push(x);else invalid.push(x);}const ans=pick(valid),wrong=shuffle(invalid.filter(v=>Math.abs(v-ans)<=Math.max(m1,m2)*3)).slice(0,2);return{expression:`${lo}〜${hi}で、${m1}と${m2}の両方の倍数はどれ？`,answer:ans,choices:shuffle([ans,...(wrong.length===2?wrong:shuffle(invalid).slice(0,2))]),templateId:'div-condition'};}
     if(t==='cycle2'){const a=pick([6,8,10,12]),b=pick([9,12,15,18]),c=pick([4,5,6]),ans=L(L(a,b),c);return whiteQuestion(`Aは${a}分、Bは${b}分、Cは${c}分ごと。次に3つが同時になるのは何分後？`,ans,[L(a,b),a+b+c],{templateId:'div-cycle2'});}
     if(t==='packing'){const a=pick([48,60,72,84]),b=pick([36,54,66,90]),g=G(a,b);return whiteQuestion(`${a}個と${b}個を、どちらも余らない同じ数の袋に最大何袋に分けられる？`,g,[L(a,b),g-1],{templateId:'div-packing'});}
     const a=pick([6,8,9,12]),b=pick([10,14,15,18]),l=L(a,b);return whiteQuestion(`${a}の倍数でも${b}の倍数でもある最小の数は？`,l,[a*b,G(a,b)],{templateId:'div-condition2'});
@@ -2152,7 +2154,7 @@ function markWorldVisited(world){
     if(t==='remain'){const total=pick([120,160,200,240,300]),p=pick([25,40,60,75]),used=total*p/100,ans=total-used;return whiteQuestion(`${total}個の${p}%を使った。残りは？`,ans,[used,total-p],{templateId:'pct-remain'});}
     if(t==='discount2'){const price=pick([1200,1600,2000,2400,3200]),p=pick([20,25,30]),ans=price-price*p/100;return whiteQuestion(`${price}円の商品を${p}%引き。値引き額ではなく支払額は？`,ans,[price*p/100,price-p],{templateId:'pct-discount2'});}
     if(t==='unit'){const l=pick([1.2,1.5,1.8,2.4]),p=pick([25,40,50,75]),ans=Math.round(l*1000*p/100);return whiteQuestion(`${l}Lの${p}%は何mL？`,ans,[Math.round(l*1000)-p,Math.round(l*10*p)],{templateId:'pct-unit'});}
-    if(t==='successive'){const price=pick([1000,2000,3000,4000]),p1=pick([10,20,25]),p2=pick([10,20]),ans=price*(100-p1)/100*(100-p2)/100;return whiteQuestion(`${price}円を${p1}%引き、その後さらに${p2}%引き。支払額は？`,ans,[price*(100-p1-p2)/100,price-price*(p1+p2)/100],{templateId:'pct-successive'});}
+    if(t==='successive'){const price=pick([1000,2000,3000,4000]),p1=pick([10,20,25]),p2=pick([10,20]),ans=price*(100-p1)/100*(100-p2)/100;return whiteQuestion(`${price}円を${p1}%引き、その後さらに${p2}%引き。支払額は？`,ans,[price*(100-p1-p2)/100,price*(100-p1)/100],{templateId:'pct-successive'});}
     if(t==='reverseDiscount'){const p=pick([20,25,40]),original=pick([1200,1600,2000,2400,3000]),sale=original*(100-p)/100;return whiteQuestion(`${p}%引きで${sale}円。元の値段は？`,original,[sale*100/p,sale+p],{templateId:'pct-reverse-discount'});}
     const total=pick([1200,1600,2000,2400]),p=pick([25,40,60]),part=total*p/100,used=part/2;return whiteQuestion(`${total}mLの${p}%を取り分け、その半分を使った。使った量は？mL`,used,[part,total-used],{templateId:'pct-mixed'});
   }
@@ -2160,14 +2162,14 @@ function markWorldVisited(world){
     const t=pick(level==='basic'?['equal','missing']:level==='standard'?['split','one']:level==='mixed'?['chain','split2','scale']:['chain2','three','mixed']);
     if(t==='equal'){const a=rand(2,8),b=rand(a+1,12),m=rand(2,5);return{expression:`${a}:${b} と同じ比は？`,answer:`${a*m}:${b*m}`,choices:shuffle([`${a*m}:${b*m}`,`${a*m}:${b+m}`,`${a*m}:${b*m+1}`]),templateId:'ratio-equal'};}
     if(t==='missing'){const a=rand(2,8),b=rand(a+1,12),m=rand(2,5),ans=b*m;return whiteQuestion(`${a}:${b}=${a*m}:□　□は？`,ans,[b+m,a*m],{templateId:'ratio-missing'});}
-    if(t==='split'){const a=pick([2,3,4]),b=pick([3,5,7]),unit=pick([6,8,10,12]),total=(a+b)*unit,ans=a*unit;return whiteQuestion(`${total}を${a}:${b}に分ける。小さい方は？`,ans,[b*unit,total/(a+b)],{templateId:'ratio-split'});}
+    if(t==='split'){const a=pick([2,3,4]),b=pick([5,6,7,8].filter(v=>v>a)),unit=pick([6,8,10,12]),total=(a+b)*unit,ans=a*unit;return whiteQuestion(`${total}を${a}:${b}に分ける。小さい方は？`,ans,[b*unit,total/(a+b)],{templateId:'ratio-split'});}
     if(t==='one'){const a=pick([2,3,4,5]),b=pick([3,5,6,7]),left=pick([12,18,20,24,30]),m=left/a;if(!Number.isInteger(m))return whiteRatio(level);return whiteQuestion(`${a}:${b}で、${a}にあたる量が${left}。${b}にあたる量は？`,b*m,[left+b,left/a],{templateId:'ratio-one'});}
-    if(t==='chain'){const a=3,b=5,b2=10,c=7;return{expression:`A:B=${a}:${b}、B:C=${b2}:${c}。A:Cは？`,answer:'6:7',choices:['6:7','3:7','6:5'],templateId:'ratio-chain'};}
+    if(t==='chain'){const a=rand(2,5),b=rand(a+1,8),scale=pick([2,3]),b2=b*scale,c=rand(3,10),an=a*scale,g=gcd(an,c),answer=`${an/g}:${c/g}`;return{expression:`A:B=${a}:${b}、B:C=${b2}:${c}。A:Cは？`,answer,choices:shuffle([answer,`${a}:${c}`,`${an}:${c+1}`]),templateId:'ratio-chain'};}
     if(t==='split2'){const r1=pick([3,4]),r2=pick([5,7]),total=pick([160,240,320,480]),unit=total/(r1+r2);if(!Number.isInteger(unit))return whiteRatio(level);return whiteQuestion(`${total}mLを${r1}:${r2}に分ける。多い方は？mL`,r2*unit,[r1*unit,unit],{templateId:'ratio-split2'});}
     if(t==='scale'){const scale=pick([2,3,4]),a=rand(4,10),b=rand(5,12);return{expression:`${a}:${b}を両方${scale}倍した比は？`,answer:`${a*scale}:${b*scale}`,choices:[`${a*scale}:${b*scale}`,`${a+scale}:${b+scale}`,`${a*scale}:${b}`],templateId:'ratio-scale'};}
-    if(t==='chain2'){return{expression:'A:B=2:3、B:C=6:5。A:Cは？',answer:'4:5',choices:['4:5','2:5','4:3'],templateId:'ratio-chain2'};}
+    if(t==='chain2'){const a=rand(2,6),b=rand(a+1,9),scale=pick([2,3,4]),b2=b*scale,c=rand(3,12),an=a*scale,g=gcd(an,c),answer=`${an/g}:${c/g}`;return{expression:`A:B=${a}:${b}、B:C=${b2}:${c}。A:Cは？`,answer,choices:shuffle([answer,`${a}:${c}`,`${an}:${c+scale}`]),templateId:'ratio-chain2'};}
     if(t==='three'){const unit=pick([6,8,10]),total=9*unit;return whiteQuestion(`${total}を2:3:4に分ける。最大の量は？`,4*unit,[3*unit,2*unit],{templateId:'ratio-three'});}
-    return{expression:'赤:青=3:5。青:黄=10:7。赤:黄は？',answer:'6:7',choices:['6:7','3:7','6:5'],templateId:'ratio-mixed'};
+    const a=rand(2,6),b=rand(a+1,9),scale=pick([2,3,4]),b2=b*scale,c=rand(3,12),an=a*scale,g=gcd(an,c),answer=`${an/g}:${c/g}`;return{expression:`赤:青=${a}:${b}。青:黄=${b2}:${c}。赤:黄は？`,answer,choices:shuffle([answer,`${a}:${c}`,`${an}:${c+scale}`]),templateId:'ratio-mixed'};
   }
   function whiteSpeed(level){
     const t=pick(level==='basic'?['distance','speed']:level==='standard'?['minutes','time','remain']:level==='mixed'?['convert','twoStep','averageLike']:['fractionTime','percentRemain','roundTrip']);
@@ -2190,7 +2192,7 @@ function markWorldVisited(world){
     if(t==='angle'){const a=rand(30,80),b=rand(30,80),ans=180-a-b;if(ans<=0)return whiteGeometry(level);return whiteQuestion(`三角形の2つの角が${a}°と${b}°。残りは？`,ans,[360-a-b,180-a+b],{templateId:'geo-angle'});}
     if(t==='circle'){const r=pick([3,4,5,6,8,10]),ans=normalizeChoiceNumber(r*r*3.14);return whiteQuestion(`半径${r}cmの円。面積は？cm²（円周率3.14）`,ans,[normalizeChoiceNumber(2*r*3.14),normalizeChoiceNumber(r*3.14)],{templateId:'geo-circle'});}
     if(t==='volume'){const a=rand(3,10),b=rand(3,10),c=rand(3,8),ans=a*b*c;return whiteQuestion(`${a}cm×${b}cm×${c}cmの直方体。体積は？cm³`,ans,[a*b+c,2*(a*b+b*c+c*a)],{templateId:'geo-volume'});}
-    if(t==='missingAngle'){const a=rand(50,120),ans=180-a;return whiteQuestion(`一直線上の2つの角の一方が${a}°。もう一方は？`,ans,[360-a,90-a],{templateId:'geo-line-angle'});}
+    if(t==='missingAngle'){const a=rand(50,120),ans=180-a;return whiteQuestion(`一直線上の2つの角の一方が${a}°。もう一方は？`,ans,[a,Math.min(179,ans+20)],{templateId:'geo-line-angle'});}
     if(t==='cut'){const w=pick([12,14,16,18]),h=pick([8,10,12]),cw=pick([2,3,4]),ch=pick([2,3,4]),ans=w*h-cw*ch;return whiteQuestion(`${w}×${h}cmの長方形から${cw}×${ch}cmを切り取る。残りの面積は？cm²`,ans,[w*h,cw*ch],{templateId:'geo-cut'});}
     if(t==='circleRemain'){const r=pick([4,5,6]),side=r*2,square=side*side,circle=normalizeChoiceNumber(r*r*3.14),ans=normalizeChoiceNumber(square-circle);return whiteQuestion(`一辺${side}cmの正方形から半径${r}cmの円を切り取る。残りは？cm²`,ans,[circle,square],{templateId:'geo-circle-remain'});}
     if(t==='box'){const a=pick([8,10,12]),b=pick([6,8,10]),h=pick([4,5,6]),ans=a*b*h;return whiteQuestion(`底面${a}cm×${b}cm、高さ${h}cmの直方体。体積は？cm³`,ans,[a*b,a*b+h],{templateId:'geo-box'});}
@@ -2206,10 +2208,10 @@ function markWorldVisited(world){
     if(t==='time'){const h=pick([1.5,2.25,2.5,3.5]),ans=h*60;return whiteQuestion(`${h}時間は何分？`,ans,[h*100,h*60+10],{templateId:'unit-time'});}
     if(t==='area'){const m2=pick([1,2,3,4,5]),ans=m2*10000;return whiteQuestion(`${m2}m²は何cm²？`,ans,[m2*100,m2*1000],{templateId:'unit-area'});}
     if(t==='scale'){const cm=pick([2,3,4,5,6]),per=pick([100,200,500]),ans=cm*per;return whiteQuestion(`地図1cmが実際${per}m。地図${cm}cmは実際何m？`,ans,[cm+per,cm*per/10],{templateId:'unit-scale'});}
-    if(t==='scale2'){const actual=pick([600,800,1000,1200,1500]),per=pick([100,200,300]),ans=actual/per;if(!Number.isInteger(ans))return whiteUnits(level);return whiteQuestion(`地図1cmが実際${per}m。実際${actual}mは地図で何cm？`,ans,[actual/per*10,actual-per],{templateId:'unit-scale2'});}
+    if(t==='scale2'){const actual=pick([600,800,1000,1200,1500]),per=pick([100,200,300]),ans=actual/per;if(!Number.isInteger(ans))return whiteUnits(level);return whiteQuestion(`地図1cmが実際${per}m。実際${actual}mは地図で何cm？`,ans,[ans*10,normalizeChoiceNumber(ans/10)],{templateId:'unit-scale2'});}
     if(t==='volume'){const l=pick([1.2,1.5,2,2.4,3]),ans=l*1000;return whiteQuestion(`${l}Lの容器は何cm³？`,ans,[l*100,l],{templateId:'unit-volume'});}
     if(t==='mixed'){const km=pick([1.2,1.5,1.8,2.4]),m=pick([200,300,450,600]),ans=Math.round(km*1000+m);return whiteQuestion(`${km}km+${m}mは合計何m？`,ans,[Math.round(km*1000-m),Math.round(km*100+m)],{templateId:'unit-mixed'});}
-    if(t==='mapSpeed'){const cm=pick([3,4,5]),per=pick([200,300,400]),actual=cm*per,min=pick([10,15,20]),ans=actual/min;return whiteQuestion(`地図1cm=${per}m。${cm}cmの道を${min}分で進む。分速何m？`,ans,[actual,cm/min],{templateId:'unit-map-speed'});}
+    if(t==='mapSpeed'){const cm=pick([3,4,5]),per=pick([200,300,400]),actual=cm*per,mins=[10,12,15,20,25].filter(v=>actual%v===0);if(!mins.length)return whiteUnits(level);const min=pick(mins),ans=actual/min;return whiteQuestion(`地図1cm=${per}m。${cm}cmの道を${min}分で進む。分速何m？`,ans,[actual,ans*10],{templateId:'unit-map-speed'});}
     if(t==='areaScale'){const cm=pick([2,3,4]),per=pick([10,20,50]),ans=(cm*per)**2;return whiteQuestion(`地図上の一辺${cm}cm、1cm=${per}mの正方形。実際の面積は？m²`,ans,[(cm*cm)*per,cm*per],{templateId:'unit-area-scale'});}
     const l=pick([1.5,2.4,3.2]),used=pick([250,400,600]),ans=Math.round(l*1000-used);return whiteQuestion(`${l}Lから${used}mL使った。残りは何mL？`,ans,[Math.round(l*1000+used),Math.round(l*100-used)],{templateId:'unit-multi'});
   }
@@ -2232,9 +2234,9 @@ function markWorldVisited(world){
     if(t==='sum'){const n=pick([6,8,10,12]),ans=n*(n+1)/2;return whiteQuestion(`1+2+…+${n} は？`,ans,[n*n,n*(n-1)/2],{templateId:'pat-sum'});}
     if(t==='nth'){const a=rand(2,6),d=rand(2,5),n=pick([10,12,15,18]),ans=a+(n-1)*d;return whiteQuestion(`${a}, ${a+d}, ${a+2*d}, … の${n}番目は？`,ans,[a+n*d,n*d],{templateId:'pat-nth'});}
     if(t==='pairs'){const n=pick([5,6,7,8]),ans=n*(n-1)/2;return whiteQuestion(`${n}人から2人組を1組選ぶ。何通り？`,ans,[n*2,n*(n-1)],{templateId:'pat-pairs'});}
-    if(t==='path'){return whiteQuestion('右に3回、上に2回動く最短経路は何通り？',10,[6,12],{templateId:'pat-path'});}
+    if(t==='path'){const r=pick([2,3,4]),u=pick([2,3]),ans=combination(r+u,r);return whiteQuestion(`右に${r}回、上に${u}回動く最短経路は何通り？`,ans,[r*u,Math.max(1,ans-r)],{templateId:'pat-path'});}
     if(t==='period'){const p=pick([3,4,5,6]),n=pick([20,25,32,41]),ans=((n-1)%p)+1;return whiteQuestion(`${p}個の色を順に繰り返す。${n}番目は何番目の色？`,ans,[n%p||p,p],{templateId:'pat-period'});}
-    if(t==='path2'){return whiteQuestion('右に3回、上に3回動く最短経路は何通り？',20,[9,12],{templateId:'pat-path2'});}
+    if(t==='path2'){const r=pick([3,4,5]),u=pick([3,4]),ans=combination(r+u,r);return whiteQuestion(`右に${r}回、上に${u}回動く最短経路は何通り？`,ans,[r*u,Math.max(1,ans-u)],{templateId:'pat-path2'});}
     if(t==='choose'){const n=pick([6,7,8]),all=n*(n-1)/2,ans=all-1;return whiteQuestion(`${n}人から2人を選ぶ。ただしAとBの組は選べない。何通り？`,ans,[all,all-2],{templateId:'pat-choose'});}
     if(t==='nth2'){const a=pick([3,5,7]),d=pick([4,5,6]),n=pick([20,24,30]),ans=a+(n-1)*d;return whiteQuestion(`${a}, ${a+d}, ${a+2*d}, … の${n}番目は？`,ans,[a+n*d,(n-1)*d],{templateId:'pat-nth2'});}
     if(t==='period2'){const p1=pick([4,6,8]),p2=pick([6,9,12]),ans=p1*p2/gcd(p1,p2);return whiteQuestion(`${p1}回ごとの印と${p2}回ごとの印。次に重なるのは何回目？`,ans,[gcd(p1,p2),p1+p2],{templateId:'pat-period2'});}
@@ -2243,15 +2245,19 @@ function markWorldVisited(world){
   function whiteLogic(level){
     const t=pick(level==='basic'?['box','order']:level==='standard'?['condition','reverse']:level==='mixed'?['order2','condition2','twoEq']:['logic3','reverse2','eliminate']);
     if(t==='box'){const x=rand(10,40),a=rand(5,20),sum=x+a;return whiteQuestion(`□+${a}=${sum}。□は？`,x,[sum+a,x+1],{templateId:'logic-box'});}
-    if(t==='order')return{expression:'AはBより先、CはBより後。正しい順は？',answer:'A→B→C',choices:['A→B→C','B→A→C','A→C→B'],templateId:'logic-order'};
-    if(t==='condition'){const choices=[42,48,46],ans=48;return{expression:'40より大きく50より小さい、6と4の両方の倍数は？',answer:ans,choices:shuffle(choices),templateId:'logic-condition'};}
+    if(t==='order'){const labels=shuffle(['A','B','C']),[a,b,c]=labels,answer=`${a}→${b}→${c}`;return{expression:`${a}は${b}より先、${c}は${b}より後。正しい順は？`,answer,choices:shuffle([answer,`${b}→${a}→${c}`,`${a}→${c}→${b}`]),templateId:'logic-order'};}
+    if(t==='condition'){
+      for(let i=0;i<200;i++){const m1=pick([4,5,6,8]),m2=pick([3,5,7,9]);if(m1===m2)continue;const lo=pick([20,30,40]),hi=lo+pick([20,24,30]),c=[];for(let x=lo+1;x<hi;x++)if(x%m1===0&&x%m2===0)c.push(x);if(c.length!==1)continue;const ans=c[0],wrong=shuffle([...Array(hi-lo-1)].map((_,j)=>lo+1+j).filter(v=>v!==ans)).slice(0,2);return{expression:`${lo}より大きく${hi}より小さい、${m1}と${m2}の両方の倍数は？`,answer:ans,choices:shuffle([ans,...wrong]),templateId:'logic-condition'};}
+      return whiteLogic('basic');
+    }
     if(t==='reverse'){const x=rand(8,30),m=pick([2,3,4]),add=rand(4,15),total=x*m+add;return whiteQuestion(`□×${m}+${add}=${total}。□は？`,x,[(total-add),Math.floor(total/m)],{templateId:'logic-reverse'});}
-    if(t==='order2')return{expression:'AはCより前。BはAより後でCより前。正しい順は？',answer:'A→B→C',choices:['A→B→C','B→A→C','A→C→B'],templateId:'logic-order2'};
-    if(t==='condition2'){const choices=[36,42,48],ans=48;return{expression:'40より大きく50より小さい、8の倍数は？',answer:ans,choices,templateId:'logic-condition2'};}
+    if(t==='order2'){const labels=shuffle(['A','B','C']),[a,b,c]=labels,answer=`${a}→${b}→${c}`;return{expression:`${a}は${c}より前。${b}は${a}より後で${c}より前。正しい順は？`,answer,choices:shuffle([answer,`${b}→${a}→${c}`,`${a}→${c}→${b}`]),templateId:'logic-order2'};}
+    if(t==='condition2'){const m=pick([6,7,8,9,12]),base=rand(4,8)*m,lo=base-rand(4,9),hi=base+rand(4,9),ans=base,wrong=shuffle([...Array(hi-lo-1)].map((_,j)=>lo+1+j).filter(v=>v!==ans)).slice(0,2);return{expression:`${lo}より大きく${hi}より小さい、${m}の倍数は？`,answer:ans,choices:shuffle([ans,...wrong]),templateId:'logic-condition2'};}
     if(t==='twoEq'){const x=rand(5,15),y=x+rand(3,8),sum=x+y,diff=y-x;return whiteQuestion(`2つの数の和が${sum}、差が${diff}。大きい方は？`,y,[x,sum],{templateId:'logic-twoeq'});}
-    if(t==='logic3')return{expression:'AはBより先。CはAより後でBより先。DはCより後。正しい順は？',answer:'A→C→B→D',choices:['A→C→B→D','C→A→B→D','A→B→C→D'],templateId:'logic-logic3'};
+    if(t==='logic3'){const labels=shuffle(['A','B','C','D']),[a,b,c,d]=labels,answer=`${a}→${c}→${b}→${d}`;return{expression:`${a}は${b}より先。${c}は${a}より後で${b}より先。${d}は${c}より後。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}→${d}`,`${a}→${b}→${c}→${d}`]),templateId:'logic-logic3'};}
     if(t==='reverse2'){const x=rand(12,40),m=pick([2,3,4]),sub=rand(5,20),total=x*m-sub;return whiteQuestion(`${m}×□−${sub}=${total}。□は？`,x,[total/m,(total+sub)/m+1],{templateId:'logic-reverse2'});}
-    return{expression:'「偶数」「30より大きい」「5の倍数」の3条件をすべて満たすのは？',answer:40,choices:[35,40,42],templateId:'logic-eliminate'};
+    for(let i=0;i<200;i++){const multiple=pick([3,4,5,6,8]),lo=pick([20,24,30,36,40]),hi=lo+pick([10,12,14,18]),c=[];for(let x=lo+1;x<hi;x++)if(x%2===0&&x%multiple===0)c.push(x);if(c.length!==1)continue;const ans=c[0],wrong=shuffle([...Array(hi-lo-1)].map((_,j)=>lo+1+j).filter(v=>v!==ans)).slice(0,2);return{expression:`「偶数」「${lo}より大きい」「${multiple}の倍数」「${hi}より小さい」をすべて満たすのは？`,answer:ans,choices:shuffle([ans,...wrong]),templateId:'logic-eliminate'};}
+    return whiteLogic('standard');
   }
   function makeWhiteCategoryQuestion(category,level){
     const map={arithmetic:whiteArithmetic,decimal:whiteDecimal,fraction:whiteFraction,divisor:whiteDivisor,percent:whitePercent,ratio:whiteRatio,speed:whiteSpeed,geometry:whiteGeometry,units:whiteUnits,data:whiteData,pattern:whitePattern,logic:whiteLogic};
@@ -2507,11 +2513,81 @@ function markWorldVisited(world){
     // Keep the old final-world dataset only as a compatibility hook for any older CSS.
     if(tier==='final')document.body.dataset.finalBossWorld=mode;else document.body.removeAttribute('data-final-boss-world');
   }
+  const HUD_MODE_KEY='sansuQuestHudMode_v1';
+  let hudMode='modern';
+  function readHudMode(){
+    try{return localStorage.getItem(HUD_MODE_KEY)==='classic'?'classic':'modern';}catch{return 'modern';}
+  }
+  function writeHudMode(value){try{localStorage.setItem(HUD_MODE_KEY,value);}catch{}}
+  function syncHudModeButton(){
+    if(!els.hudModeToggleBtn)return;
+    const modern=hudMode==='modern';
+    els.hudModeToggleBtn.textContent=`HUD表示：${modern?'新':'従来'}`;
+    els.hudModeToggleBtn.setAttribute('aria-pressed',modern?'true':'false');
+    els.hudModeToggleBtn.title=modern?'現在は新HUDです。押すと従来HUDへ切り替えます。':'現在は従来HUDです。押すと新HUDへ切り替えます。';
+  }
+  function applyHudMode(value,{persist=true}={}){
+    hudMode=value==='classic'?'classic':'modern';
+    document.body.classList.toggle('hud-modern',hudMode==='modern');
+    document.body.classList.toggle('hud-classic',hudMode==='classic');
+    if(persist)writeHudMode(hudMode);
+    syncHudModeButton();
+    updateModernBattleHud();
+    updateSpecialHud();
+    updateBossHpHud();updateModernBattleHud();
+  }
+  function toggleHudMode(){applyHudMode(hudMode==='modern'?'classic':'modern');}
+  function modernNormalProgress(){
+    if(mode==='white')return Math.max(0,Math.min(9,whiteQuestionInDepth));
+    return Math.max(0,Math.min(10,stageQuestion));
+  }
+  function rebuildEnemyRing(total){
+    if(!els.enemyRingSegments)return;
+    total=Math.max(1,Number(total)||1);
+    if(Number(els.enemyRingSegments.dataset.total)===total)return;
+    els.enemyRingSegments.dataset.total=String(total);els.enemyRingSegments.replaceChildren();
+    const span=total===1?0:280/(total-1);
+    for(let i=0;i<total;i++){
+      const seg=document.createElement('i');seg.style.setProperty('--seg-angle',`${-140+i*span}deg`);els.enemyRingSegments.appendChild(seg);
+    }
+  }
+  function updateModernBattleHud(){
+    if(!els.heroLifeHud||!els.enemyRingHud)return;
+    const lifePips=[...els.heroLifeHud.children];lifePips.forEach((p,i)=>p.classList.toggle('active',i<lives));
+    els.heroLifeHud.setAttribute('aria-label',`ライフ ${Math.max(0,lives)} / 3`);
+    let total=10,value=modernNormalProgress(),label='PROGRESS',aria=`通常問題 ${value} / ${total}`,critical=false;
+    if(bossPhase){
+      total=mode==='white'?1:5;value=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));label='BOSS HP';aria=`ボスHP ${value} / ${total}`;critical=value===1;
+    }
+    rebuildEnemyRing(total);
+    const segments=[...els.enemyRingSegments.children];
+    segments.forEach((seg,i)=>{
+      const active=bossPhase?i<value:i<value;
+      seg.classList.toggle('active',active);seg.classList.toggle('cleared',!bossPhase&&active);seg.classList.toggle('lost',bossPhase&&!active);
+    });
+    els.enemyRingHud.classList.toggle('boss-mode',bossPhase);
+    els.enemyRingHud.classList.toggle('critical',bossPhase&&critical);
+    els.enemyRingHud.classList.toggle('empty',bossPhase&&value<=0);
+    if(els.enemyRingText)els.enemyRingText.textContent=`${value} / ${total}`;
+    if(els.enemyRingLabel)els.enemyRingLabel.textContent=label;
+    els.enemyRingHud.setAttribute('aria-label',aria);
+    syncModernTimerHud();
+  }
+  function syncModernTimerHud(){
+    if(!els.questionTimerHud||!els.questionTimerText)return;
+    const limit=Math.max(1,Number(timerLimit)||1),left=Math.max(0,Number(timeLeft)||0),pct=Math.max(0,Math.min(100,left/limit*100));
+    els.questionTimerText.textContent=left;
+    els.questionTimerHud.style.setProperty('--timer-pct',pct.toFixed(3));
+    els.questionTimerHud.classList.toggle('time-pressure',left<=30);
+    els.questionTimerHud.classList.toggle('time-critical',left<=10);
+    els.questionTimerHud.setAttribute('aria-label',`残り${left}秒`);
+  }
+
   function renderGame(){
     const s=currentStage(),stageProgress=stageDisplayProgress();document.body.dataset.mode=mode;document.body.dataset.stage=mode==='white'?`depth-${whiteDepth}`:(mode==='end'&&endFinalPhase)?'final':stageIndex;
     if(mode==='white'){els.progressText.textContent=`${whiteQuestionInDepth} / 10`;els.progressFill.style.width=`${Math.min(100,whiteQuestionInDepth/10*100)}%`;els.stageLabel.textContent=`DEPTH ${whiteDepth}`;els.stageName.textContent=bossPhase?'BOSS QUESTION':'ENDLESS CHALLENGE';}
     else if((mode==='crimson'&&crimsonLastPhase)||(mode==='end'&&endFinalPhase)){const finalStart=stageRunTotal(),finalTotal=finalStart+Math.max(1,Number(s.count)||5);els.progressText.textContent=`${Math.min(finalTotal,totalProgress)} / ${finalTotal}`;els.progressFill.style.width=`${Math.min(100,Math.max(0,(totalProgress-finalStart)/Math.max(1,Number(s.count)||5)*100))}%`;els.stageLabel.textContent=mode==='end'?'FINAL':'LAST BOSS';els.stageName.textContent=s.name;}else{const stageCount=Math.max(1,Number(s.count)||1);els.progressText.textContent=`${stageProgress} / ${stageCount}`;els.progressFill.style.width=`${stageProgress/stageCount*100}%`;els.stageLabel.textContent=`STAGE ${stageIndex+1}`;els.stageName.textContent=s.name;}
-    els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'◆':'◇').join(' ');els.lifeDisplay.setAttribute('aria-label',`ライフ${lives}`);els.timerText.textContent=timeLeft;fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
+    els.lifeDisplay.textContent=[0,1,2].map(i=>i<lives?'◆':'◇').join(' ');els.lifeDisplay.setAttribute('aria-label',`ライフ ${Math.max(0,lives)} / 3`);els.timerText.textContent=timeLeft;fitSingleLineText(els.stageName,{maxWidthRatio:.42,minPx:10});
     const blueAdult=isBlueAdultPhase();const battleBgFile=isBlueStage5()?(blueAdult?'blue_stage5_after.png':'blue_stage5_before.png'):s.bg;els.battleBg.style.backgroundImage=`url('./assets/${battleBgFile}')`;
     let heroWorld=mode;if(mode==='end')heroWorld=currentEndHeroWorld();if(mode==='white')heroWorld='front';document.body.dataset.heroWorld=heroWorld;
     els.heroImage.src=mode==='white'?'./assets/hero.png':mode==='end'?`./assets/${END_HERO_FILES[heroWorld]}`:mode==='front'?'./assets/hero.png':mode==='back'?'./assets/back_hero.png':mode==='crimson'?'./assets/crimson_hero.png':mode==='blue'?(blueAdult?'./assets/blue_hero_adult.png':'./assets/blue_hero.png'):mode==='silver'?'./assets/silver_hero.png':'./assets/midori_hero_pirate_captain.png';
@@ -2521,7 +2597,7 @@ function markWorldVisited(world){
     syncWorldBossAura();
     const choiceCaption=document.querySelector('.question-panel .choice-caption');
     if(choiceCaption)choiceCaption.textContent=['crimson','blue','silver','midori','end','white'].includes(mode)?'答えを選ぼう':'こたえを えらぼう';
-    updateBossHpHud();
+    updateBossHpHud();updateModernBattleHud();
   }
 
   function syncPauseButton(){
@@ -2534,18 +2610,20 @@ function markWorldVisited(world){
   function stopTimer(){clearInterval(timerId);timerId=null;syncPauseButton();}
   function updateTimerUrgency(){
     const timer=els.timerText?.closest('.timer');
-    if(!timer)return;
-    // The last 30 seconds are visually urgent for every question, not only boss actions.
-    timer.classList.toggle('time-pressure',timeLeft<=30);
-    timer.classList.toggle('time-critical',timeLeft<=10);
+    if(timer){
+      // The last 30 seconds are visually urgent for every question, not only boss actions.
+      timer.classList.toggle('time-pressure',timeLeft<=30);
+      timer.classList.toggle('time-critical',timeLeft<=10);
+    }
+    syncModernTimerHud();
   }
   function playCountCueOnce(){
     if(countCuePlayed)return;
     countCuePlayed=true;
     playSE(countSE);
   }
-  function startTimer(seconds=60,{preserveCountCue=false}={}){
-    stopTimer();if(!preserveCountCue)countCuePlayed=false;timeLeft=seconds;els.timerText.textContent=timeLeft;updateTimerUrgency();
+  function startTimer(seconds=60,{preserveCountCue=false,preserveLimit=false}={}){
+    stopTimer();if(!preserveCountCue)countCuePlayed=false;if(!preserveLimit)timerLimit=Math.max(1,Number(seconds)||60);timeLeft=seconds;els.timerText.textContent=timeLeft;updateTimerUrgency();
     // Boss STAGE3+ fifth actions start directly at 30 seconds, so cue immediately there.
     if(timeLeft<=30)playCountCueOnce();
     timerId=setInterval(()=>{timeLeft--;els.timerText.textContent=timeLeft;updateTimerUrgency();if(timeLeft===30)playCountCueOnce();if(timeLeft<=0){stopTimer();resolveAnswer(null,true);}},1000);syncPauseButton();updateSpecialHud();
@@ -2829,7 +2907,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function updateSpecialHud(){
     if(!els.specialHud||!els.specialFill||!els.specialBtn)return;
     const value=Math.max(0,Math.min(100,specialGauge));
-    els.specialFill.style.width=`${value}%`;
+    els.specialFill.style.width=`${value}%`;els.specialHud.style.setProperty('--meter-pct',value);
     els.specialHud.classList.toggle('ready',value>=100);
     const midoriBlocked=midoriSpecialBlocksAssist();
     const canUse=value>=100&&!midoriBlocked&&!specialActive&&!crimsonMoonShiftBusy&&!silverSpecialBusy&&!blueSpecialBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
@@ -2900,18 +2978,18 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     specialActive=false;locked=false;
     syncMidoriAfterElimination();restoreChoiceInteractivity();
     updateSpecialHud();syncPauseButton();
-    if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true});
+    if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true,preserveLimit:true});
   }
 
+  function questionHasFractionChoices(q){
+    const values=Array.isArray(q?.choices)&&q.choices.length?q.choices:[q?.answer];
+    return values.some(v=>!!parseFractionKey(v));
+  }
   function setFractionQuestionLayout(problemFraction=false,choiceFraction=false){
     const panel=els.mathProblem.closest('.question-panel');
     if(!panel)return;
     panel.classList.toggle('fraction-question',!!problemFraction);
     panel.classList.toggle('fraction-choice-question',!!choiceFraction&&!problemFraction);
-  }
-  function questionHasFractionChoices(q){
-    if(Array.isArray(q?.choices)&&q.choices.length)return q.choices.some(v=>!!parseFractionKey(v));
-    return !!parseFractionKey(q?.answer);
   }
   function setMimesisQuestionLayout(type='',activeBoss=false){
     const panel=els.mathProblem?.closest('.question-panel');
@@ -3089,13 +3167,6 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(!soundOn)return;
     try{endCorruptionNoiseSE.pause();endCorruptionNoiseSE.currentTime=0;endCorruptionNoiseSE.play().catch(()=>{});}catch{}
   }
-  function delayEndBossBgmAfterNoise(delay=520){
-    if(mode!=='end'||endFinalPhase)return;
-    const visualToken=enemyVisualToken;
-    setTimeout(()=>{
-      if(mode==='end'&&!endFinalPhase&&bossPhase&&enemyVisualToken===visualToken)void playStageBgm();
-    },delay);
-  }
   function corruptedEndNameFrame(name,level=.45){
     const marks=['▯','▒','◆','◇','⌁','⊗','∞','∴','∵','Ξ'];
     return [...String(name)].map((ch,i)=>{
@@ -3104,7 +3175,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       return wave<level?marks[(i*7+Math.floor(level*10))%marks.length]:ch;
     }).join('');
   }
-  async function showBossName(){
+  async function showBossName({startEndBgm=false}={}){
     const fx=$('bossNameFx'),text=$('bossNameText'),english=$('bossNameEnglish'),kicker=$('bossNameKicker'),boss=currentBoss();
     if(mode==='end'){
       const hasRewrite=!endFinalPhase&&boss.baseName&&boss.baseName!==boss.name;
@@ -3114,11 +3185,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       fx.hidden=false;fx.className=`boss-name-fx active end-boss-name end-boss-name-${endFinalPhase?'front':(boss.sourceWorld||currentEndSource())}`;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
       await sleep(hasRewrite?520:760);
       if(hasRewrite){
-        fx.classList.add('end-name-corrupting');playEndCorruptionNoise();if(!currentBgm)delayEndBossBgmAfterNoise(520);
+        fx.classList.add('end-name-corrupting');playEndCorruptionNoise();
+        const delayedBgm=startEndBgm?(async()=>{await sleep(520);await playStageBgm();})():null;
         const frames=[.28,.48,.68,.82,.58,.74];
         for(const level of frames){text.textContent=corruptedEndNameFrame(boss.name,level);fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});await sleep(165);}
         if(!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=boss.name;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
         fx.classList.remove('end-name-corrupting');fx.classList.add('end-name-resolved');
+        if(delayedBgm)await delayedBgm;
       }else fx.classList.add('end-name-resolved');
       if(english)english.textContent=boss.english||'';
       await sleep(endFinalPhase?2100:1750);
@@ -3148,12 +3221,14 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     specialHudCutinDepth++;
     if(els.specialHud)els.specialHud.classList.add('cutin-hidden');
     if(els.bossHpHud)els.bossHpHud.classList.add('cutin-hidden');
+    if(els.enemyRingHud)els.enemyRingHud.classList.add('cutin-hidden');
   }
   function restoreSpecialHudAfterCutin(){
     specialHudCutinDepth=Math.max(0,specialHudCutinDepth-1);
     if(specialHudCutinDepth===0){
       if(els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
       if(els.bossHpHud){els.bossHpHud.classList.remove('cutin-hidden');updateBossHpHud();}
+      if(els.enemyRingHud){els.enemyRingHud.classList.remove('cutin-hidden');updateModernBattleHud();}
     }
   }
   async function showActionCutin(side,imgFile,{variant='finisher',duration=1680}={}){
@@ -3193,10 +3268,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await showBossWarning();
     if(!(await visualReady))return;
     els.enemyActor.style.opacity='0';
-    const delayedEndBossBgm=mode==='end'&&!endFinalPhase;
-    if(!retry&&!delayedEndBossBgm)await playStageBgm();
-    await showBossName();
-    if(delayedEndBossBgm&&!currentBgm)await playStageBgm();
+    const delayedEndBgm=!retry&&mode==='end'&&!endFinalPhase;
+    if(!retry&&!delayedEndBgm)await playStageBgm();
+    await showBossName({startEndBgm:delayedEndBgm});
     if(isBlueStage5()&&!retry)prepareBlueStage5BossReveal();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
     await sleep(1400);
@@ -3336,7 +3410,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       document.body.classList.add('boss-technique-active');
       banner.querySelector('small').textContent=kicker;
       label.textContent=name;
-      banner.hidden=false;banner.classList.remove('active');void banner.offsetWidth;banner.classList.add('active');
+      banner.hidden=false;requestAnimationFrame(()=>fitSingleLineText(label,{maxWidthRatio:.82,minPx:12}));banner.classList.remove('active');void banner.offsetWidth;banner.classList.add('active');
       await sleep(920);
       banner.classList.remove('active');await sleep(160);banner.hidden=true;
     }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
@@ -3347,16 +3421,15 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const name=spec?.name||'';
     const detail=String(phase||'').trim();
     if(!name)return detail;
-    if(spec?.type==='end-blue-loop'&&detail&&detail!==name)return detail;
     if(!detail||detail===name||!MULTI_PHASE_BOSS_SPECIALS.has(spec.type))return name;
-    return `${name}｜${detail}`;
+    return detail;
   }
   function setBossStepChip(text='',step=1){
     const label=bossTechniqueChipLabel(text);
     if(!label){$('bossStrikeChip')?.remove();return;}
     let chip=$('bossStrikeChip');
     if(!chip){chip=document.createElement('span');chip.id='bossStrikeChip';chip.className='boss-strike-chip';document.querySelector('.question-panel')?.appendChild(chip);}
-    chip.textContent=label;chip.dataset.step=String(step);
+    chip.textContent=label;chip.dataset.step=String(step);requestAnimationFrame(()=>fitSingleLineText(chip,{maxWidthRatio:.46,minPx:8}));
   }
   function populateSpecialQuestion(q,{chip='',step=1}={}){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
@@ -3477,8 +3550,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     });updateMidoriRouteState();
   }
   function midoriTideConditions(q){
-    if(String(q?.expression||'').includes('偶数で'))return['偶数である','20より大きく30より小さい','3の倍数である'];
-    return['条件①を満たす','条件②を満たす','条件③も満たす'];
+    if(Array.isArray(q?.conditions)&&q.conditions.length>=3)return q.conditions.slice(0,3).map(String);
+    return['条件①を確認','条件②を確認','条件③を確認'];
   }
   function startMidoriTide(){
     const source=currentQuestion,conditions=midoriTideConditions(source),seen=new Set([0]);
@@ -3501,9 +3574,9 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     ensureBossSpecialFxLayer();const fx=$('endFinalConvergenceFx');if(!fx)return;
     const step=Math.max(0,Math.min(2,Number(phase)||0));
     const titles=[
-      ['FINAL BOSS TECHNIQUE','時空終式・五界収束','FIVE WORLDS CONVERGE'],
-      ['CONVERGENCE II','第二収束・界圧上昇','THE FIVE STREAMS COLLIDE'],
-      ['FINAL CONVERGENCE','五界収束・終撃','ALL WORLDS / ONE POINT']
+      ['FINAL BOSS TECHNIQUE','時空終式・五界収束','CONVERGENCE PHASE I'],
+      ['CONVERGENCE PHASE II','収束位相 II','FIVE WORLDS COLLIDE'],
+      ['CONVERGENCE PHASE III','収束位相 III','五界臨界 / CRITICAL CONVERGENCE']
     ][step];
     clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active','end-final-convergence-cutin');
     try{
@@ -3934,7 +4007,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     [...els.choices.children].forEach(b=>b.disabled=true);syncPauseButton();updateSpecialHud();
     await sleep(900);
     document.body.classList.remove('blue-lantern-dark');locked=false;blueSpecialBusy=false;restoreChoiceInteractivity();
-    if(resume>0&&currentQuestion&&!gameOverActive)startTimer(resume,{preserveCountCue:true});else{syncPauseButton();updateSpecialHud();}
+    if(resume>0&&currentQuestion&&!gameOverActive)startTimer(resume,{preserveCountCue:true,preserveLimit:true});else{syncPauseButton();updateSpecialHud();}
   }
   function startBlueLanternOut(){
     document.body.classList.add('blue-lantern-active');document.querySelector('.question-panel')?.classList.add('blue-special-panel');
@@ -3996,22 +4069,24 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     };});
   }
   function makeEndCrimsonChain(){
-    const bank=[
-      [{expression:'2.4 ÷ 0.3',answer:8,choices:[7,8,9]},{expression:'8 × 1.5',answer:12,choices:[10,12,14]},{expression:'12 − 3/4 × 4',displayExpression:'12 − 3/4 × 4 = ?',answer:9,choices:[8,9,10]}],
-      [{expression:'3.6 ÷ 0.4',answer:9,choices:[8,9,10]},{expression:'9 × 1.2',answer:10.8,choices:[9.8,10.8,11.8]},{expression:'10.8 + 3/5 × 2',displayExpression:'10.8 + 3/5 × 2 = ?',answer:12,choices:[11.4,12,12.6]}],
-      [{expression:'4.8 ÷ 0.6',answer:8,choices:[6,8,10]},{expression:'8 × 1.25',answer:10,choices:[8,10,12]},{expression:'10 − 1/2 × 6',displayExpression:'10 − 1/2 × 6 = ?',answer:7,choices:[6,7,8]}]
-    ];return pick(bank);
+    const divisor=pick([.2,.3,.4,.5,.6,.8]),x=rand(6,12),first=normalizeChoiceNumber(divisor*x),m=pick([1.2,1.25,1.5,2]),second=normalizeChoiceNumber(x*m);
+    const fractions=shuffle([[1,2],[1,4],[3,4],[1,5],[2,5]]);let f=fractions[0],z=pick([4,5,8,10]);while(!Number.isInteger(f[0]*z/f[1]))z=pick([4,5,8,10,12,20]);const term=f[0]*z/f[1],third=normalizeChoiceNumber(second-term);
+    if(third<=0)return makeEndCrimsonChain();
+    return[
+      {expression:`${first} ÷ ${divisor}`,answer:x,choices:compactNumericChoices(x,[x-1,x+1])},
+      {expression:`${x} × ${m}`,answer:second,choices:compactNumericChoices(second,[normalizeChoiceNumber(second-1),normalizeChoiceNumber(second+1)])},
+      {expression:`${second} − ${f[0]}/${f[1]} × ${z}`,displayExpression:`${second} − ${f[0]}/${f[1]} × ${z} = ?`,answer:third,choices:compactNumericChoices(third,[normalizeChoiceNumber(third-1),normalizeChoiceNumber(third+1)])}
+    ];
   }
   function startEndGenmaTriple(){
     document.body.classList.add('end-genma-triple-active');document.querySelector('.question-panel')?.classList.add('end-special-panel');
     const chain=makeEndCrimsonChain();endSpecialState={type:'end-genma-triple',step:0,chain};populateSpecialQuestion(chain[0],{chip:'初太刀',step:1});document.body.classList.add('boss-time-pressure');startTimer(20);
   }
   function makeEndMimesisEquivalentQuestion(){
-    return pick([
-      {expression:'3/4 × 24',displayExpression:'3/4 × 24 = ?',altExpression:'0.75 × 24 = ?',answer:18,choices:[16,18,20],alt:{16:'8×2',18:'36÷2',20:'5×4'}},
-      {expression:'5/8 × 32',displayExpression:'5/8 × 32 = ?',altExpression:'0.625 × 32 = ?',answer:20,choices:[18,20,24],alt:{18:'36÷2',20:'4×5',24:'6×4'}},
-      {expression:'7/10 × 50',displayExpression:'7/10 × 50 = ?',altExpression:'0.7 × 50 = ?',answer:35,choices:[30,35,40],alt:{30:'15×2',35:'70÷2',40:'8×5'}}
-    ]);
+    const pair=pick([[1,2,.5],[1,4,.25],[3,4,.75],[2,5,.4],[3,5,.6],[5,8,.625],[7,10,.7]]),[n,d,dec]=pair,base=pick([20,24,30,32,40,48,50,60,64,80].filter(v=>v%d===0)),answer=base*n/d;
+    const wrong1=Math.max(1,answer-pick([1,2,4])),wrong2=answer+pick([2,4,5]);const choices=shuffle([answer,wrong1,wrong2]);const alt={};
+    choices.forEach(v=>{alt[String(v)]=`${v*2}÷2`;});
+    return{expression:`${n}/${d} × ${base}`,displayExpression:`${n}/${d} × ${base} = ?`,altExpression:`${dec} × ${base} = ?`,answer,choices,alt};
   }
   function toggleEndMimesisEquivalent(){
     const st=endSpecialState;if(!st||st.type!=='end-mimesis-equivalent'||paused||specialActive||locked)return;st.alt=!st.alt;
@@ -4021,23 +4096,23 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function startEndMimesisEquivalent(){
     document.body.classList.add('end-mimesis-equivalent-active');document.querySelector('.question-panel')?.classList.add('end-special-panel');
     const q=makeEndMimesisEquivalentQuestion();endSpecialState={type:'end-mimesis-equivalent',q,alt:false};populateSpecialQuestion(q,{chip:'鏡面A',step:1});
-    trackEndInterval(setInterval(()=>{toggleEndMimesisEquivalent();const chip=$('bossStrikeChip');if(chip)chip.textContent=`${END_BOSS_SPECIALS.silver.name}｜${endSpecialState?.alt?'鏡面B':'鏡面A'}`;},2600));startTimer(60);
+    trackEndInterval(setInterval(()=>{toggleEndMimesisEquivalent();const chip=$('bossStrikeChip');if(chip)setBossStepChip(endSpecialState?.alt?'鏡面B':'鏡面A',1);},2600));startTimer(60);
   }
   function makeEndBlueLoopChain(){
-    return pick([
-      [{expression:'1200mを4分で進む。1分あたりは？m',answer:300,choices:[250,300,400]},{expression:'1500mを4分で進む。1分あたりは？m',answer:375,choices:[300,350,375]},{expression:'1800mを5分で進む。1分あたりは？m',answer:360,choices:[350,360,400]}],
-      [{expression:'平均72点の5人。合計は？点',answer:360,choices:[350,360,370]},{expression:'平均76点の5人。合計は？点',answer:380,choices:[360,380,400]},{expression:'平均78点の6人。合計は？点',answer:468,choices:[456,468,478]}]
-    ]);
+    if(Math.random()<.5){
+      const chain=[];for(let i=0;i<3;i++){const minutes=pick([3,4,5,6]),per=pick([240,300,320,360,375,400]),distance=per*minutes;chain.push({expression:`${distance}mを${minutes}分で進む。1分あたりは？m`,answer:per,choices:compactNumericChoices(per,[per-25,per+25,per+50])});}return chain;
+    }
+    const chain=[];for(let i=0;i<3;i++){const people=pick([4,5,6,8]),avg=pick([64,68,72,75,76,78,80,84]),answer=people*avg;chain.push({expression:`平均${avg}点の${people}人。合計は？点`,answer,choices:compactNumericChoices(answer,[answer-people*2,answer+people*2])});}return chain;
   }
   function startEndBlueLoop(){
     document.body.classList.add('end-blue-loop-active');document.querySelector('.question-panel')?.classList.add('end-special-panel');const chain=makeEndBlueLoopChain();endSpecialState={type:'end-blue-loop',step:0,chain};bossSpecialSequence={type:'end-blue-loop',step:0,chain};populateSpecialQuestion(chain[0],{chip:'回帰層 I',step:1});startTimer(45);
   }
   function makeEndBackCausalChain(){
-    const x=pick([60,70,80]),mult=pick([6,8,10]),add=40,total=x*mult+add,y=x*3-20,eqCorrect=`${y+10}−10`;
+    const x=rand(45,110),mult=pick([5,6,8,10,12]),add=pick([20,30,40,50,60]),total=x*mult+add,secondMult=pick([2,3,4]),sub=pick([10,20,30,40]),y=x*secondMult-sub,offset=pick([10,20,50]),eqCorrect=`${y+offset}−${offset}`;
     return[
       {expression:`□ × ${mult} + ${add} = ${total}`,displayExpression:`□ × ${mult} + ${add} = ${total}　□は？`,answer:x,choices:compactNumericChoices(x,[x-10,x+10])},
-      {expression:`${x} × 3 − 20`,answer:y,choices:compactNumericChoices(y,[y-10,y+20])},
-      {expression:`${y} と同じ値は？`,answer:eqCorrect,choices:[eqCorrect,`${y}+10`,`${Math.max(0,y-20)}−10`]}
+      {expression:`${x} × ${secondMult} − ${sub}`,answer:y,choices:compactNumericChoices(y,[y-10,y+20])},
+      {expression:`${y} と同じ値は？`,answer:eqCorrect,choices:shuffle([eqCorrect,`${y}+${offset}`,`${Math.max(0,y-offset*2)}−${offset}`])}
     ];
   }
   function startEndBackCausal(){
@@ -4048,18 +4123,16 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const phase=Math.max(0,Math.min(4,bossQuestion));
     if(phase===4&&finalStrike!==null){
       const strike=Math.max(0,Math.min(2,Number(finalStrike)||0));
-      if(strike===0){setBossStepChip('終式・第一収束',1);document.body.classList.add('boss-time-pressure');return;}
-      if(strike===1){setBossStepChip('終式・第二収束',2);document.body.classList.add('end-final-silver-equivalent');[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+100}−100`;b.classList.add('end-equivalent-choice');});return;}
-      setBossStepChip('五界収束・終撃',3);panel?.classList.add('end-final-tide-panel');const guide=document.createElement('div');guide.id='endFinalTideGuide';guide.className='end-final-tide-guide';guide.innerHTML='<button type="button">潮流 I</button><button type="button">潮流 II</button><button type="button">潮流 III</button><strong>三つの条件を確認せよ</strong>';panel?.querySelector('.choice-caption')?.before(guide);const seen=new Set();const ans=Number(currentQuestion.answer),lower=Math.floor(ans/1000)*1000,upper=lower+1000;const cond=[`答えは${lower}以上`,`答えは${upper}未満`,`一の位は${Math.abs(ans)%10}`];[...guide.querySelectorAll('button')].forEach((b,i)=>{b.onclick=()=>{if(paused||locked)return;seen.add(i);b.classList.add('seen');guide.querySelector('strong').textContent=cond[i];if(seen.size===3){els.feedbackText.textContent='五界の条件が収束した。最後の答えを選ぼう！';[...els.choices.children].forEach(x=>x.disabled=false);}};});[...els.choices.children].forEach(x=>x.disabled=true);return;
+      if(strike===0){setBossStepChip('収束位相 I',1);document.body.classList.add('boss-time-pressure');return;}
+      if(strike===1){setBossStepChip('収束位相 II',2);document.body.classList.add('boss-time-pressure','end-final-silver-equivalent');const shift=pick([50,100,200,300]);[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+shift}−${shift}`;b.classList.add('end-equivalent-choice');});return;}
+      setBossStepChip('収束位相 III',3);document.body.classList.add('boss-time-pressure');els.feedbackText.textContent='五界臨界――最後の答えを導け。';return;
     }
     if(phase===0){
-      const ans=currentQuestion.answer,k=600;currentQuestion={...currentQuestion,expression:`□ ÷ 1.2 + 500 = ${ans/1.2+500}`,displayExpression:`□ ÷ 1.2 + 500 = ${ans/1.2+500}　□は？`};renderQuestionContent(currentQuestion);setBossStepChip('因果反転',1);
+      const ans=Number(currentQuestion.answer),div=pick([1.2,1.5,2,2.5]),add=pick([300,400,500,600]);if(Number.isFinite(ans)){currentQuestion={...currentQuestion,expression:`□ ÷ ${div} + ${add} = ${normalizeChoiceNumber(ans/div+add)}`,displayExpression:`□ ÷ ${div} + ${add} = ${normalizeChoiceNumber(ans/div+add)}　□は？`};renderQuestionContent(currentQuestion);}setBossStepChip('因果反転',1);
     }else if(phase===1){setBossStepChip('一刀断算',2);document.body.classList.add('boss-time-pressure');}
-    else if(phase===2){setBossStepChip('時の改竄',3);const ans=currentQuestion.answer;endFinalModifierTimer=setTimeout(()=>{if(!currentQuestion||bossQuestion!==2||paused)return;document.body.classList.add('end-final-blue-rewrite');const n=pick([120,240,360]);els.mathProblem.textContent=`${ans+n} − ${n} = ?`;fitMathProblemToBox(currentQuestion);els.feedbackText.textContent='記憶が書き換わった――答えは変わらない。';},11000);}
-    else if(phase===3){setBossStepChip('鏡界反転',4);document.body.classList.add('end-final-silver-equivalent');[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+100}−100`;b.classList.add('end-equivalent-choice');});}
-    else{
-      setBossStepChip('五界収束',5);panel?.classList.add('end-final-tide-panel');const guide=document.createElement('div');guide.id='endFinalTideGuide';guide.className='end-final-tide-guide';guide.innerHTML='<button type="button">潮流 I</button><button type="button">潮流 II</button><button type="button">潮流 III</button><strong>三つの条件を確認せよ</strong>';panel?.querySelector('.choice-caption')?.before(guide);const seen=new Set();const ans=Number(currentQuestion.answer),lower=Math.floor(ans/1000)*1000,upper=lower+1000;const cond=[`答えは${lower}以上`,`答えは${upper}未満`,`一の位は${Math.abs(ans)%10}`];[...guide.querySelectorAll('button')].forEach((b,i)=>{b.onclick=()=>{if(paused||locked)return;seen.add(i);b.classList.add('seen');guide.querySelector('strong').textContent=cond[i];if(seen.size===3){els.feedbackText.textContent='五界の条件が収束した。答えを選ぼう！';[...els.choices.children].forEach(x=>x.disabled=false);}};});[...els.choices.children].forEach(x=>x.disabled=true);
-    }
+    else if(phase===2){setBossStepChip('時の改竄',3);const ans=currentQuestion.answer;endFinalModifierTimer=setTimeout(()=>{if(!currentQuestion||bossQuestion!==2||paused)return;document.body.classList.add('end-final-blue-rewrite');const n=pick([120,240,360,480]);els.mathProblem.textContent=`${ans+n} − ${n} = ?`;fitMathProblemToBox(currentQuestion);els.feedbackText.textContent='記憶が書き換わった――答えは変わらない。';},11000);}
+    else if(phase===3){setBossStepChip('鏡界反転',4);document.body.classList.add('end-final-silver-equivalent');const shift=pick([50,100,200,300]);[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+shift}−${shift}`;b.classList.add('end-equivalent-choice');});}
+    else{setBossStepChip('収束位相 I',5);document.body.classList.add('boss-time-pressure');els.feedbackText.textContent='五界収束――時間内に正確な答えを選べ。';}
   }
   function makeEndBarrierQuestion(){return makeEndQuestion(currentEndSource(),bossQuestion);}
   async function startEndBossCoreSpecial(spec){
@@ -4401,7 +4474,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();enemyVisualToken++;concealEnemyVisual(true);
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
     stopSE(sirenSE);stopSE(endCorruptionNoiseSE);stopSE(cutinSE);stopSE(breakSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
-    await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);enqueuePendingSecretRelicNotices({showNow:true});
+    await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1050);enqueuePendingSecretRelicNotices({showNow:true});
   }
 
   function showPauseMenu(){els.pauseMenu.hidden=false;els.pauseConfirm.hidden=true;}
@@ -4422,7 +4495,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(pauseBgmShouldResume&&currentBgm)currentBgm.play().catch(()=>resumeStageBgmForCurrentState());
       else resumeStageBgmForCurrentState();
     }
-    if(!locked&&currentQuestion&&timeLeft>0)startTimer(timeLeft,{preserveCountCue:true});else syncPauseButton();
+    if(!locked&&currentQuestion&&timeLeft>0)startTimer(timeLeft,{preserveCountCue:true,preserveLimit:true});else syncPauseButton();
     updateSpecialHud();
   }
   async function returnTitleFromPause(){
@@ -4431,7 +4504,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     clearBossAction();clearMonsterAnnouncement();clearBattleFx();
     try{stageBgmPlayer.pause();stageBgmPlayer.currentTime=0;}catch{}currentBgm=null;
     stopSE(sirenSE);stopSE(endCorruptionNoiseSE);stopSE(cutinSE);stopSE(breakSE);stopSE(frontFinisherSE);stopSE(backFinisherSE);stopSE(countSE);stopSE(start321SE);stopSE(start0SE);stopSE(clearSE);stopSE(cancelSE);resetRun();
-    await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1050);enqueuePendingSecretRelicNotices({showNow:true});
+    await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1050);enqueuePendingSecretRelicNotices({showNow:true});
   }
 
   function ensureWhiteMemoryFx(){
@@ -4500,16 +4573,22 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(ok){
       comboStreak++;adjustSpecialGauge(20);els.feedbackText.textContent='正解！';showAnswerMark(true);playSE(correctSE);
       if(bossPhase){bossQuestion=1;whiteQuestionInDepth=10;whiteTotalCorrect++;renderGame();await sleep(450);await completeWhiteDepth();return;}
-      pulseWhiteMemoryFx();runAttackMotion();await sleep(800);whiteQuestionInDepth++;whiteTotalCorrect++;renderGame();await continueWhiteAfterQuestion();return;
+      pulseWhiteMemoryFx();runAttackMotion();await sleep(700);whiteQuestionInDepth++;whiteTotalCorrect++;renderGame();await continueWhiteAfterQuestion();return;
     }
-    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`時間切れ！ 正解は ${q.answer}`:`残念！ 正解は ${q.answer}`;renderGame();await sleep(1050);
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`時間切れ！ 正解は ${q.answer}`:`残念！ 正解は ${q.answer}`;renderGame();await sleep(950);
     if(lives<=0){persistWhiteResult();await showGameOver();return;}
     // 白のボスは1問突破型。失敗しても同じボスに別問題で再挑戦する。
     prepareQuestion();startTimer(whiteQuestionTime());
   }
 
-  async function startAdventure(){if(mode==='white'){await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);}
+  async function startAdventure(){if(mode==='white'){await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode,1500);await showMapSequence(true,true);}
   async function nextQuestion(){if(bossPhase){prepareQuestion();const spec=currentBossSpecial();startTimer(bossQuestion===4&&spec?.time?spec.time:60);}else{await beginNormalEncounter();}}
+
+  function pulseBossCorrectFrame(){
+    const panel=document.querySelector('.question-panel');if(!panel)return;
+    panel.classList.remove('boss-correct-pulse');void panel.offsetWidth;panel.classList.add('boss-correct-pulse');
+    setTimeout(()=>panel.classList.remove('boss-correct-pulse'),420);
+  }
 
   async function resolveAnswer(value,timeout=false){
     if(mode==='white'){await resolveWhiteAnswer(value,timeout);return;}
@@ -4636,7 +4715,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(bossPhase&&bossQuestion===4){playSE(correctSE);await sleep(520);totalProgress++;bossQuestion++;renderGame();await defeatBoss();return;}
       const blueQ10Slow=mode==='blue'&&stageIndex===4&&!bossPhase&&stageQuestion===9;
       if(blueQ10Slow)els.heroActor.classList.add('blue-q10-slow');
-      runAttackMotion();await sleep(180);playSE(correctSE);await sleep(blueQ10Slow?1370:720);els.heroActor.classList.remove('blue-q10-slow');totalProgress++;
+      runAttackMotion();await sleep(180);playSE(correctSE);if(bossPhase)pulseBossCorrectFrame();await sleep(blueQ10Slow?1370:(bossPhase?720:620));els.heroActor.classList.remove('blue-q10-slow');totalProgress++;
       if(bossPhase){
         const previousFinalHero=mode==='end'&&endFinalPhase?currentEndHeroWorld():null;
         bossQuestion++;renderGame();
@@ -4649,7 +4728,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(stageQuestion>=10){await enterBossPhase();return;}
       await beginNormalEncounter();return;
     }
-    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(1200);
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(bossPhase?1200:1050);
     if(lives<=0){
       stats.restarts++;
       await showGameOver();
@@ -4756,6 +4835,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     gate.classList.remove('show');await sleep(300);gate.remove();
   }
 
+  function worldClearLabel(world=mode){return{front:'光の世界',back:'裏の世界',crimson:'紅の世界',blue:'蒼の世界',silver:'銀の世界',midori:'翠の世界'}[world]||'';}
+  async function showWorldClear(world=mode,{goldText=''}={}){
+    const overlay=els.stageClearOverlay,label=overlay?.querySelector('small'),gold=$('stageClearGold');if(!overlay)return;
+    if(label)label.textContent='WORLD CLEAR';els.stageClearName.textContent=worldClearLabel(world);if(gold&&goldText)gold.textContent=goldText;
+    requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));overlay.hidden=false;playSE(clearSE);await sleep(2750);overlay.hidden=true;if(label)label.textContent='STAGE CLEAR';
+  }
+
   async function defeatBoss(){
     stopTimer();clearBossAction();els.answerMark.hidden=true;
     const terminalClear=mode==='end'&&endFinalPhase;
@@ -4775,7 +4861,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       enemyVisualToken++;concealEnemyVisual(true);
     }
     els.enemyActor.classList.remove('boss-defeat','end-final-defeat','finisher-hit','finisher-midori-hit');els.heroActor.classList.remove('finisher-front','finisher-back');document.querySelector('.battlefield')?.classList.remove('midori-finisher-impact');els.attackEffect.className='attack-effect';
-    if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await finishRun();return;}
+    if(mode==='crimson'&&crimsonLastPhase){grantStageClearGold('crimson-last',15);await stopBgmFade(1500);await showWorldClear('crimson',{goldText:'＋15 G'});await finishRun();return;}
     if(terminalClear){
       // The clear is committed as soon as the final enemy is defeated, before the tap gate,
       // so closing the app on the congratulations screen cannot lose the clear record.
@@ -4799,8 +4885,8 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
 
   async function clearStage(){
-    resetSpecialGauge();const stageGold=currentStageClearGold();grantStageClearGold(stageIndex,stageGold);const stageClearGold=$('stageClearGold');if(stageClearGold)stageClearGold.textContent=mode==='end'?'＋0 G':`＋${stageGold} G`;els.stageClearName.textContent=currentStage().name;requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));els.stageClearOverlay.hidden=false;playSE(clearSE);enemyVisualToken++;concealEnemyVisual(true);const fade=stopBgmFade(1500);await sleep(2750);
-    if(stageIndex>=getStages().length-1){els.stageClearOverlay.hidden=true;await fade;if(mode==='crimson'){await beginCrimsonLastBoss();return;}if(mode==='end'){await beginEndFinalBoss();return;}await finishRun();return;}
+    resetSpecialGauge();const stageGold=currentStageClearGold();grantStageClearGold(stageIndex,stageGold);const stageClearGold=$('stageClearGold'),clearLabel=els.stageClearOverlay?.querySelector('small'),finalStage=stageIndex>=getStages().length-1,worldComplete=finalStage&&!['crimson','end'].includes(mode);if(stageClearGold)stageClearGold.textContent=mode==='end'?'＋0 G':`＋${stageGold} G`;if(clearLabel)clearLabel.textContent=worldComplete?'WORLD CLEAR':'STAGE CLEAR';els.stageClearName.textContent=worldComplete?worldClearLabel(mode):currentStage().name;requestAnimationFrame(()=>fitSingleLineText(els.stageClearName,{maxWidthRatio:.90,minPx:18}));els.stageClearOverlay.hidden=false;playSE(clearSE);enemyVisualToken++;concealEnemyVisual(true);const fade=stopBgmFade(1500);await sleep(2750);
+    if(finalStage){els.stageClearOverlay.hidden=true;if(clearLabel)clearLabel.textContent='STAGE CLEAR';await fade;if(mode==='crimson'){await beginCrimsonLastBoss();return;}if(mode==='end'){await beginEndFinalBoss();return;}await finishRun();return;}
     stageIndex++;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;clearBossAction();lives=3;prepareMapOverlay(false);await new Promise(requestAnimationFrame);await sceneBlackout(async()=>{els.stageClearOverlay.hidden=true;},{fadeIn:650,hold:160,fadeOut:850});await fade;await showMapSequence(false,true);
   }
 
@@ -4818,23 +4904,17 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }else renderTitle();renderResult();els.resultOverlay.hidden=false;if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'特別なアイテムを手に入れた！':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}else enqueuePendingSecretRelicNotices({showNow:true});
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
-  function renderResult(){
-    els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;
-    if(!stats.errors.length){els.resultErrors.innerHTML='<div class="error-row">ミスはありませんでした！</div>';return;}
-    const recent=stats.errors.slice(-10),summary=stats.errors.length>10?`<div class="error-row result-error-summary">全${stats.errors.length}件中、直近10件を表示しています。</div>`:'';
-    els.resultErrors.innerHTML=summary+recent.map(e=>`<div class="error-row"><b>${questionDisplayText({expression:e.q})}</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join('');
-  }
+  function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;if(!stats.errors.length){els.resultErrors.innerHTML='<div class="error-row">ミスはありませんでした！</div>';return;}const recent=stats.errors.slice(-10),head=stats.errors.length>10?`<div class="error-row error-summary">全${stats.errors.length}件中、直近10件</div>`:'';els.resultErrors.innerHTML=head+recent.map(e=>`<div class="error-row"><b>${questionDisplayText({expression:e.q})}</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join('');}
 
   if(els.mapVisual)els.mapVisual.onclick=advanceMapFromInput;
   if(els.mapNextBtn)els.mapNextBtn.onclick=advanceMapFromInput;
 
-  if(els.dataManagementBtn)els.dataManagementBtn.onclick=async()=>{await transitionTo(()=>openDataManagement(),mode==='back'?'back':'normal',1000);};
-  if(els.dataManagementBackBtn)els.dataManagementBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1000);};
-  if(els.dataDeleteBtn)els.dataDeleteBtn.onclick=showDataDeleteConfirm;
-  if(els.dataDeleteCancelBtn)els.dataDeleteCancelBtn.onclick=hideDataDeleteConfirm;
+  if(els.dataManagementBtn)els.dataManagementBtn.onclick=openDataManagement;
+  if(els.dataManagementBackBtn)els.dataManagementBackBtn.onclick=closeDataManagement;
+  if(els.dataDeleteBtn)els.dataDeleteBtn.onclick=openDataDeleteConfirm;
+  if(els.dataDeleteCancelBtn)els.dataDeleteCancelBtn.onclick=closeDataDeleteConfirm;
   if(els.dataDeleteConfirmBtn)els.dataDeleteConfirmBtn.onclick=deleteAllSaveData;
-  if(els.dataDeleteConfirm)els.dataDeleteConfirm.onclick=e=>{if(e.target===els.dataDeleteConfirm)hideDataDeleteConfirm();};
-
+  if(els.dataDeleteConfirm)els.dataDeleteConfirm.onclick=e=>{if(e.target===els.dataDeleteConfirm)closeDataDeleteConfirm();};
   els.musicBtn.onclick=()=>openMusicPlayer();
   els.musicCloseBtn.onclick=()=>closeMusicPlayer();
   els.musicOverlay.onclick=e=>{if(e.target===els.musicOverlay){playSE(cancelSE);closeMusicPlayer();}};
@@ -4862,29 +4942,30 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   if(els.debugOverlay)els.debugOverlay.onclick=e=>{if(e.target===els.debugOverlay)closeDebugPanel();};
 
   els.playBtn.onclick=startAdventure;
-  els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode==='back'?'back':'normal',1450);};
-  els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode==='back'?'back':'normal',1450);};
-  els.monsterBookBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.monsterBookScreen);renderMonsterBook();},mode==='back'?'back':'normal',1450);};
-  els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1450);};
+  els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode,1450);};
+  els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode,1450);};
+  els.monsterBookBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.monsterBookScreen);renderMonsterBook();},mode,1450);};
+  els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1450);};
   els.collectionBackBtn.onclick=els.shopBackBtn.onclick;
   els.monsterBookBackBtn.onclick=els.shopBackBtn.onclick;
   els.monsterCardClose.onclick=closeMonsterCard;
   els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay){playSE(cancelSE);closeMonsterCard();}};
-  if(els.worldWarpBtn)els.worldWarpBtn.onclick=async()=>{if(!canWorldWarp())return;await transitionTo(()=>{renderWorldWarp();showOnly(els.worldWarpScreen);},mode==='back'?'back':'normal',1300);};
-  if(els.worldWarpBackBtn)els.worldWarpBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1200);};
+  if(els.worldWarpBtn)els.worldWarpBtn.onclick=async()=>{if(!canWorldWarp())return;await transitionTo(()=>{renderWorldWarp();showOnly(els.worldWarpScreen);},mode,1300);};
+  if(els.worldWarpBackBtn)els.worldWarpBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1200);};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
-  els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'front',1700);};
-  els.soundBtn.onclick=async()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();ALL_SE.forEach(stopSE);}else{playSE(buttonSE);await resumeStageBgmForCurrentState();}};
+  els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
+  els.soundBtn.onclick=async()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();[correctSE,wrongSE,swordSE,magicSE,gunSE,midoriFinisherSE,sirenSE,endCorruptionNoiseSE,cutinSE,breakSE,frontFinisherSE,backFinisherSE,countSE,buttonSE,cancelSE,start321SE,start0SE,clearSE].forEach(stopSE);}else{playSE(buttonSE);await resumeStageBgmForCurrentState();}};
   els.pauseBtn.onclick=pauseGame;
   if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
   els.pauseResumeBtn.onclick=resumeGame;
+  if(els.hudModeToggleBtn)els.hudModeToggleBtn.onclick=toggleHudMode;
   els.pauseTitleBtn.onclick=showPauseConfirm;
   els.pauseCancelTitleBtn.onclick=showPauseMenu;
   els.pauseConfirmTitleBtn.onclick=returnTitleFromPause;
   els.gameOverRetryBtn.onclick=retryFromGameOver;
   els.gameOverTitleBtn.onclick=returnTitleFromGameOver;
-  els.replayBtn.onclick=async()=>{if(mode==='white'){els.resultOverlay.hidden=true;await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode==='back'?'back':'normal',1500);await showMapSequence(true,true);};
-  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{document.body.classList.remove('end-final-postclear-active');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1500);enqueuePendingSecretRelicNotices({showNow:true});};
+  els.replayBtn.onclick=async()=>{if(mode==='white'){els.resultOverlay.hidden=true;await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.gameScreen);prepareMapOverlay(true);},mode,1500);await showMapSequence(true,true);};
+  els.toTitleBtn.onclick=async()=>{await transitionTo(()=>{document.body.classList.remove('end-final-postclear-active');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');els.resultOverlay.hidden=true;els.rewardOverlay.hidden=true;showOnly(els.titleScreen);renderTitle();},mode,1500);enqueuePendingSecretRelicNotices({showNow:true});};
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;const next=rewardFollowupQueue.shift();if(next)setTimeout(()=>presentRewardNotice(next),180);};
 
   const CANCEL_BUTTON_IDS=new Set([
@@ -4900,13 +4981,13 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   });
 
   window.__SANSU_TEST__={
-    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,bossSpecialSequence:bossSpecialSequence&&{...bossSpecialSequence},currentQuestion:currentQuestion&&{...currentQuestion},paused,gameOverActive,specialGauge,comboStreak,specialActive};},
+    get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,timerLimit,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,bossSpecialSequence:bossSpecialSequence&&{...bossSpecialSequence},currentQuestion:currentQuestion&&{...currentQuestion},paused,gameOverActive,specialGauge,comboStreak,specialActive,hudMode};},
     rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,
-    showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_FLIP_FACING,
+    showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,startTimer,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_FLIP_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
-    setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},
+    setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},setHudMode(v){applyHudMode(v);},setTimerState(left,limit=timerLimit){timerLimit=Math.max(1,Number(limit)||1);timeLeft=Math.max(0,Number(left)||0);els.timerText.textContent=timeLeft;updateTimerUrgency();},updateModernBattleHud,syncModernTimerHud,
     registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalQuestion,newEndRoute,WHITE_BOSS_POOL,WHITE_BACKGROUND_POOL,WHITE_NORMAL_BGM_POOL,WHITE_BOSS_BGM_POOL,makeWhiteQuestion,makeWhiteBeyondQuestion,whiteQuestionTime,whiteBeyondRate,startWhiteChallenge,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
@@ -4919,5 +5000,6 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   initializeSecretRelics();
   initializeWorldUnlockState();
   installDebugSecretGesture();
+  applyHudMode(readHudMode(),{persist:false});
   renderTitle();showOnly(els.titleScreen);enqueuePendingSecretRelicNotices({showNow:true});
 })();

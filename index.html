@@ -62,7 +62,7 @@
     <div class="rule-grid">
       <div><span class="rule-icon">◷</span><div><strong>60</strong><span>びょう</span><small>1もんの制限時間</small></div></div>
       <div><span class="rule-icon">◇</span><div><strong>3</strong><span>たく</span><small>こたえを選択</small></div></div>
-      <div><span class="rule-icon">♥</span><div><strong>3</strong><span>ライフ</span><small>3ミスでステージ再挑戦</small></div></div>
+      <div><span class="rule-icon">◆</span><div><strong>3</strong><span>ライフ</span><small>3ミスでステージ再挑戦</small></div></div>
       <div><span class="rule-icon">★</span><div><strong id="titleQuestionCount">75</strong><span>もん</span><small id="titleQuestionRuleNote">全5ステージ</small></div></div>
     </div>
   </div>
@@ -226,6 +226,12 @@
   <section class="battlefield"><div class="battle-corner battle-corner-tl" aria-hidden="true"></div><div class="battle-corner battle-corner-tr" aria-hidden="true"></div><div class="battle-corner battle-corner-bl" aria-hidden="true"></div><div class="battle-corner battle-corner-br" aria-hidden="true"></div>
     <div id="battleBg" class="battle-bg"></div><div class="battle-shade"></div>
     <div id="heroActor" class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"><div id="attackEffect" class="attack-effect" aria-hidden="true"><i class="silver-claw-stroke claw-a"></i><i class="silver-claw-stroke claw-b"></i><i class="silver-claw-stroke claw-c"></i></div></div>
+    <div id="heroLifeHud" class="hero-life-hud modern-battle-hud" aria-label="ライフ 3 / 3"><i></i><i></i><i></i></div>
+    <div id="enemyRingHud" class="enemy-ring-hud modern-battle-hud" aria-label="通常問題 0 / 10">
+      <div id="enemyRingSegments" class="enemy-ring-segments" aria-hidden="true"></div>
+      <strong id="enemyRingText">0 / 10</strong>
+      <small id="enemyRingLabel">PROGRESS</small>
+    </div>
     <div id="specialHud" class="special-hud" aria-label="必殺技ゲージ">
       <button id="specialBtn" class="special-btn" type="button" hidden>必殺技！</button>
       <div class="special-meter" aria-hidden="true"><i id="specialFill"></i><span class="special-meter-shine"></span></div>
@@ -235,6 +241,7 @@
       <div class="boss-hp-meter" aria-hidden="true"><i id="bossHpFill"></i><span class="boss-hp-shine"></span></div>
     </div>
     <section class="question-panel">
+      <div id="questionTimerHud" class="question-timer-hud modern-battle-hud" aria-label="残り60秒"><strong id="questionTimerText">60</strong></div>
       <div class="question-cap">もんだい</div>
       <div class="equation-box"><div id="mathProblem" class="math-problem">7+5=?</div></div>
       <div id="feedbackText" class="feedback"></div>
@@ -273,6 +280,7 @@
     <p>タイマーとバトルの動きを止めています。</p>
     <div class="pause-actions">
       <button id="pauseResumeBtn" class="menu-btn primary" type="button">つづける</button>
+      <button id="hudModeToggleBtn" class="menu-btn hud-mode-toggle" type="button" aria-pressed="true">HUD表示：新</button>
       <button id="pauseTitleBtn" class="menu-btn" type="button">タイトルにもどる</button>
     </div>
   </section>
