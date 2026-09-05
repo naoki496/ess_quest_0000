@@ -1110,11 +1110,16 @@ function markWorldVisited(world){
     target.addEventListener('pointercancel',clearHold);target.addEventListener('pointerleave',clearHold);
   }
 
+  const TRANSITION_WORLD_CLASSES=['front','back','crimson','blue','silver','midori','end','white'];
+  function transitionWorldClass(kind='normal'){
+    if(kind!=='normal'&&TRANSITION_WORLD_CLASSES.includes(kind))return kind;
+    return TRANSITION_WORLD_CLASSES.includes(mode)?mode:'front';
+  }
   async function transitionTo(swap,kind='normal',ms=1500){
-    const duration=Math.max(ms,1400),coverAt=Math.round(duration*0.46);
+    const duration=Math.max(ms,1400),coverAt=Math.round(duration*0.46),worldClass=transitionWorldClass(kind);
     els.transitionFx.style.setProperty('--transition-ms',`${duration}ms`);
-    els.transitionFx.classList.remove('active','back');
-    if(kind==='back')els.transitionFx.classList.add('back');
+    els.transitionFx.classList.remove('active',...TRANSITION_WORLD_CLASSES);
+    els.transitionFx.classList.add(worldClass);
     els.transitionFx.hidden=false;
     void els.transitionFx.offsetWidth;
     els.transitionFx.classList.add('active');
@@ -3080,10 +3085,16 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     }
   }
 
-  function playEndCorruptionNoise(duration=980){
+  function playEndCorruptionNoise(){
     if(!soundOn)return;
     try{endCorruptionNoiseSE.pause();endCorruptionNoiseSE.currentTime=0;endCorruptionNoiseSE.play().catch(()=>{});}catch{}
-    setTimeout(()=>stopSE(endCorruptionNoiseSE),duration);
+  }
+  function delayEndBossBgmAfterNoise(delay=520){
+    if(mode!=='end'||endFinalPhase)return;
+    const visualToken=enemyVisualToken;
+    setTimeout(()=>{
+      if(mode==='end'&&!endFinalPhase&&bossPhase&&enemyVisualToken===visualToken)void playStageBgm();
+    },delay);
   }
   function corruptedEndNameFrame(name,level=.45){
     const marks=['▯','▒','◆','◇','⌁','⊗','∞','∴','∵','Ξ'];
@@ -3103,7 +3114,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       fx.hidden=false;fx.className=`boss-name-fx active end-boss-name end-boss-name-${endFinalPhase?'front':(boss.sourceWorld||currentEndSource())}`;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
       await sleep(hasRewrite?520:760);
       if(hasRewrite){
-        fx.classList.add('end-name-corrupting');playEndCorruptionNoise(1080);
+        fx.classList.add('end-name-corrupting');playEndCorruptionNoise();if(!currentBgm)delayEndBossBgmAfterNoise(520);
         const frames=[.28,.48,.68,.82,.58,.74];
         for(const level of frames){text.textContent=corruptedEndNameFrame(boss.name,level);fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});await sleep(165);}
         if(!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=boss.name;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
@@ -3182,8 +3193,10 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await showBossWarning();
     if(!(await visualReady))return;
     els.enemyActor.style.opacity='0';
-    if(!retry)await playStageBgm();
+    const delayedEndBossBgm=mode==='end'&&!endFinalPhase;
+    if(!retry&&!delayedEndBossBgm)await playStageBgm();
     await showBossName();
+    if(delayedEndBossBgm&&!currentBgm)await playStageBgm();
     if(isBlueStage5()&&!retry)prepareBlueStage5BossReveal();
     els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
     await sleep(1400);
@@ -4860,7 +4873,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   if(els.worldWarpBtn)els.worldWarpBtn.onclick=async()=>{if(!canWorldWarp())return;await transitionTo(()=>{renderWorldWarp();showOnly(els.worldWarpScreen);},mode==='back'?'back':'normal',1300);};
   if(els.worldWarpBackBtn)els.worldWarpBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode==='back'?'back':'normal',1200);};
   els.backWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='back';renderTitle();showOnly(els.titleScreen);},'back',1700);};
-  els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'normal',1700);};
+  els.frontWorldBtn.onclick=async()=>{await transitionTo(()=>{mode='front';renderTitle();showOnly(els.titleScreen);},'front',1700);};
   els.soundBtn.onclick=async()=>{soundOn=!soundOn;els.soundBtn.textContent=`♪ ${soundOn?'ON':'OFF'}`;if(!soundOn){if(currentBgm)currentBgm.pause();ALL_SE.forEach(stopSE);}else{playSE(buttonSE);await resumeStageBgmForCurrentState();}};
   els.pauseBtn.onclick=pauseGame;
   if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
