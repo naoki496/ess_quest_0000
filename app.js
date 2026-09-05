@@ -3193,6 +3193,14 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
         </div>
         <div id="bossReconstructFx" class="boss-reconstruct-fx" hidden>
           <small>RECONSTRUCT</small><strong id="bossReconstructNumber"></strong><i></i>
+        </div>
+        <div id="endFinalConvergenceFx" class="end-final-convergence-fx" hidden>
+          <div class="end-final-convergence-vignette"></div>
+          <div class="end-final-convergence-orbs">
+            <i class="orb-back"></i><i class="orb-crimson"></i><i class="orb-blue"></i><i class="orb-silver"></i><i class="orb-midori"></i>
+          </div>
+          <div class="end-final-convergence-core"><i class="core-ring ring-a"></i><i class="core-ring ring-b"></i><b></b></div>
+          <div class="end-final-convergence-label"><small id="endFinalConvergenceKicker">FINAL BOSS TECHNIQUE</small><strong id="endFinalConvergenceTitle">時空終式・五界収束</strong><span id="endFinalConvergenceSub">FIVE WORLDS CONVERGE</span></div>
         </div>`;
       battlefield.appendChild(layer);
     }
@@ -3209,6 +3217,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const strike=$('bossStrikeTransition');if(strike){strike.hidden=true;strike.className='boss-strike-transition';}
     const rewrite=$('bossRewriteFx');if(rewrite){rewrite.hidden=true;rewrite.classList.remove('active');}
     const reconstruct=$('bossReconstructFx');if(reconstruct){reconstruct.hidden=true;reconstruct.classList.remove('active');}
+    const finalConv=$('endFinalConvergenceFx');if(finalConv){finalConv.hidden=true;finalConv.className='end-final-convergence-fx';}
     const shield=$('bossShieldFx');if(shield){shield.hidden=true;shield.classList.remove('active','breaking');}
     const chip=$('bossStrikeChip');if(chip)chip.remove();
   }
@@ -3380,6 +3389,23 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     view.append(tabs,condition);els.mathProblem.appendChild(view);
     els.feedbackText.textContent='三つの潮流条件をすべて確認しよう。';
     [...els.choices.children].forEach(b=>b.disabled=true);syncMidoriSpecialControls();updateSpecialHud();
+  }
+
+  async function showEndFinalConvergenceFx(phase=0){
+    ensureBossSpecialFxLayer();const fx=$('endFinalConvergenceFx');if(!fx)return;
+    const step=Math.max(0,Math.min(2,Number(phase)||0));
+    const titles=[
+      ['FINAL BOSS TECHNIQUE','時空終式・五界収束','FIVE WORLDS CONVERGE'],
+      ['CONVERGENCE II','第二収束・界圧上昇','THE FIVE STREAMS COLLIDE'],
+      ['FINAL CONVERGENCE','五界収束・終撃','ALL WORLDS / ONE POINT']
+    ][step];
+    clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active','end-final-convergence-cutin');
+    try{
+      $('endFinalConvergenceKicker').textContent=titles[0];$('endFinalConvergenceTitle').textContent=titles[1];$('endFinalConvergenceSub').textContent=titles[2];
+      fx.hidden=false;fx.className=`end-final-convergence-fx phase-${step+1}`;void fx.offsetWidth;fx.classList.add('active');
+      if(step===2)playSE(cutinSE);
+      await sleep(step===2?1500:1280);fx.classList.remove('active');await sleep(120);fx.hidden=true;
+    }finally{document.body.classList.remove('boss-technique-active','end-final-convergence-cutin');restoreSpecialHudAfterCutin();}
   }
 
   async function showBossPhaseTransition(kicker='SECOND STRIKE',title='第二撃',variant='slash'){
@@ -4074,7 +4100,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       }
       case'end-final-convergence':{
         // The FINAL climax is an offensive three-question convergence, not another double-shield pattern.
-        bossSpecialSequence={type:'end-final-convergence',step:0};prepareQuestion();startTimer(30);break;
+        bossSpecialSequence={type:'end-final-convergence',step:0};await showEndFinalConvergenceFx(0);prepareQuestion();startTimer(30);break;
       }
       case'crimson-genma':{
         bossSpecialSequence={type:'crimson-genma',step:'final'};await startCrimsonGenmaFinal();break;
@@ -4410,7 +4436,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(seq.type==='end-final-convergence'&&Number(seq.step)<2){
         const step=Number(seq.step)||0;
         await intermediate(step===0?'第一収束を突破！':'第二収束を突破！');
-        await showBossPhaseTransition(step===0?'SECOND CONVERGENCE':'FINAL CONVERGENCE',step===0?'第二収束':'五界収束・終撃','impact');
+        await showEndFinalConvergenceFx(step+1);
         bossSpecialSequence={type:'end-final-convergence',step:step+1};
         currentQuestion=makeEndFinalQuestion(4);renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});locked=false;applyEndFinalQuestionModifier(step+1);syncPauseButton();updateSpecialHud();startTimer(30,{preserveCountCue:true});return;
       }

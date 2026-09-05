@@ -2190,3 +2190,52 @@ body[data-mode="end"] .actor.hero img{transition:opacity .30s ease,transform .30
 @media (orientation:portrait){.bgm-title-toast{left:10px;top:10px;max-width:82vw}.end-final-hero-relay{min-width:76vw}.end-congratulations-gate strong{font-size:clamp(2rem,11vw,4.2rem)}}
 @media (orientation:landscape) and (max-height:500px){.bgm-title-toast{left:8px;top:7px;padding:5px 9px}.bgm-title-toast small{font-size:.40rem}.bgm-title-toast strong{font-size:.60rem}.end-final-hero-relay{top:48%;padding:8px 20px}.end-congratulations-gate{gap:4px}.end-congratulations-gate strong{font-size:2.8rem}.end-congratulations-gate span{margin-top:3px;font-size:.58rem}.music-white-shuffle-panel{padding:10px;gap:5px}.music-white-shuffle-panel p{font-size:.56rem}.music-white-random-btn{min-height:34px;min-width:160px;padding:6px 14px}}
 @media (prefers-reduced-motion:reduce){.end-final-hero-relay.show,.end-congratulations-gate.show,.end-congratulations-gate span,.bgm-title-toast.show{animation:none!important}.end-final-hero-relay.show{opacity:1;transform:translate(-50%,-50%)}.end-congratulations-gate.show{opacity:1}.bgm-title-toast.show{opacity:1;transform:translateX(0)}}
+
+/* ===== End FINAL convergence cut-in + portrait clear-title safety ===== */
+.end-final-convergence-fx{position:absolute;z-index:96;inset:0;overflow:hidden;pointer-events:none;opacity:0;background:radial-gradient(circle at 72% 46%,rgba(106,46,160,.16),transparent 26%),linear-gradient(180deg,rgba(2,3,10,.28),rgba(3,2,12,.76))}
+.end-final-convergence-fx.active{opacity:1;animation:endFinalConvergenceScene 1.28s ease both}
+.end-final-convergence-fx.phase-3.active{animation-duration:1.5s}
+.end-final-convergence-vignette{position:absolute;inset:-8%;background:radial-gradient(circle at 72% 46%,transparent 0 16%,rgba(5,3,14,.12) 27%,rgba(1,2,8,.72) 72%);opacity:0;animation:endFinalConvergenceVignette 1.28s ease both}
+.end-final-convergence-fx.phase-3 .end-final-convergence-vignette{animation-duration:1.5s;background:radial-gradient(circle at 72% 46%,rgba(223,171,79,.08) 0 10%,transparent 19%,rgba(22,7,39,.26) 34%,rgba(1,2,8,.82) 76%)}
+.end-final-convergence-orbs{position:absolute;left:72%;top:46%;width:1px;height:1px}
+.end-final-convergence-orbs i{position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor,0 0 34px currentColor;opacity:0;transform:translate(var(--dx),var(--dy)) scale(.45);animation:endFinalWorldOrb 1.12s cubic-bezier(.18,.72,.16,1) both}
+.end-final-convergence-orbs .orb-back{color:#b27cff;--dx:-49vw;--dy:-30vh}
+.end-final-convergence-orbs .orb-crimson{color:#ef5664;--dx:-52vw;--dy:24vh;animation-delay:.05s}
+.end-final-convergence-orbs .orb-blue{color:#65a7ff;--dx:-12vw;--dy:-44vh;animation-delay:.10s}
+.end-final-convergence-orbs .orb-silver{color:#dbeaff;--dx:19vw;--dy:-31vh;animation-delay:.15s}
+.end-final-convergence-orbs .orb-midori{color:#50e7bc;--dx:21vw;--dy:29vh;animation-delay:.20s}
+.end-final-convergence-fx.phase-2 .end-final-convergence-orbs i{width:16px;height:16px;left:-8px;top:-8px;filter:saturate(1.18)}
+.end-final-convergence-fx.phase-3 .end-final-convergence-orbs i{width:18px;height:18px;left:-9px;top:-9px;animation-duration:1.28s;box-shadow:0 0 15px currentColor,0 0 42px currentColor,0 0 70px color-mix(in srgb,currentColor 44%,transparent)}
+.end-final-convergence-core{position:absolute;left:72%;top:46%;width:clamp(92px,15vw,180px);aspect-ratio:1;transform:translate(-50%,-50%) scale(.7);opacity:0;animation:endFinalConvergenceCore 1.25s ease both}
+.end-final-convergence-core .core-ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(188,119,242,.68);box-shadow:0 0 18px rgba(159,75,230,.46),inset 0 0 18px rgba(84,34,126,.30)}
+.end-final-convergence-core .ring-a{animation:endFinalCoreSpin 2.2s linear infinite}
+.end-final-convergence-core .ring-b{inset:14%;border-style:dashed;border-color:rgba(105,219,255,.58);animation:endFinalCoreSpinReverse 1.5s linear infinite}
+.end-final-convergence-core b{position:absolute;inset:36%;border-radius:50%;background:radial-gradient(circle,#e9d6ff 0 6%,#9a55d4 24%,rgba(43,10,79,.9) 54%,transparent 72%);box-shadow:0 0 18px rgba(194,121,244,.74),0 0 44px rgba(100,39,149,.62)}
+.end-final-convergence-fx.phase-3 .end-final-convergence-core .core-ring{border-color:rgba(237,190,98,.72);box-shadow:0 0 21px rgba(216,155,68,.40),inset 0 0 22px rgba(108,55,10,.24)}
+.end-final-convergence-fx.phase-3 .end-final-convergence-core .ring-b{border-color:rgba(214,166,255,.68)}
+.end-final-convergence-fx.phase-3 .end-final-convergence-core b{background:radial-gradient(circle,#fff0b7 0 7%,#d99c42 25%,#6f286e 49%,rgba(29,7,46,.88) 67%,transparent 76%);box-shadow:0 0 23px rgba(238,190,91,.76),0 0 58px rgba(146,63,175,.58)}
+.end-final-convergence-label{position:absolute;z-index:3;left:7%;top:50%;width:min(56vw,720px);transform:translateY(-50%);padding:10px 16px 12px;border-left:2px solid rgba(199,158,244,.62);background:linear-gradient(90deg,rgba(4,5,17,.84),rgba(5,8,20,.38),transparent);opacity:0;animation:endFinalConvergenceLabel 1.25s ease both}
+.end-final-convergence-label small{display:block;color:#c7a7ef;font:900 clamp(.48rem,1.2vw,.72rem)/1.1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.24em}
+.end-final-convergence-label strong{display:block;margin:6px 0 4px;color:#f7f1ff;font:900 clamp(1.18rem,4vw,2.5rem)/1.08 "Yu Gothic",sans-serif;letter-spacing:.08em;text-shadow:0 0 14px rgba(178,108,235,.46)}
+.end-final-convergence-label span{display:block;color:#8fa8c7;font:800 clamp(.47rem,1vw,.66rem)/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.18em}
+.end-final-convergence-fx.phase-3 .end-final-convergence-label{border-left-color:rgba(236,188,99,.74)}
+.end-final-convergence-fx.phase-3 .end-final-convergence-label strong{color:#fff1c3;text-shadow:0 0 12px rgba(255,214,121,.38),0 0 28px rgba(149,66,185,.44)}
+@keyframes endFinalConvergenceScene{0%{opacity:0;filter:brightness(.72)}13%{opacity:1}72%{opacity:1;filter:brightness(1)}100%{opacity:0;filter:brightness(.76)}}
+@keyframes endFinalConvergenceVignette{0%{opacity:0;transform:scale(1.05)}22%,72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.98)}}
+@keyframes endFinalWorldOrb{0%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.35)}18%{opacity:1}68%{opacity:1;transform:translate(0,0) scale(.75)}82%{opacity:1;transform:translate(0,0) scale(1.55)}100%{opacity:0;transform:translate(0,0) scale(.15)}}
+@keyframes endFinalConvergenceCore{0%{opacity:0;transform:translate(-50%,-50%) scale(.58) rotate(-10deg)}32%{opacity:.9}72%{opacity:1;transform:translate(-50%,-50%) scale(1.04) rotate(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(.78) rotate(7deg)}}
+@keyframes endFinalCoreSpin{to{transform:rotate(360deg)}}
+@keyframes endFinalCoreSpinReverse{to{transform:rotate(-360deg)}}
+@keyframes endFinalConvergenceLabel{0%{opacity:0;transform:translate(-18px,-50%)}20%,72%{opacity:1;transform:translate(0,-50%)}100%{opacity:0;transform:translate(10px,-50%)}}
+
+/* Keep the clear title on one line even on narrow portrait phones. */
+.end-congratulations-gate strong{justify-self:center;max-width:calc(100% - 18px);white-space:nowrap}
+@media (orientation:portrait){
+  .end-congratulations-gate{padding-left:12px;padding-right:12px}
+  .end-congratulations-gate strong{font-size:clamp(1.35rem,8.2vw,3.2rem);letter-spacing:.025em;max-width:calc(100vw - 24px)}
+  .end-final-convergence-label{left:5%;top:67%;width:90vw;padding:8px 12px 9px}
+  .end-final-convergence-label strong{font-size:clamp(1rem,5.6vw,1.65rem)}
+  .end-final-convergence-core{left:70%;top:34%;width:clamp(86px,27vw,142px)}
+  .end-final-convergence-orbs{left:70%;top:34%}
+}
+@media (prefers-reduced-motion:reduce){.end-final-convergence-fx.active,.end-final-convergence-vignette,.end-final-convergence-orbs i,.end-final-convergence-core,.end-final-convergence-core .core-ring,.end-final-convergence-label{animation:none!important}.end-final-convergence-fx.active{opacity:1}.end-final-convergence-core,.end-final-convergence-label{opacity:1}}
