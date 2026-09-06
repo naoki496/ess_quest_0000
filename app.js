@@ -2872,6 +2872,10 @@ function advanceMapFromInput(){
   const resolve=mapAdvanceResolve;mapAdvanceResolve=null;resolve();
 }
 function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdvanceResolve=resolve;});}
+function setMapOverlayVisible(visible){
+  if(els.mapOverlay)els.mapOverlay.hidden=!visible;
+  document.body.classList.toggle('map-overlay-active',!!visible);
+}
 
   function prepareMapOverlay(initial=false){
     els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':mode==='silver'?'SILVER WORLD':mode==='midori'?'EMERALD SEA':'TIME RIVER';
@@ -2881,7 +2885,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const mapLinesFront=['森を抜けて、つぎの地へ。','洞くつの先へ進みます…','塔へ向かっています…','まおうの城へ進軍中…','決戦の部屋へ向かいます…'],mapLinesBack=['渋谷の裂け目へ移動中…','浅草の夜へ向かいます…','スカイツリー方面へ移動中…','都庁前へ急行中…','都庁屋上へ向かいます…'],mapLinesCrimson=['実りの里へ向かいます…','紅葉隠れの社へ進みます…','湯煙の古宿へ向かいます…','錦秋の城下へ進みます…','月影の山城へ向かいます…'],mapLinesBlue=['昔ながらの田舎町へ向かいます…','山の秘密基地へ進みます…','夏祭りの灯りへ向かいます…','夕暮れの公園へ進みます…','あの家へ帰ります…'],mapLinesSilver=['孤独の雪原へ踏み出します…','氷鏡の美術館へ向かいます…','天穹の雪嶺を登ります…','白夜の大天幕へ進みます…','世界の果てへ向かいます…'],mapLinesMidori=['出航の港島へ向かいます…','翠海の群島へ船を進めます…','翠深の遺跡島へ上陸します…','黒帆大船団へ突入します…','大渦の秘宝島へ向かいます…'];
     const mapLinesEnd=buildEndStages().map((st,i)=>i===0?'翠の海の先から、大時空支流へ入ります…':`${st.name}へ時空河を進みます…`);
     const lines=mode==='front'?mapLinesFront:mode==='back'?mapLinesBack:mode==='crimson'?mapLinesCrimson:mode==='blue'?mapLinesBlue:mode==='silver'?mapLinesSilver:mode==='midori'?mapLinesMidori:mapLinesEnd;els.mapMessage.textContent=lines[stageIndex]||(initial?'最初のエリアへ向かっています…':'次のエリアへ移動しています…');
-    const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}if(els.mapVisual)els.mapVisual.disabled=true;if(els.mapNextBtn)els.mapNextBtn.disabled=true;els.mapOverlay.hidden=false;
+    const tip=chooseMapTip();if(els.mapTipCategory)els.mapTipCategory.textContent=tip.category;if(els.mapTipText)els.mapTipText.textContent=tip.text;if(mapAdvanceResolve)mapAdvanceResolve=null;if(mapAdvanceTimer){clearTimeout(mapAdvanceTimer);mapAdvanceTimer=null;}if(els.mapVisual)els.mapVisual.disabled=true;if(els.mapNextBtn)els.mapNextBtn.disabled=true;setMapOverlayVisible(true);
   }
 
   function prepareStageOverlay(){
@@ -3222,6 +3226,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function hideSpecialHudForCutin(){
     specialHudCutinDepth++;
     if(els.specialHud)els.specialHud.classList.add('cutin-hidden');
+    if(els.heroLifeHud)els.heroLifeHud.classList.add('cutin-hidden');
     if(els.bossHpHud)els.bossHpHud.classList.add('cutin-hidden');
     if(els.compactProgressHud)els.compactProgressHud.classList.add('cutin-hidden');
   }
@@ -3229,6 +3234,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     specialHudCutinDepth=Math.max(0,specialHudCutinDepth-1);
     if(specialHudCutinDepth===0){
       if(els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
+      if(els.heroLifeHud){els.heroLifeHud.classList.remove('cutin-hidden');updateModernBattleHud();}
       if(els.bossHpHud){els.bossHpHud.classList.remove('cutin-hidden');updateBossHpHud();}
       if(els.compactProgressHud){els.compactProgressHud.classList.remove('cutin-hidden');updateModernBattleHud();}
     }
@@ -4134,7 +4140,22 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(phase===0){
       const ans=Number(currentQuestion.answer),div=pick([1.2,1.5,2,2.5]),add=pick([300,400,500,600]);if(Number.isFinite(ans)){currentQuestion={...currentQuestion,expression:`□ ÷ ${div} + ${add} = ${normalizeChoiceNumber(ans/div+add)}`,displayExpression:`□ ÷ ${div} + ${add} = ${normalizeChoiceNumber(ans/div+add)}　□は？`};renderQuestionContent(currentQuestion);}setBossStepChip('因果反転',1);
     }else if(phase===1){setBossStepChip('一刀断算',2);document.body.classList.add('boss-time-pressure');}
-    else if(phase===2){setBossStepChip('時の改竄',3);const ans=currentQuestion.answer;endFinalModifierTimer=setTimeout(()=>{if(!currentQuestion||bossQuestion!==2||paused)return;document.body.classList.add('end-final-blue-rewrite');const n=pick([120,240,360,480]);els.mathProblem.textContent=`${ans+n} − ${n} = ?`;fitMathProblemToBox(currentQuestion);els.feedbackText.textContent='記憶が書き換わった――答えは変わらない。';},11000);}
+    else if(phase===2){
+      setBossStepChip('時の改竄',3);
+      const alterTime=()=>{
+        if(!currentQuestion||bossQuestion!==2)return;
+        if(paused){endFinalModifierTimer=setTimeout(alterTime,500);return;}
+        const loss=Math.min(10,Math.max(0,timeLeft-1));
+        if(loss<=0)return;
+        timeLeft=Math.max(1,timeLeft-loss);
+        els.timerText.textContent=timeLeft;
+        updateTimerUrgency();
+        setBossStepChip(`時の改竄 −${loss}秒`,3);
+        els.feedbackText.textContent=`TIME ALTERED −${loss}s　時間が削られた！`;
+        if(els.questionTimerHud){els.questionTimerHud.classList.remove('time-altered');void els.questionTimerHud.offsetWidth;els.questionTimerHud.classList.add('time-altered');setTimeout(()=>els.questionTimerHud?.classList.remove('time-altered'),760);}
+      };
+      endFinalModifierTimer=setTimeout(alterTime,11000);
+    }
     else if(phase===3){setBossStepChip('鏡界反転',4);document.body.classList.add('end-final-silver-equivalent');const shift=pick([50,100,200,300]);[...els.choices.children].forEach(b=>{const v=Number(b.dataset.answerValue);if(!Number.isFinite(v))return;b.dataset.originalLabel=b.textContent;b.textContent=`${v+shift}−${shift}`;b.classList.add('end-equivalent-choice');});}
     else{setBossStepChip('収束位相 I',5);document.body.classList.add('boss-time-pressure');els.feedbackText.textContent='五界収束――時間内に正確な答えを選べ。';}
   }
@@ -4312,7 +4333,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     await waitForMapAdvance();
     await sceneBlackout(async()=>{
       prepareStageOverlay();
-      els.mapOverlay.hidden=true;
+      setMapOverlayVisible(false);
     },{fadeIn:650,hold:150,fadeOut:780});
     // Let the stage card breathe before entering the battlefield.
     await sleep(1500);
@@ -4767,7 +4788,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(isStandaloneFinalBoss()){await restartStandaloneFinalBossCheckpoint();return;}
     stopTimer();await stopBgmFade(600);clearBossAction();lives=3;bossPhase=true;bossQuestion=0;if(isBlueStage5())blueAdultState=true;totalProgress=bossCheckpointTotal();unlockCurrentBossMusic();
     prepareMapOverlay(false);await sleep(1100);
-    await sceneBlackout(async()=>{prepareStageOverlay();els.mapOverlay.hidden=true;},{fadeIn:250,hold:70,fadeOut:310});
+    await sceneBlackout(async()=>{prepareStageOverlay();setMapOverlayVisible(false);},{fadeIn:250,hold:70,fadeOut:310});
     await sleep(760);
     await sceneBlackout(async()=>{bossPhase=true;currentMonster=null;renderGame();clearQuestionUi();els.enemyActor.style.opacity='0';els.stageOverlay.hidden=true;},{fadeIn:270,hold:100,fadeOut:360});
     await playStageBgm();

@@ -2346,6 +2346,8 @@ body.hud-modern .question-panel{padding-top:12px}
 
 /* Hero life remains local to the hero. A lost crystal visibly breaks/fades once. */
 .hero-life-hud{position:absolute;z-index:68;left:1.2%;bottom:2%;width:auto;flex-direction:row;align-items:center;gap:6px;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.58))}
+/* In the slim HUD, keep LIFE visually separate from the SPECIAL meter while preserving its hero-side placement. */
+body.hud-modern .hero-life-hud{left:1.8%;bottom:8%}
 .hero-life-hud i{display:block;width:11px;height:11px;transform:rotate(45deg);border:1px solid color-mix(in srgb,var(--battle-life) 78%,#fff);background:rgba(4,12,24,.76);box-shadow:0 0 5px rgba(0,0,0,.50);transition:background .2s,box-shadow .2s,opacity .2s}
 .hero-life-hud i.active{background:var(--battle-life);box-shadow:0 0 7px var(--battle-life-glow),0 0 13px color-mix(in srgb,var(--battle-life) 44%,transparent)}
 body.hud-modern .hero-life-hud i:not(.active){background:rgba(4,12,24,.78)!important;box-shadow:0 0 4px rgba(0,0,0,.50)!important;opacity:.42}
@@ -2374,23 +2376,55 @@ body.hud-modern .boss-shield-fx b{display:none!important}
 @media (orientation:landscape) and (max-height:700px){
   body.hud-modern .hud{margin:4px 5px 0;gap:4px}body.hud-modern .compact-progress-hud{height:25px;width:min(45vw,360px);padding:0 8px}.compact-progress-track{height:5px!important}body.hud-modern .compact-progress-hud strong{font-size:.56rem}
   body.hud-modern .question-timer-hud,body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{height:25px;width:36px;border-radius:8px}body.hud-modern .question-timer-hud strong{font-size:.75rem}body.hud-modern .hud .sound-btn{font-size:.52rem}body.hud-modern .hud .pause-btn{font-size:.68rem}
-  .hero-life-hud{gap:4px}.hero-life-hud i{width:9px;height:9px}
+  body.hud-modern .hero-life-hud{bottom:6.2%}.hero-life-hud{gap:4px}.hero-life-hud i{width:9px;height:9px}
   body.hud-modern .special-hud{left:11.8%;bottom:.9%;width:17%;min-width:106px;height:21px}body.hud-modern .special-meter{height:7px}body.hud-modern .special-btn{min-width:66px;height:20px;bottom:5px;font-size:.52rem;padding:0 7px}
   body.hud-modern .boss-hp-hud:not([hidden]){left:88.2%;bottom:.9%;width:17%;min-width:106px}body.hud-modern .boss-hp-meter{height:7px}body.hud-modern .boss-shield-status:not([hidden]){bottom:7px;font-size:.42rem;padding:2px 5px}
 }
 @media (orientation:landscape) and (max-height:500px){
   body.hud-modern .hud{margin-top:3px}body.hud-modern .compact-progress-hud{height:22px;width:min(44vw,320px)}body.hud-modern .compact-progress-track{height:4px!important}body.hud-modern .compact-progress-hud strong{font-size:.50rem;min-width:36px}
   body.hud-modern .question-timer-hud,body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{height:22px;width:32px}body.hud-modern .question-timer-hud strong{font-size:.68rem}body.hud-modern .hud .sound-btn{font-size:.48rem}body.hud-modern .hud .pause-btn{font-size:.61rem}
-  .hero-life-hud{gap:3px}.hero-life-hud i{width:8px;height:8px}
+  body.hud-modern .hero-life-hud{bottom:7.4%}.hero-life-hud{gap:3px}.hero-life-hud i{width:8px;height:8px}
   body.hud-modern .special-hud{left:11.05%;bottom:.5%;width:16.5%;min-width:90px;height:19px}body.hud-modern .special-meter{height:6px}body.hud-modern .special-btn{min-width:58px;height:18px;bottom:4px;font-size:.46rem;padding:0 6px}
   body.hud-modern .boss-hp-hud:not([hidden]){left:88.95%;bottom:.5%;width:16.5%;min-width:90px}body.hud-modern .boss-hp-meter{height:6px}body.hud-modern .boss-hp-label{font-size:.36rem}body.hud-modern .boss-shield-status:not([hidden]){bottom:6px;font-size:.38rem;padding:1px 4px}
 }
 @media (orientation:portrait){
   body.hud-modern .hud{margin:4px 5px 0;gap:4px}body.hud-modern .compact-progress-hud{width:min(55vw,280px);height:27px;padding:0 7px;gap:5px;border-radius:9px}body.hud-modern .compact-progress-track{height:5px}body.hud-modern .compact-progress-hud strong{font-size:.54rem;min-width:38px}
   body.hud-modern .question-timer-hud,body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{height:27px;width:34px;border-radius:9px}body.hud-modern .question-timer-hud strong{font-size:.76rem}body.hud-modern .hud .sound-btn{display:block;font-size:.50rem}body.hud-modern .hud .pause-btn{position:static;transform:none;display:block;font-size:.66rem}
-  .hero-life-hud{left:1.3%;bottom:auto;top:30.2%;gap:4px}.hero-life-hud i{width:8px;height:8px}
+  body.hud-modern .hero-life-hud{left:1.8%;bottom:auto;top:26.4%}.hero-life-hud{gap:4px}.hero-life-hud i{width:8px;height:8px}
   body.hud-modern .special-hud{left:17.5%;top:29.0%;bottom:auto;width:25%;min-width:0;max-width:none;transform:translateX(-50%);height:21px}body.hud-modern .special-meter{height:7px;bottom:1px}body.hud-modern .special-btn{min-width:64px;height:19px;bottom:5px;font-size:.48rem;padding:0 6px}
   body.hud-modern .boss-hp-hud:not([hidden]){left:82.5%;top:29.0%;bottom:auto;width:25%;min-width:0;max-width:none;transform:translateX(-50%);gap:1px;z-index:70}body.hud-modern .boss-hp-meter{height:7px}body.hud-modern .boss-hp-label{font-size:.37rem}body.hud-modern .boss-shield-status:not([hidden]){bottom:7px;font-size:.39rem;padding:1px 5px}
   body.hud-modern .question-panel{top:34%;padding-top:10px}
 }
 @media (prefers-reduced-motion:reduce){body.hud-modern .question-timer-hud.time-pressure,body.hud-modern .question-timer-hud.time-critical,body.hud-modern .hero-life-hud.life-impact,body.hud-modern .hero-life-hud i.life-lost,body.hud-modern .special-btn{animation:none!important}}
+
+/* ===== v31 HUD layering / map visibility / END FINAL time alteration ===== */
+/* The map is a preparation screen: keep every top-HUD variant out of it, as in the legacy flow. */
+body.map-overlay-active .hud{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* Hero life follows the same cut-in visibility contract as the special / boss meters. */
+.hero-life-hud.cutin-hidden{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* Modern SHIELD sits directly above the BOSS HP label, centered rather than pushed right. */
+body.hud-modern .boss-hp-hud{overflow:visible}
+body.hud-modern .boss-shield-status:not([hidden]){
+  left:50%!important;right:auto!important;top:-10px!important;bottom:auto!important;
+  transform:translateX(-50%)!important;z-index:8!important;white-space:nowrap
+}
+@media (max-width:700px) and (orientation:landscape){
+  body.hud-modern .boss-shield-status:not([hidden]){top:-8px!important}
+}
+@media (max-width:500px) and (orientation:landscape){
+  body.hud-modern .boss-shield-status:not([hidden]){top:-7px!important}
+}
+@media (orientation:portrait){
+  body.hud-modern .boss-shield-status:not([hidden]){top:-8px!important}
+}
+
+/* Clear, explicit feedback for FINAL phase 3: time itself is altered instead of silently rewriting the equation. */
+body.hud-modern .question-timer-hud.time-altered{animation:endFinalTimeAltered .72s cubic-bezier(.18,.78,.2,1)!important}
+@keyframes endFinalTimeAltered{
+  0%{transform:scale(1);filter:brightness(1)}
+  24%{transform:scale(1.18);filter:brightness(1.8)}
+  48%{transform:scale(.94);filter:brightness(1.15)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
