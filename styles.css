@@ -2428,3 +2428,97 @@ body.hud-modern .question-timer-hud.time-altered{animation:endFinalTimeAltered .
   48%{transform:scale(.94);filter:brightness(1.15)}
   100%{transform:scale(1);filter:brightness(1)}
 }
+
+/* ===== 2026-09-06 FINAL integration / HUD-state audit / mobile landscape viewport ===== */
+/* Keep the battle shell tied to the fixed screen box. Android landscape can report a
+   shorter 100dvh than the actual fixed viewport; position:relative + 100dvh was the
+   cause of the large empty strip under the battlefield. */
+body.hud-modern .game-shell{
+  position:fixed!important;
+  inset:0!important;
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
+  grid-template-rows:minmax(0,1fr);
+}
+@media (orientation:landscape) and (max-height:600px) and (pointer:coarse){
+  body.hud-modern .game-shell{height:auto!important;min-height:0!important;inset:0!important}
+}
+
+/* A map / stage card / cinematic cut-in owns the screen. No battle resource may sit over it. */
+body.map-overlay-active .hud,
+body.map-overlay-active .hero-life-hud,
+body.map-overlay-active .special-hud,
+body.map-overlay-active .boss-hp-hud,
+body.stage-overlay-active .hud,
+body.stage-overlay-active .hero-life-hud,
+body.stage-overlay-active .special-hud,
+body.stage-overlay-active .boss-hp-hud,
+body.battle-hud-cutin-hidden .hud,
+body.battle-hud-cutin-hidden .hero-life-hud,
+body.battle-hud-cutin-hidden .special-hud,
+body.battle-hud-cutin-hidden .boss-hp-hud,
+body.end-final-postclear-active .hud,
+body.end-final-postclear-active .hero-life-hud,
+body.end-final-postclear-active .special-hud,
+body.end-final-postclear-active .boss-hp-hud{
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+
+/* The BGM toast sits below the slim glass HUD rather than under the progress track. */
+body.hud-modern .bgm-title-toast{top:43px;left:12px;max-width:min(420px,58vw)}
+@media (orientation:landscape) and (max-height:500px){
+  body.hud-modern .bgm-title-toast{top:31px;left:7px;max-width:min(340px,50vw)}
+  body.hud-modern .question-panel{top:calc(5% + 11px)}
+}
+
+/* END FINAL prelude — five world colors are compressed from the perimeter into the problem area.
+   This is deliberately not a white fullscreen flash. */
+.end-final-prelude-compress-fx{
+  --prelude-a:#7d91aa;--prelude-b:#33465b;
+  position:absolute;z-index:66;inset:0;overflow:hidden;pointer-events:none;opacity:0;
+  display:grid;place-items:center;isolation:isolate
+}
+.end-final-prelude-compress-fx[data-world="back"]{--prelude-a:#8ea4b8;--prelude-b:#33475b}
+.end-final-prelude-compress-fx[data-world="crimson"]{--prelude-a:#c55b55;--prelude-b:#5b1720}
+.end-final-prelude-compress-fx[data-world="blue"]{--prelude-a:#82d9f4;--prelude-b:#163a68}
+.end-final-prelude-compress-fx[data-world="silver"]{--prelude-a:#e2eef4;--prelude-b:#617687}
+.end-final-prelude-compress-fx[data-world="midori"]{--prelude-a:#61d9b2;--prelude-b:#125848}
+.end-final-prelude-compress-fx .prelude-edge{
+  position:absolute;inset:-16%;border:clamp(6px,1vw,13px) solid var(--prelude-a);border-radius:22%;
+  box-shadow:inset 0 0 70px color-mix(in srgb,var(--prelude-a) 30%,transparent),0 0 45px color-mix(in srgb,var(--prelude-b) 65%,transparent);
+  opacity:0;transform:scale(1.28)
+}
+.end-final-prelude-compress-fx .edge-b{inset:-9%;border-width:3px;filter:blur(1px);transform:scale(1.18) rotate(.5deg)}
+.end-final-prelude-compress-fx .prelude-core{
+  position:absolute;left:22%;right:22%;top:15%;bottom:36%;border-radius:18px;
+  background:radial-gradient(ellipse at center,color-mix(in srgb,var(--prelude-a) 23%,transparent),transparent 68%);
+  border:1px solid color-mix(in srgb,var(--prelude-a) 55%,transparent);opacity:0;transform:scale(1.32)
+}
+.end-final-prelude-compress-fx small,.end-final-prelude-compress-fx strong{
+  position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;text-align:center;
+  text-shadow:0 2px 8px #000,0 0 15px var(--prelude-b);opacity:0
+}
+.end-final-prelude-compress-fx small{top:35%;font:800 clamp(.48rem,1vw,.72rem)/1 Arial,sans-serif;letter-spacing:.22em;color:color-mix(in srgb,var(--prelude-a) 76%,#fff)}
+.end-final-prelude-compress-fx strong{top:40%;font:900 clamp(1rem,2.4vw,1.8rem)/1.1 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.10em;color:#f6fbff}
+.end-final-prelude-compress-fx.active{animation:endFinalPreludeHolder .82s ease-out both}
+.end-final-prelude-compress-fx.active .edge-a{animation:endFinalPreludeCompressA .82s cubic-bezier(.16,.78,.18,1) both}
+.end-final-prelude-compress-fx.active .edge-b{animation:endFinalPreludeCompressB .82s cubic-bezier(.18,.76,.2,1) both}
+.end-final-prelude-compress-fx.active .prelude-core{animation:endFinalPreludeCore .82s ease-out both}
+.end-final-prelude-compress-fx.active small,.end-final-prelude-compress-fx.active strong{animation:endFinalPreludeText .82s ease-out both}
+@keyframes endFinalPreludeHolder{0%{opacity:0}10%,78%{opacity:1}100%{opacity:0}}
+@keyframes endFinalPreludeCompressA{0%{opacity:0;transform:scale(1.34)}18%{opacity:.8}67%{opacity:.72;transform:scale(.56)}100%{opacity:0;transform:scale(.20)}}
+@keyframes endFinalPreludeCompressB{0%{opacity:0;transform:scale(1.25) rotate(.5deg)}24%{opacity:.66}70%{opacity:.58;transform:scale(.50) rotate(-1deg)}100%{opacity:0;transform:scale(.18)}}
+@keyframes endFinalPreludeCore{0%,30%{opacity:0;transform:scale(1.32)}62%{opacity:.62;transform:scale(.96)}100%{opacity:0;transform:scale(.70)}}
+@keyframes endFinalPreludeText{0%,30%{opacity:0;filter:blur(5px)}48%,72%{opacity:1;filter:blur(0)}100%{opacity:0;filter:blur(2px)}}
+@media (orientation:landscape) and (max-height:500px){
+  .end-final-prelude-compress-fx small{top:30%}.end-final-prelude-compress-fx strong{top:36%}
+}
+@media (prefers-reduced-motion:reduce){
+  .end-final-prelude-compress-fx.active,.end-final-prelude-compress-fx.active *{animation:none!important}
+  .end-final-prelude-compress-fx.active{opacity:.92}.end-final-prelude-compress-fx.active .prelude-core{opacity:.55!important;transform:scale(.96)!important}.end-final-prelude-compress-fx.active small,.end-final-prelude-compress-fx.active strong{opacity:1!important;transform:translateX(-50%)!important}
+}
+
+@media (orientation:landscape) and (max-height:500px){body.hud-modern .hero-life-hud{bottom:9.2%}}

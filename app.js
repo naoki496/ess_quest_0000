@@ -102,7 +102,10 @@
     back:{name:'儀式祭殿裏東京',bg:'end_bg_back.png',bgm:'boss.mp3',bossBgm:'BOSS DEFEAT.mp3',boss:['終星魔導皇・アステリア',BACK_STAGES[4].boss[1]],baseBossName:BACK_STAGES[4].boss[0],bossEnglish:'ENDSTAR ARCANE SOVEREIGN — ASTERIA',roadBosses:BACK_STAGES.slice(0,4).map(s=>s.boss)},
     blue:{name:'永劫夏界大迷宮',bg:'end_bg_blue.png',bgm:'残夏.mp3',bossBgm:'BOSS IGNITE.mp3',boss:['終劫残夏・トコナツ',BLUE_STAGES[4].boss[1]],baseBossName:BLUE_STAGES[4].boss[0],bossEnglish:'END-AEON SUMMER REMNANT — TOKONATSU',roadBosses:BLUE_STAGES.slice(0,4).map(s=>s.boss)}
   };
-  const END_FINAL={name:'まおうの へや',key:'end-final',count:5,normalCount:0,bossCount:5,bgm:'BOSS EXTERMINATE.mp3',bossBgm:'BOSS EXTERMINATE.mp3',bg:'end_bg_final.png',boss:['ゆうしゃ','end_final_yuusha.png'],bossEnglish:'THE HERO',sourceWorld:'front',final:true};
+  const END_FINAL={name:'まおうの へや',key:'end-final',count:10,normalCount:0,bossCount:10,bgm:'BOSS EXTERMINATE.mp3',bossBgm:'BOSS EXTERMINATE.mp3',bg:'end_bg_final.png',boss:['ゆうしゃ','end_final_yuusha.png'],bossEnglish:'THE HERO',sourceWorld:'front',final:true};
+  const END_FINAL_PRELUDE_COUNT=5,END_FINAL_TOTAL_QUESTIONS=10;
+  const END_FINAL_PRELUDE_WORLDS=['back','crimson','blue','silver','midori'];
+  const END_FINAL_PRELUDE_CATEGORIES=['units','data','pattern','logic','geometry'];
   const END_HERO_FILES={front:'hero.png',back:'end_back_hero.png',crimson:'end_crimson_hero.png',blue:'end_blue_hero_adult.png',silver:'end_silver_hero.png',midori:'end_midori_hero.png'};
   const END_HERO_NAMES={front:'ゆうしゃ',back:'魔法少女',crimson:'流浪の剣士',blue:'青年',silver:'銀狼の少女',midori:'海賊船長'};
   const END_FINAL_HERO_ORDER=['back','crimson','blue','silver','midori'];
@@ -111,7 +114,7 @@
   function newEndRoute(){return ['midori',...shuffle(['crimson','silver','back','blue'])];}
   function buildEndStages(route=endRunRoute){return route.map((sourceWorld,i)=>{const c=END_REGION_CONFIG[sourceWorld];return{name:c.name,key:`end-${sourceWorld}`,count:15,normalCount:10,bossCount:5,bgm:c.bgm,bossBgm:c.bossBgm,bg:c.bg,boss:c.boss,roadBosses:c.roadBosses,sourceWorld,endStage:i};});}
   function currentEndSource(){return endFinalPhase?'front':(endRunRoute[stageIndex]||'midori');}
-  function currentEndHeroWorld(){return endFinalPhase?(endFinalHeroOrder[Math.max(0,Math.min(4,bossQuestion))]||'midori'):endHeroWorld;}
+  function currentEndHeroWorld(){if(!endFinalPhase)return endHeroWorld;const relayIndex=Math.max(0,Math.min(4,(Number(bossQuestion)||0)-END_FINAL_PRELUDE_COUNT));return endFinalHeroOrder[relayIndex]||'midori';}
   function endRoadEntriesFor(sourceWorld,stage=0){const c=END_REGION_CONFIG[sourceWorld];return(c?.roadBosses||[]).map(([name,img],i)=>({id:`end-${sourceWorld}-road-${i+1}`,world:'end',sourceWorld,stage,rarity:5,name,img,boss:true,endPastBoss:true}));}
   function allEndMonsterEntries(){
     const entries=[];
@@ -1047,7 +1050,7 @@ function markWorldVisited(world){
   }
   async function debugJumpToCrimsonLast(question=0){
     if(!debugFullUnlock)return;
-    closeDebugPanel();resetRun();mode='crimson';crimsonLastPhase=true;stageIndex=4;stageQuestion=10;bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(question)||0));totalProgress=75+bossQuestion;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
+    closeDebugPanel();resetRun();mode='crimson';crimsonLastPhase=true;stageIndex=4;stageQuestion=10;bossPhase=true;bossQuestion=Math.max(0,Math.min(END_FINAL_TOTAL_QUESTIONS-1,Number(question)||0));totalProgress=75+bossQuestion;lives=3;currentMonster=null;currentQuestion=null;clearBossAction();unlockCurrentBossMusic();primeStageBgm();
     await transitionTo(()=>{showOnly(els.gameScreen);document.body.dataset.mode=mode;document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);document.querySelector('.battlefield')?.classList.remove('battle-base-enter');},mode,1250);
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,bossQuestion);
   }
@@ -1217,11 +1220,11 @@ function markWorldVisited(world){
     return stageStartTotal(stageIndex)+stageNormalCount(stageIndex);
   }
   function resetRun(){
-    clearEndSpecialEffects();
+    clearCrimsonSpecialEffects();clearMidoriSpecialEffects();clearEndSpecialEffects();
     stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
     if(mode==='white'){whiteDepth=1;whiteQuestionInDepth=0;whiteTotalCorrect=0;whiteBoss=null;whiteRecentBossIds=[];whiteRecentMonsterIds=[];whiteLastCategory='';whiteRecentTemplates=[];whiteBeyondActive=false;whiteBeyondSeenRun=0;whiteBeyondCorrectRun=0;whiteBeyondUnlockShown=false;chooseWhiteEnvironment();}
-    document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent','white-challenge-active','white-beyond-active');
+    document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent','white-challenge-active','white-beyond-active','map-overlay-active','stage-overlay-active','battle-hud-cutin-hidden','end-final-prelude-active','end-final-prelude-complete');
     if(els.pauseOverlay)els.pauseOverlay.hidden=true;if(els.gameOverOverlay)els.gameOverOverlay.hidden=true;if(els.battleCountdownOverlay)els.battleCountdownOverlay.hidden=true;runStageRewards=new Set();stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};pendingReviewTip=null;const blueDim=$('blueMemoryDimmer');if(blueDim){blueDim.classList.remove('full-black');blueDim.style.opacity='0';}locked=true;updateSpecialHud();syncPauseButton();
   }
 
@@ -1280,8 +1283,8 @@ function markWorldVisited(world){
     const show=!forceHide&&bossPhase&&!els.gameScreen.hidden;
     els.bossHpHud.hidden=!show;
     if(!show)return;
-    const totalHp=mode==='white'?1:5;
-    const remaining=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));
+    const totalHp=mode==='white'?1:(mode==='end'&&endFinalPhase?END_FINAL_TOTAL_QUESTIONS:5);
+    const remaining=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(totalHp,totalHp-bossQuestion));
     const pct=remaining/totalHp*100;
     els.bossHpFill.style.width=`${pct}%`;els.bossHpHud.style.setProperty('--meter-pct',pct);
     els.bossHpHud.classList.toggle('critical',remaining===1);
@@ -1459,6 +1462,14 @@ function markWorldVisited(world){
     if(sourceWorld==='crimson')return makeEndCrimsonQuestion(effective);
     return makeEndBackQuestion(effective);
   }
+  function makeEndFinalPreludeQuestion(step=bossQuestion){
+    const index=Math.max(0,Math.min(END_FINAL_PRELUDE_COUNT-1,Number(step)||0));
+    const category=END_FINAL_PRELUDE_CATEGORIES[index];
+    const level=index===END_FINAL_PRELUDE_COUNT-1?'master':'mixed';
+    const q=makeWhiteCategoryQuestion(category,level);
+    return {...q,endFinal:true,endFinalPrelude:true,preludeIndex:index,preludeWorld:END_FINAL_PRELUDE_WORLDS[index],advice:q.advice||WHITE_CATEGORY_INFO[category]?.advice};
+  }
+
   function makeEndFinalQuestion(step=bossQuestion){
     const phase=Math.max(0,Math.min(4,Number(step)||0));
     if(phase===0){
@@ -1487,7 +1498,7 @@ function markWorldVisited(world){
   }
 
   function makeBossQuestion(idx){
-    if(mode==='end')return endFinalPhase?makeEndFinalQuestion(bossQuestion):makeEndQuestion(currentEndSource(),bossQuestion);
+    if(mode==='end')return endFinalPhase?(bossQuestion<END_FINAL_PRELUDE_COUNT?makeEndFinalPreludeQuestion(bossQuestion):makeEndFinalQuestion(bossQuestion-END_FINAL_PRELUDE_COUNT)):makeEndQuestion(currentEndSource(),bossQuestion);
     if(mode==='crimson'){if(crimsonLastPhase)return makeCrimsonFinalQuestion(true,bossQuestion);if(idx<4)return makeCrimsonQuestion(idx+1);return makeCrimsonFinalQuestion(false,bossQuestion);}
     if(mode==='blue')return makeBlueBossQuestion(idx,bossQuestion);if(mode==='silver'){if(idx<4)return makeSilverQuestion(idx+1);return makeSilverFinalBossQuestion(bossQuestion);}if(mode==='midori'){if(idx<4)return makeMidoriQuestion(idx+1);return makeMidoriFinalBossQuestion(bossQuestion);}if(idx<4)return mode==='front'?makeFrontQuestion(idx+1):makeBackQuestion(idx+1);if(mode==='front')return makeFrontFinalBossQuestion();return makeBackFinalBossQuestion();
   }
@@ -2538,6 +2549,11 @@ function markWorldVisited(world){
   }
   function toggleHudMode(){applyHudMode(hudMode==='modern'?'classic':'modern');}
   let modernHudLastLives=3;
+  function bossQuestionTotal(){return mode==='end'&&endFinalPhase?END_FINAL_TOTAL_QUESTIONS:(mode==='white'?1:5);}
+  function bossFinalActionIndex(){return bossQuestionTotal()-1;}
+  function isBossFinalActionQuestion(){return bossPhase&&bossQuestion===bossFinalActionIndex();}
+  function endFinalSpecialPhase(){return mode==='end'&&endFinalPhase?Math.max(0,Math.min(4,(Number(bossQuestion)||0)-END_FINAL_PRELUDE_COUNT)):null;}
+
   function modernPhaseProgress(){
     const stage=currentStage()||{},normalTotal=Math.max(1,Number(stage.normalCount)||10),bossTotal=Math.max(1,Number(stage.bossCount)||5);
     if(bossPhase){
@@ -2876,6 +2892,10 @@ function setMapOverlayVisible(visible){
   if(els.mapOverlay)els.mapOverlay.hidden=!visible;
   document.body.classList.toggle('map-overlay-active',!!visible);
 }
+function setStageOverlayVisible(visible){
+  if(els.stageOverlay)els.stageOverlay.hidden=!visible;
+  document.body.classList.toggle('stage-overlay-active',!!visible);
+}
 
   function prepareMapOverlay(initial=false){
     els.mapModeLabel.textContent=mode==='front'?'WORLD MAP':mode==='back'?'BACK WORLD':mode==='crimson'?'CRIMSON WORLD':mode==='blue'?'BLUE WORLD':mode==='silver'?'SILVER WORLD':mode==='midori'?'EMERALD SEA':'TIME RIVER';
@@ -2889,7 +2909,7 @@ function setMapOverlayVisible(visible){
   }
 
   function prepareStageOverlay(){
-    const s=currentStage();els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;els.stageOverlayLabel.textContent=mode==='end'&&endFinalPhase?'FINAL':`STAGE ${stageIndex+1}`;els.stageOverlayName.textContent=s.name;els.stageOverlay.hidden=false;requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
+    const s=currentStage();els.stagePreview.style.backgroundImage=`url('./assets/${s.bg}')`;els.stageOverlayLabel.textContent=mode==='end'&&endFinalPhase?'FINAL':`STAGE ${stageIndex+1}`;els.stageOverlayName.textContent=s.name;setStageOverlayVisible(true);requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
   }
 
   function clearMonsterAnnouncement(){
@@ -2966,7 +2986,7 @@ function setMapOverlayVisible(visible){
     [...els.choices.children].forEach(b=>b.disabled=true);
     document.body.classList.add('special-assist-active');
     specialGauge=0;updateSpecialHud();
-    const heroFile=mode==='white'?'hero.png':mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='midori'?'midori_hero_pirate_captain.png':'silver_hero.png';
+    const heroFile=mode==='white'?'hero.png':mode==='end'?END_HERO_FILES[currentEndHeroWorld()]:mode==='front'?'hero.png':mode==='back'?'back_hero.png':mode==='crimson'?'crimson_hero.png':mode==='blue'?(isBlueAdultPhase()?'blue_hero_adult.png':'blue_hero.png'):mode==='silver'?'silver_hero.png':'midori_hero_pirate_captain.png';
     await showActionCutin('hero',heroFile,{variant:'assist',duration:980});
     const target=pick(wrongButtons);
     playFinisherSE();
@@ -3116,11 +3136,11 @@ function setMapOverlayVisible(visible){
     applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);
   }
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
-  function battleQuestionTime(){if(mode==='white')return whiteBeyondActive?60:whiteQuestionTime();if(mode==='end'&&endFinalPhase)return [45,20,40,40,30][Math.max(0,Math.min(4,bossQuestion))];return 60;}
+  function battleQuestionTime(){if(mode==='white')return whiteBeyondActive?60:whiteQuestionTime();if(mode==='end'&&endFinalPhase){if(bossQuestion<END_FINAL_PRELUDE_COUNT)return 45;return [45,20,40,40,30][endFinalSpecialPhase()];}return 60;}
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
     currentQuestion=mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
-    renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase)applyEndFinalQuestionModifier(bossQuestion===4&&bossSpecialSequence?.type==='end-final-convergence'?bossSpecialSequence.step:null);syncPauseButton();updateSpecialHud();
+    renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase&&bossQuestion>=END_FINAL_PRELUDE_COUNT)applyEndFinalQuestionModifier(isBossFinalActionQuestion()&&bossSpecialSequence?.type==='end-final-convergence'?bossSpecialSequence.step:null);syncPauseButton();updateSpecialHud();
   }
 
   function clearQuestionUi(){clearEndSpecialEffects();setFractionQuestionLayout(false,false);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
@@ -3224,7 +3244,7 @@ function setMapOverlayVisible(visible){
   };
   let specialHudCutinDepth=0;
   function hideSpecialHudForCutin(){
-    specialHudCutinDepth++;
+    specialHudCutinDepth++;document.body.classList.add('battle-hud-cutin-hidden');
     if(els.specialHud)els.specialHud.classList.add('cutin-hidden');
     if(els.heroLifeHud)els.heroLifeHud.classList.add('cutin-hidden');
     if(els.bossHpHud)els.bossHpHud.classList.add('cutin-hidden');
@@ -3233,6 +3253,7 @@ function setMapOverlayVisible(visible){
   function restoreSpecialHudAfterCutin(){
     specialHudCutinDepth=Math.max(0,specialHudCutinDepth-1);
     if(specialHudCutinDepth===0){
+      document.body.classList.remove('battle-hud-cutin-hidden');
       if(els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
       if(els.heroLifeHud){els.heroLifeHud.classList.remove('cutin-hidden');updateModernBattleHud();}
       if(els.bossHpHud){els.bossHpHud.classList.remove('cutin-hidden');updateBossHpHud();}
@@ -3265,28 +3286,49 @@ function setMapOverlayVisible(visible){
       restoreSpecialHudAfterCutin();
     }
   }
+  async function showEndFinalPreludeCompression(index){
+    if(mode!=='end'||!endFinalPhase||index<0||index>=END_FINAL_PRELUDE_COUNT)return;
+    const battlefield=document.querySelector('.battlefield');if(!battlefield)return;
+    const world=END_FINAL_PRELUDE_WORLDS[index];
+    hideSpecialHudForCutin();document.body.classList.add('end-final-prelude-active');
+    let fx=$('endFinalPreludeCompressFx');
+    if(!fx){fx=document.createElement('div');fx.id='endFinalPreludeCompressFx';fx.className='end-final-prelude-compress-fx';fx.setAttribute('aria-hidden','true');fx.innerHTML='<i class="prelude-edge edge-a"></i><i class="prelude-edge edge-b"></i><i class="prelude-core"></i><small></small><strong></strong>';battlefield.appendChild(fx);}
+    const worldLabel={back:'裏',crimson:'紅',blue:'蒼',silver:'銀',midori:'翠'}[world]||'';
+    fx.dataset.world=world;fx.querySelector('small').textContent=`WORLD DATA ${index+1} / ${END_FINAL_PRELUDE_COUNT}`;fx.querySelector('strong').textContent=`${worldLabel}界圧縮`;
+    fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');
+    await sleep(820);fx.classList.remove('active');document.body.classList.remove('end-final-prelude-active');restoreSpecialHudAfterCutin();
+  }
+  async function showEndFinalPreludeComplete(){
+    if(mode!=='end'||!endFinalPhase)return;
+    hideSpecialHudForCutin();document.body.classList.add('end-final-prelude-complete');
+    try{await showBossPhaseTransition('WORLD DATA COLLAPSED','五つの世界がひとつに沈む','impact');await sleep(180);}finally{document.body.classList.remove('end-final-prelude-complete');restoreSpecialHudAfterCutin();}
+  }
+
   async function showBossEntrance(retry=false,startAt=0){
     ensureMonsterFx();clearMonsterAnnouncement();locked=true;
     enemyVisualToken++;concealEnemyVisual(true);
-    bossPhase=true;bossQuestion=Math.max(0,Math.min(4,Number(startAt)||0));currentMonster=null;
+    bossPhase=true;const maxBossIndex=mode==='end'&&endFinalPhase?END_FINAL_TOTAL_QUESTIONS-1:4;bossQuestion=Math.max(0,Math.min(maxBossIndex,Number(startAt)||0));currentMonster=null;
     const boss=currentBoss();registerMonster(boss);renderGame();updateBossHpHud(true);
     // Decode during WARNING so the boss is ready before its reveal, but keep the enemy
     // region empty until the dedicated spawn animation begins.
     const visualReady=stageEnemyVisual(boss);
-    await showBossWarning();
-    if(!(await visualReady))return;
-    els.enemyActor.style.opacity='0';
-    const delayedEndBgm=!retry&&mode==='end'&&!endFinalPhase;
-    if(!retry&&!delayedEndBgm)await playStageBgm();
-    await showBossName({startEndBgm:delayedEndBgm});
-    if(isBlueStage5()&&!retry)prepareBlueStage5BossReveal();
-    els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
-    await sleep(1400);
-    els.enemyActor.classList.remove('spawn-boss');
-    if(isBlueStage5()&&!retry)await revealBlueStage5BossRoomAndHero();
-    clearMonsterAnnouncement();updateBossHpHud();
-    if(mode==='end'&&endFinalPhase&&!retry&&bossQuestion===0)await showBossTechnique(END_FINAL_SPECIAL.name,'TERMINAL ART');
-    if(bossQuestion===4){await runBossFifthAction();return;}
+    hideSpecialHudForCutin();
+    try{
+      await showBossWarning();
+      if(!(await visualReady))return;
+      els.enemyActor.style.opacity='0';
+      const delayedEndBgm=!retry&&mode==='end'&&!endFinalPhase;
+      if(!retry&&!delayedEndBgm)await playStageBgm();
+      await showBossName({startEndBgm:delayedEndBgm});
+      if(isBlueStage5()&&!retry)prepareBlueStage5BossReveal();
+      els.enemyActor.classList.add('spawn-boss');void els.enemyActor.offsetWidth;els.enemyActor.style.opacity='1';
+      await sleep(1400);
+      els.enemyActor.classList.remove('spawn-boss');
+      if(isBlueStage5()&&!retry)await revealBlueStage5BossRoomAndHero();
+      clearMonsterAnnouncement();updateBossHpHud();
+    }finally{restoreSpecialHudAfterCutin();}
+    if(mode==='end'&&endFinalPhase&&bossQuestion<END_FINAL_PRELUDE_COUNT){if(!retry&&bossQuestion===0)await showBossTechnique('五界圧縮','WORLD DATA COMPRESSION');await showEndFinalPreludeCompression(bossQuestion);}
+    if(isBossFinalActionQuestion()){await runBossFifthAction();return;}
     prepareQuestion();startTimer(battleQuestionTime());
   }
 
@@ -4130,7 +4172,7 @@ function setMapOverlayVisible(visible){
   }
   function applyEndFinalQuestionModifier(finalStrike=null){
     if(mode!=='end'||!endFinalPhase||!currentQuestion)return;clearEndSpecialEffects();document.body.classList.remove('boss-time-pressure');document.body.classList.add('end-final-convergence-active');const panel=document.querySelector('.question-panel');panel?.classList.add('end-special-panel');
-    const phase=Math.max(0,Math.min(4,bossQuestion));
+    const phase=endFinalSpecialPhase();
     if(phase===4&&finalStrike!==null){
       const strike=Math.max(0,Math.min(2,Number(finalStrike)||0));
       if(strike===0){setBossStepChip('収束位相 I',1);document.body.classList.add('boss-time-pressure');return;}
@@ -4143,7 +4185,7 @@ function setMapOverlayVisible(visible){
     else if(phase===2){
       setBossStepChip('時の改竄',3);
       const alterTime=()=>{
-        if(!currentQuestion||bossQuestion!==2)return;
+        if(!currentQuestion||bossQuestion!==END_FINAL_PRELUDE_COUNT+2)return;
         if(paused){endFinalModifierTimer=setTimeout(alterTime,500);return;}
         const loss=Math.min(10,Math.max(0,timeLeft-1));
         if(loss<=0)return;
@@ -4339,7 +4381,7 @@ function setMapOverlayVisible(visible){
     await sleep(1500);
     await sceneBlackout(async()=>{
       prepareEmptyBattle();
-      els.stageOverlay.hidden=true;
+      setStageOverlayVisible(false);
     },{fadeIn:700,hold:180,fadeOut:900});
     document.querySelector('.battlefield')?.classList.remove('battle-base-enter');
     // A short visual beat prevents the monster entrance from starting on the same
@@ -4551,8 +4593,8 @@ function setMapOverlayVisible(visible){
   }
   async function showWhiteDepthIntro(){
     locked=true;stopTimer();bossPhase=false;bossQuestion=0;whiteBoss=null;currentMonster=null;currentQuestion=null;chooseWhiteEnvironment();renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
-    els.stagePreview.style.backgroundImage=`url('./assets/${whiteCurrentBg}')`;els.stageOverlayLabel.textContent=`DEPTH ${whiteDepth}`;els.stageOverlayName.textContent=whiteDepth===1?'ENDLESS CHALLENGE':'NEXT DEPTH';els.stageOverlay.hidden=false;requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
-    await sleep(1250);await sceneBlackout(async()=>{els.stageOverlay.hidden=true;renderGame();clearQuestionUi();},{fadeIn:480,hold:100,fadeOut:620});
+    els.stagePreview.style.backgroundImage=`url('./assets/${whiteCurrentBg}')`;els.stageOverlayLabel.textContent=`DEPTH ${whiteDepth}`;els.stageOverlayName.textContent=whiteDepth===1?'ENDLESS CHALLENGE':'NEXT DEPTH';setStageOverlayVisible(true);requestAnimationFrame(()=>fitSingleLineText(els.stageOverlayName,{maxWidthRatio:.90,minPx:20}));
+    await sleep(1250);await sceneBlackout(async()=>{setStageOverlayVisible(false);renderGame();clearQuestionUi();},{fadeIn:480,hold:100,fadeOut:620});
     ensureWhiteMemoryFx();await playStageBgm();await runBattleCountdown();await beginWhiteNormalEncounter();
   }
   async function startWhiteChallenge(){
@@ -4607,7 +4649,7 @@ function setMapOverlayVisible(visible){
   }
 
   async function startAdventure(){if(mode==='white'){await startWhiteChallenge();return;}resetRun();primeStageBgm();await transitionTo(()=>{showOnly(els.gameScreen);prepareMapOverlay(true);},mode,1500);await showMapSequence(true,true);}
-  async function nextQuestion(){if(bossPhase){prepareQuestion();const spec=currentBossSpecial();startTimer(bossQuestion===4&&spec?.time?spec.time:60);}else{await beginNormalEncounter();}}
+  async function nextQuestion(){if(bossPhase){prepareQuestion();const spec=currentBossSpecial();startTimer(isBossFinalActionQuestion()&&spec?.time?spec.time:battleQuestionTime());}else{await beginNormalEncounter();}}
 
   function pulseBossCorrectFrame(){
     const panel=document.querySelector('.question-panel');if(!panel)return;
@@ -4619,7 +4661,7 @@ function setMapOverlayVisible(visible){
     if(mode==='white'){await resolveWhiteAnswer(value,timeout);return;}
     if(locked)return;locked=true;stopTimer();updateSpecialHud();[...els.choices.children].forEach(b=>{b.disabled=true;const bv=b.dataset.answerValue??b.textContent;if(answersEqual(bv,currentQuestion.answer))b.classList.add('correct');if(value!==null&&answersEqual(bv,value)&&!answersEqual(value,currentQuestion.answer))b.classList.add('wrong');});
     const ok=!timeout&&answersEqual(value,currentQuestion.answer);
-    if(ok&&bossPhase&&bossQuestion===4&&bossSpecialSequence){
+    if(ok&&bossPhase&&isBossFinalActionQuestion()&&bossSpecialSequence){
       const seq=bossSpecialSequence;
       const intermediate=async(message)=>{els.feedbackText.textContent=message;showAnswerMark(true);playSE(correctSE);await sleep(520);};
       if(seq.type==='end-double-barrier'){
@@ -4737,16 +4779,21 @@ function setMapOverlayVisible(visible){
     if(ok){
       comboStreak++;adjustSpecialGauge(20);
       els.feedbackText.textContent='せいかい！';showAnswerMark(true);
-      if(bossPhase&&bossQuestion===4){playSE(correctSE);await sleep(520);totalProgress++;bossQuestion++;renderGame();await defeatBoss();return;}
+      if(bossPhase&&isBossFinalActionQuestion()){playSE(correctSE);await sleep(520);totalProgress++;bossQuestion++;renderGame();await defeatBoss();return;}
       const blueQ10Slow=mode==='blue'&&stageIndex===4&&!bossPhase&&stageQuestion===9;
       if(blueQ10Slow)els.heroActor.classList.add('blue-q10-slow');
       runAttackMotion();await sleep(180);playSE(correctSE);if(bossPhase)pulseBossCorrectFrame();await sleep(blueQ10Slow?1370:(bossPhase?720:620));els.heroActor.classList.remove('blue-q10-slow');totalProgress++;
       if(bossPhase){
         const previousFinalHero=mode==='end'&&endFinalPhase?currentEndHeroWorld():null;
         bossQuestion++;renderGame();
-        if(mode==='end'&&endFinalPhase&&bossQuestion<5)await showEndFinalHeroRelay(previousFinalHero,currentEndHeroWorld());
-        if(bossQuestion>=5){await defeatBoss();return;}
-        if(bossQuestion===4){await runBossFifthAction();return;}
+        const bossTotal=bossQuestionTotal();
+        if(bossQuestion>=bossTotal){await defeatBoss();return;}
+        if(mode==='end'&&endFinalPhase){
+          if(bossQuestion===END_FINAL_PRELUDE_COUNT)await showEndFinalPreludeComplete();
+          else if(bossQuestion<END_FINAL_PRELUDE_COUNT)await showEndFinalPreludeCompression(bossQuestion);
+          if(bossQuestion>END_FINAL_PRELUDE_COUNT&&bossQuestion<END_FINAL_TOTAL_QUESTIONS)await showEndFinalHeroRelay(previousFinalHero,currentEndHeroWorld());
+        }
+        if(isBossFinalActionQuestion()){await runBossFifthAction();return;}
         prepareQuestion();startTimer(battleQuestionTime());return;
       }
       stageQuestion++;
@@ -4760,15 +4807,18 @@ function setMapOverlayVisible(visible){
       return;
     }
     if(bossPhase){
-      if(bossQuestion===4){await runBossFifthAction();return;}
+      if(isBossFinalActionQuestion()){await runBossFifthAction();return;}
       prepareQuestion();startTimer(battleQuestionTime());
     }else{prepareQuestion();startTimer(battleQuestionTime());}
   }
 
   async function enterBossPhase(){
     locked=true;stopTimer();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);await stopBgmFade(900);
-    if(isBlueStage5()){els.answerMark.hidden=true;await blueStage5BossBlackout();}
-    bossPhase=true;bossQuestion=0;currentMonster=null;clearBossAction();unlockCurrentBossMusic();await showBossEntrance(false);
+    const blueFinalIntro=isBlueStage5();if(blueFinalIntro)hideSpecialHudForCutin();
+    try{
+      if(blueFinalIntro){els.answerMark.hidden=true;await blueStage5BossBlackout();}
+      bossPhase=true;bossQuestion=0;currentMonster=null;clearBossAction();unlockCurrentBossMusic();await showBossEntrance(false);
+    }finally{if(blueFinalIntro)restoreSpecialHudAfterCutin();}
   }
   function isStandaloneFinalBoss(){return(mode==='crimson'&&crimsonLastPhase)||(mode==='end'&&endFinalPhase);}
   async function restartStandaloneFinalBossCheckpoint(){
@@ -4776,10 +4826,10 @@ function setMapOverlayVisible(visible){
     if(mode==='end'&&endFinalPhase){
       await sceneBlackout(async()=>{showOnly(els.gameScreen);document.body.dataset.mode='end';document.body.dataset.stage='final';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);prepareStageOverlay();},{fadeIn:420,hold:140,fadeOut:560});
       await sleep(1100);
-      await sceneBlackout(async()=>{els.stageOverlay.hidden=true;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);},{fadeIn:420,hold:120,fadeOut:560});
+      await sceneBlackout(async()=>{setStageOverlayVisible(false);renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);},{fadeIn:420,hold:120,fadeOut:560});
       await sleep(220);
     }else{
-      await sceneBlackout(async()=>{showOnly(els.gameScreen);document.body.dataset.mode='crimson';document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);els.stageOverlay.hidden=true;},{fadeIn:420,hold:140,fadeOut:560});
+      await sceneBlackout(async()=>{showOnly(els.gameScreen);document.body.dataset.mode='crimson';document.body.dataset.stage='last';renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);setStageOverlayVisible(false);},{fadeIn:420,hold:140,fadeOut:560});
       await sleep(220);
     }
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,0);
@@ -4790,7 +4840,7 @@ function setMapOverlayVisible(visible){
     prepareMapOverlay(false);await sleep(1100);
     await sceneBlackout(async()=>{prepareStageOverlay();setMapOverlayVisible(false);},{fadeIn:250,hold:70,fadeOut:310});
     await sleep(760);
-    await sceneBlackout(async()=>{bossPhase=true;currentMonster=null;renderGame();clearQuestionUi();els.enemyActor.style.opacity='0';els.stageOverlay.hidden=true;},{fadeIn:270,hold:100,fadeOut:360});
+    await sceneBlackout(async()=>{bossPhase=true;currentMonster=null;renderGame();clearQuestionUi();els.enemyActor.style.opacity='0';setStageOverlayVisible(false);},{fadeIn:270,hold:100,fadeOut:360});
     await playStageBgm();
     await runBattleCountdown();
     await showBossEntrance(true);
@@ -4798,17 +4848,19 @@ function setMapOverlayVisible(visible){
   async function showEndRescue(sourceWorld){
     if(mode!=='end'||endFinalPhase||stageIndex===0)return;
     const rescued=sourceWorld||currentEndSource(),file=END_HERO_FILES[rescued];if(!file)return;
-    document.body.classList.add('end-rescue-active');
-    const wrap=document.createElement('div');wrap.className='end-rescue-fx';wrap.innerHTML=`<div class="end-rescue-river"></div><img src="./assets/${file}" alt="${END_HERO_NAMES[rescued]||'主人公'}"><strong>RESCUED</strong>`;document.body.appendChild(wrap);await sleep(2300);wrap.remove();document.body.classList.remove('end-rescue-active');endHeroWorld=rescued;
+    hideSpecialHudForCutin();document.body.classList.add('end-rescue-active');
+    try{const wrap=document.createElement('div');wrap.className='end-rescue-fx';wrap.innerHTML=`<div class="end-rescue-river"></div><img src="./assets/${file}" alt="${END_HERO_NAMES[rescued]||'主人公'}"><strong>RESCUED</strong>`;document.body.appendChild(wrap);await sleep(2300);wrap.remove();endHeroWorld=rescued;}finally{document.body.classList.remove('end-rescue-active');restoreSpecialHudAfterCutin();}
   }
   async function showEndFinalHeroRelay(fromWorld,toWorld){
     if(mode!=='end'||!endFinalPhase||!toWorld||fromWorld===toWorld)return;
     const battlefield=document.querySelector('.battlefield');if(!battlefield)return;
-    document.body.classList.add('end-final-hero-switching');
-    let fx=$('endFinalHeroRelay');if(!fx){fx=document.createElement('div');fx.id='endFinalHeroRelay';fx.className='end-final-hero-relay';battlefield.appendChild(fx);}
-    const worldLabel={back:'裏',crimson:'紅',blue:'蒼',silver:'銀',midori:'翠'}[toWorld]||'';
-    fx.innerHTML=`<small>NEXT RELAY / ${worldLabel}</small><strong>${END_HERO_NAMES[toWorld]||'主人公'}</strong><span>次の一問へ</span>`;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');
-    await sleep(760);document.body.classList.remove('end-final-hero-switching');await sleep(360);fx.classList.remove('show');
+    hideSpecialHudForCutin();document.body.classList.add('end-final-hero-switching');
+    try{
+      let fx=$('endFinalHeroRelay');if(!fx){fx=document.createElement('div');fx.id='endFinalHeroRelay';fx.className='end-final-hero-relay';battlefield.appendChild(fx);}
+      const worldLabel={back:'裏',crimson:'紅',blue:'蒼',silver:'銀',midori:'翠'}[toWorld]||'';
+      fx.innerHTML=`<small>NEXT RELAY / ${worldLabel}</small><strong>${END_HERO_NAMES[toWorld]||'主人公'}</strong><span>次の一問へ</span>`;fx.classList.remove('show');void fx.offsetWidth;fx.classList.add('show');
+      await sleep(760);await sleep(360);fx.classList.remove('show');
+    }finally{document.body.classList.remove('end-final-hero-switching');restoreSpecialHudAfterCutin();}
   }
 
   async function beginEndFinalBoss(){
@@ -4822,7 +4874,7 @@ function setMapOverlayVisible(visible){
     },{fadeIn:520,hold:220,fadeOut:700});
     await sleep(1500);
     await sceneBlackout(async()=>{
-      els.stageOverlay.hidden=true;renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
+      setStageOverlayVisible(false);renderGame();clearQuestionUi();enemyVisualToken++;concealEnemyVisual(true);
     },{fadeIn:520,hold:160,fadeOut:700});
     await sleep(260);
     await playStageBgm();await runBattleCountdown();await showBossEntrance(true,0);
@@ -5013,7 +5065,7 @@ function setMapOverlayVisible(visible){
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},setHudMode(v){applyHudMode(v);},setTimerState(left,limit=timerLimit){timerLimit=Math.max(1,Number(limit)||1);timeLeft=Math.max(0,Number(left)||0);els.timerText.textContent=timeLeft;updateTimerUrgency();},updateModernBattleHud,syncModernTimerHud,
-    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalQuestion,newEndRoute,WHITE_BOSS_POOL,WHITE_BACKGROUND_POOL,WHITE_NORMAL_BGM_POOL,WHITE_BOSS_BGM_POOL,makeWhiteQuestion,makeWhiteBeyondQuestion,whiteQuestionTime,whiteBeyondRate,startWhiteChallenge,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
+    registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalPreludeQuestion,makeEndFinalQuestion,newEndRoute,WHITE_BOSS_POOL,WHITE_BACKGROUND_POOL,WHITE_NORMAL_BGM_POOL,WHITE_BOSS_BGM_POOL,makeWhiteQuestion,makeWhiteBeyondQuestion,whiteQuestionTime,whiteBeyondRate,startWhiteChallenge,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
