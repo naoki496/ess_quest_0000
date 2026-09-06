@@ -126,10 +126,19 @@
 <section id="collectionScreen" class="screen sub-screen" hidden>
   <div class="sub-bg"></div>
   <div class="sub-shell panel-gold collection-shell">
-    <header class="sub-header"><div><small>COLLECTION</small><h2>コレクション</h2></div><div class="wallet"><strong id="collectionCount">0 / 100</strong></div></header>
+    <header class="sub-header"><div><small>COLLECTION</small><h2>コレクション</h2></div><div class="wallet collection-wallet"><span>NORMAL</span><strong id="collectionCount">0 / 100</strong></div></header>
     <div class="collection-layout">
-      <div class="collection-grid-wrap"><div id="collectionGrid" class="collection-grid"></div></div>
-      <aside id="collectionDetail" class="collection-detail"><div class="detail-icon">?</div><h3>アイテムを えらぼう</h3><p>手に入れたアイテムの詳細を鑑賞できます。</p></aside>
+      <div class="collection-grid-wrap">
+        <section class="collection-section normal-items-section" aria-label="通常アイテム">
+          <div class="collection-section-head"><div><small>NORMAL ITEMS</small><b>収集アイテム</b></div><span>購入・報酬で集める100品</span></div>
+          <div id="collectionGrid" class="collection-grid"></div>
+        </section>
+        <section class="collection-section secret-items-section" aria-label="シークレットレリック">
+          <div class="collection-section-head secret-section-head"><div><small>SECRET RELICS</small><b>シークレットレリック</b></div><strong id="collectionSecretCount">0 / ??</strong></div>
+          <div id="secretRelicGrid" class="collection-grid secret-relic-grid"></div>
+        </section>
+      </div>
+      <aside id="collectionDetail" class="collection-detail"><div class="detail-icon">?</div><h3>アイテムを えらぼう</h3><p>手に入れたアイテムの詳細を鑑賞できます。説明文は入手後にだけ解放されます。</p></aside>
     </div>
     <footer class="sub-footer"><button id="collectionBackBtn" class="back-btn">タイトルにもどる</button></footer>
   </div>
