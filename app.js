@@ -251,7 +251,7 @@
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),hudModeToggleBtn:$('hudModeToggleBtn'),
-    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),enemyRingHud:$('enemyRingHud'),enemyRingSegments:$('enemyRingSegments'),enemyRingText:$('enemyRingText'),enemyRingLabel:$('enemyRingLabel'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
+    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),specialArcHud:$('specialArcHud'),specialArcSegments:$('specialArcSegments'),enemyRingHud:$('enemyRingHud'),enemyRingSegments:$('enemyRingSegments'),enemyRingText:$('enemyRingText'),enemyRingLabel:$('enemyRingLabel'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapVisual:$('mapVisual'),mapImage:$('mapImage'),mapTipCategory:$('mapTipCategory'),mapTipText:$('mapTipText'),mapMessage:$('mapMessage'),mapNextBtn:$('mapNextBtn'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
@@ -2522,9 +2522,9 @@ function markWorldVisited(world){
   function syncHudModeButton(){
     if(!els.hudModeToggleBtn)return;
     const modern=hudMode==='modern';
-    els.hudModeToggleBtn.textContent=`HUD表示：${modern?'新':'従来'}`;
+    els.hudModeToggleBtn.textContent=`HUD表示：${modern?'アーク':'従来'}`;
     els.hudModeToggleBtn.setAttribute('aria-pressed',modern?'true':'false');
-    els.hudModeToggleBtn.title=modern?'現在は新HUDです。押すと従来HUDへ切り替えます。':'現在は従来HUDです。押すと新HUDへ切り替えます。';
+    els.hudModeToggleBtn.title=modern?'現在はアークHUDです。押すと従来HUDへ切り替えます。':'現在は従来HUDです。押すとアークHUDへ切り替えます。';
   }
   function applyHudMode(value,{persist=true}={}){
     hudMode=value==='classic'?'classic':'modern';
@@ -2541,23 +2541,37 @@ function markWorldVisited(world){
     if(mode==='white')return Math.max(0,Math.min(9,whiteQuestionInDepth));
     return Math.max(0,Math.min(10,stageQuestion));
   }
-  function rebuildEnemyRing(total){
-    if(!els.enemyRingSegments)return;
+  function rebuildArcSegments(container,total,side='enemy'){
+    if(!container)return;
     total=Math.max(1,Number(total)||1);
-    if(Number(els.enemyRingSegments.dataset.total)===total)return;
-    els.enemyRingSegments.dataset.total=String(total);els.enemyRingSegments.replaceChildren();
-    const span=total===1?0:280/(total-1);
+    const signature=`${total}:${side}`;
+    if(container.dataset.arcSignature===signature)return;
+    container.dataset.arcSignature=signature;container.replaceChildren();
     for(let i=0;i<total;i++){
-      const seg=document.createElement('i');seg.style.setProperty('--seg-angle',`${-140+i*span}deg`);els.enemyRingSegments.appendChild(seg);
+      const t=total===1?.5:i/(total-1),bow=Math.sin(Math.PI*t);
+      const seg=document.createElement('i');
+      seg.style.setProperty('--seg-y',(t*100).toFixed(3));
+      seg.style.setProperty('--seg-x',(.25+.75*bow).toFixed(3));
+      seg.style.setProperty('--seg-rot',`${((t-.5)*24*(side==='hero'?-1:1)).toFixed(2)}deg`);
+      container.appendChild(seg);
     }
+  }
+  function rebuildEnemyRing(total){rebuildArcSegments(els.enemyRingSegments,total,'enemy');}
+  function updateModernSpecialArc(value){
+    if(!els.specialArcHud||!els.specialArcSegments)return;
+    rebuildArcSegments(els.specialArcSegments,10,'hero');
+    const lit=Math.max(0,Math.min(10,Math.floor(Math.max(0,Math.min(100,value))/10+1e-9)));
+    [...els.specialArcSegments.children].forEach((seg,i)=>seg.classList.toggle('active',i<lit));
+    els.specialArcHud.classList.toggle('ready',value>=100);
+    els.specialArcHud.setAttribute('aria-label',`必殺技ゲージ ${Math.round(value)}%`);
   }
   function updateModernBattleHud(){
     if(!els.heroLifeHud||!els.enemyRingHud)return;
     const lifePips=[...els.heroLifeHud.children];lifePips.forEach((p,i)=>p.classList.toggle('active',i<lives));
     els.heroLifeHud.setAttribute('aria-label',`ライフ ${Math.max(0,lives)} / 3`);
-    let total=10,value=modernNormalProgress(),label='PROGRESS',aria=`通常問題 ${value} / ${total}`,critical=false;
+    let total=10,value=modernNormalProgress(),label='',aria=`通常問題 ${value} / ${total}`,critical=false;
     if(bossPhase){
-      total=mode==='white'?1:5;value=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));label='BOSS HP';aria=`ボスHP ${value} / ${total}`;critical=value===1;
+      total=mode==='white'?1:5;value=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));label='BOSS';aria=`ボスHP ${value} / ${total}`;critical=value===1;
     }
     rebuildEnemyRing(total);
     const segments=[...els.enemyRingSegments.children];
@@ -2907,7 +2921,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function updateSpecialHud(){
     if(!els.specialHud||!els.specialFill||!els.specialBtn)return;
     const value=Math.max(0,Math.min(100,specialGauge));
-    els.specialFill.style.width=`${value}%`;els.specialHud.style.setProperty('--meter-pct',value);
+    els.specialFill.style.width=`${value}%`;els.specialHud.style.setProperty('--meter-pct',value);updateModernSpecialArc(value);
     els.specialHud.classList.toggle('ready',value>=100);
     const midoriBlocked=midoriSpecialBlocksAssist();
     const canUse=value>=100&&!midoriBlocked&&!specialActive&&!crimsonMoonShiftBusy&&!silverSpecialBusy&&!blueSpecialBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
@@ -3222,6 +3236,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     if(els.specialHud)els.specialHud.classList.add('cutin-hidden');
     if(els.bossHpHud)els.bossHpHud.classList.add('cutin-hidden');
     if(els.enemyRingHud)els.enemyRingHud.classList.add('cutin-hidden');
+    if(els.specialArcHud)els.specialArcHud.classList.add('cutin-hidden');
   }
   function restoreSpecialHudAfterCutin(){
     specialHudCutinDepth=Math.max(0,specialHudCutinDepth-1);
@@ -3229,6 +3244,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
       if(els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
       if(els.bossHpHud){els.bossHpHud.classList.remove('cutin-hidden');updateBossHpHud();}
       if(els.enemyRingHud){els.enemyRingHud.classList.remove('cutin-hidden');updateModernBattleHud();}
+      if(els.specialArcHud){els.specialArcHud.classList.remove('cutin-hidden');updateModernSpecialArc(specialGauge);}
     }
   }
   async function showActionCutin(side,imgFile,{variant='finisher',duration=1680}={}){

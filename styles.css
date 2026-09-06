@@ -2310,39 +2310,52 @@ body[data-mode="end"]{
 @keyframes bossCorrectFrame{0%{filter:brightness(1);box-shadow:var(--battle-panel-shadow)}35%{filter:brightness(1.12);box-shadow:var(--battle-panel-shadow),0 0 0 2px rgba(107,255,154,.44),0 0 22px rgba(107,255,154,.20)}100%{filter:brightness(1);box-shadow:var(--battle-panel-shadow)}}
 
 
-/* ===== Battle HUD prototype: modern / classic switch ===== */
+/* ===== Battle HUD: outer-arc / classic switch =====
+   The arc HUD keeps passive status graphics outside the character silhouettes.
+   Passive arcs sit behind actors (z=2; actors are z=3); only actionable controls
+   and the question timer are allowed above the character plane. */
 .modern-battle-hud{display:none}
 body.hud-modern .modern-battle-hud{display:flex}
-body.hud-modern .hud{min-height:40px;padding:5px 9px;grid-template-columns:minmax(0,1fr) 58px 48px;gap:7px}
-body.hud-modern .hud>.hud-unit{display:none}
-body.hud-modern .hud .progress-wrap{min-width:0}
-body.hud-modern .hud .progress-bar{display:none}
-body.hud-modern .hud .progress-meta{height:29px;justify-content:flex-start;gap:10px}
-body.hud-modern .hud .progress-meta span{flex:0 0 auto;font-size:.66rem;color:var(--battle-accent-soft);font-weight:900;letter-spacing:.08em}
-body.hud-modern .hud .progress-meta b{display:block;min-width:0;max-width:100%;font-size:.78rem}
-body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{height:29px}
+body.hud-modern .game-shell{position:relative;grid-template-rows:minmax(0,1fr);gap:0}
+body.hud-modern .battlefield{grid-row:1;grid-column:1}
+body.hud-modern .hud{grid-row:1;grid-column:1;justify-self:end;align-self:start;z-index:76;width:auto;min-height:0;margin:7px 7px 0 0;padding:0;display:flex;gap:5px;background:none!important;border:0!important;border-radius:0;box-shadow:none!important;overflow:visible;pointer-events:none}
+body.hud-modern .hud::before{display:none}
+body.hud-modern .hud>.hud-unit,body.hud-modern .hud>.progress-wrap{display:none!important}
+body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{display:block;pointer-events:auto;width:42px;height:32px;padding:0;border-radius:999px;background:rgba(4,13,28,.72);border:1px solid color-mix(in srgb,var(--battle-accent) 38%,transparent);box-shadow:0 3px 10px rgba(0,0,0,.32),0 0 9px color-mix(in srgb,var(--battle-accent) 14%,transparent);backdrop-filter:blur(5px);font-size:.64rem}
+body.hud-modern .hud .pause-btn{font-size:.82rem}
 body.hud-modern .question-cap{display:none}
 body.hud-modern .question-panel{padding-top:12px}
 body.hud-modern .boss-hp-hud{display:none!important}
 
-.hero-life-hud{position:absolute;z-index:72;left:1.6%;top:20%;width:28px;flex-direction:column;align-items:center;gap:5px;pointer-events:none}
-.hero-life-hud i{display:block;width:12px;height:12px;transform:rotate(45deg);border:1px solid color-mix(in srgb,var(--battle-life) 75%,#fff);background:rgba(4,12,24,.72);box-shadow:0 0 6px rgba(0,0,0,.45);transition:background .2s,box-shadow .2s,opacity .2s}
-.hero-life-hud i.active{background:var(--battle-life);box-shadow:0 0 7px var(--battle-life-glow),0 0 14px color-mix(in srgb,var(--battle-life) 46%,transparent)}
+/* Hero life stays on the hero side, clear of the artwork. */
+.hero-life-hud{position:absolute;z-index:2;left:1.2%;bottom:2%;width:auto;flex-direction:row;align-items:center;gap:6px;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.58))}
+.hero-life-hud i{display:block;width:11px;height:11px;transform:rotate(45deg);border:1px solid color-mix(in srgb,var(--battle-life) 78%,#fff);background:rgba(4,12,24,.76);box-shadow:0 0 5px rgba(0,0,0,.50);transition:background .2s,box-shadow .2s,opacity .2s}
+.hero-life-hud i.active{background:var(--battle-life);box-shadow:0 0 7px var(--battle-life-glow),0 0 13px color-mix(in srgb,var(--battle-life) 44%,transparent)}
+body.hud-modern .hero-life-hud i:not(.active){background:rgba(4,12,24,.78)!important;box-shadow:0 0 4px rgba(0,0,0,.50)!important;opacity:.42}
 
-.enemy-ring-hud{--ring-r:92px;position:absolute;z-index:11;right:1.5%;top:50%;width:22%;aspect-ratio:1;transform:translateY(-50%);align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.34));transition:opacity .2s,filter .2s}
-.enemy-ring-segments{position:absolute;inset:0}
-.enemy-ring-segments i{position:absolute;left:50%;top:50%;width:8px;height:20px;border-radius:999px;background:rgba(22,34,47,.70);border:1px solid color-mix(in srgb,var(--battle-accent-soft) 28%,transparent);transform:translate(-50%,-50%) rotate(var(--seg-angle)) translateY(calc(-1 * min(9.0vw,110px)));transform-origin:center;box-shadow:0 0 3px rgba(0,0,0,.5);transition:background .22s,box-shadow .22s,opacity .22s,transform .22s}
-.enemy-ring-segments i.active{background:linear-gradient(180deg,var(--battle-progress-b),var(--battle-progress-a));border-color:var(--battle-progress-border);box-shadow:0 0 8px var(--battle-progress-glow)}
-.enemy-ring-hud.boss-mode .enemy-ring-segments i.active{background:linear-gradient(180deg,#ffb03a,#dc1d27 58%,#720919);border-color:rgba(255,112,88,.72);box-shadow:0 0 8px rgba(255,43,54,.62)}
-.enemy-ring-hud.boss-mode .enemy-ring-segments i.lost{opacity:.28}
-.enemy-ring-hud strong{position:absolute;bottom:7%;left:50%;transform:translateX(-50%);min-width:54px;text-align:center;color:#fff;font:900 .76rem/1 Georgia,serif;text-shadow:0 2px 4px #000,0 0 7px var(--battle-progress-glow)}
-.enemy-ring-hud small{position:absolute;bottom:-1%;left:50%;transform:translateX(-50%);font:900 .43rem/1 Arial,sans-serif;letter-spacing:.12em;color:var(--battle-accent-soft);white-space:nowrap;text-shadow:0 1px 3px #000}
-.enemy-ring-hud.boss-mode strong{color:#ffe5d0;text-shadow:0 2px 4px #000,0 0 8px rgba(255,55,55,.55)}
-.enemy-ring-hud.boss-mode small{color:#ffb0a7}
-.enemy-ring-hud.critical{animation:modernEnemyCritical .8s ease-in-out infinite}
-.enemy-ring-hud.cutin-hidden{visibility:hidden!important;opacity:0!important}
-@keyframes modernEnemyCritical{50%{filter:drop-shadow(0 0 9px rgba(255,52,52,.75))}}
+/* Both combat-side meters use a narrow OUTER arc rail in the battlefield gutter.
+   The rail is deliberately confined to the few pixels outside the actor boxes, so the
+   actor can remain above it without ever concealing a required segment. */
+.enemy-arc-hud,.special-arc-hud{position:absolute;z-index:2;top:63%;width:12px;height:62%;transform:translateY(-50%);pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.42));transition:opacity .2s,filter .2s}
+.enemy-arc-hud{right:2px}
+.special-arc-hud{left:2px}
+.enemy-arc-segments,.special-arc-segments{position:absolute;inset:0;overflow:visible}
+.enemy-arc-segments i,.special-arc-segments i{position:absolute;top:calc(var(--seg-y)*1%);width:4px;height:clamp(13px,2.1vh,22px);border-radius:999px;clip-path:polygon(20% 0,100% 8%,80% 100%,0 90%);background:rgba(14,27,42,.72);border:1px solid color-mix(in srgb,var(--battle-accent-soft) 22%,transparent);box-shadow:0 0 3px rgba(0,0,0,.64);transition:background .22s,box-shadow .22s,opacity .22s,filter .22s}
+.enemy-arc-segments i{right:calc(var(--seg-x)*1px);transform:translateY(-50%) rotate(var(--seg-rot))}
+.special-arc-segments i{left:calc(var(--seg-x)*1px);transform:translateY(-50%) rotate(var(--seg-rot))}
+.enemy-arc-segments i.active,.special-arc-segments i.active{background:linear-gradient(180deg,var(--battle-progress-b),var(--battle-progress-a));border-color:color-mix(in srgb,var(--battle-progress-b) 54%,transparent);box-shadow:0 0 7px var(--battle-progress-glow)}
+.enemy-arc-hud.boss-mode .enemy-arc-segments i.active{background:linear-gradient(180deg,#ffc04d,#dc2833 58%,#7c0b17);border-color:rgba(255,121,91,.74);box-shadow:0 0 8px rgba(255,49,61,.62)}
+.enemy-arc-hud.boss-mode .enemy-arc-segments i.lost{opacity:.22;filter:saturate(.45)}
+/* Exact counts remain accessible to assistive technology; the visual HUD relies on the
+   segments themselves to avoid reintroducing a business-dashboard label block. */
+.enemy-arc-hud strong,.enemy-arc-hud small,.special-arc-hud small{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
+.enemy-arc-hud.critical{animation:modernEnemyCritical .8s ease-in-out infinite}
+.enemy-arc-hud.cutin-hidden,.special-arc-hud.cutin-hidden{visibility:hidden!important;opacity:0!important}
+.special-arc-hud.ready{filter:drop-shadow(0 0 8px var(--battle-progress-glow)) brightness(1.15);animation:modernSpecialReady 1s ease-in-out infinite}
+@keyframes modernEnemyCritical{50%{filter:drop-shadow(0 0 9px rgba(255,52,52,.72))}}
+@keyframes modernSpecialReady{50%{filter:drop-shadow(0 0 13px var(--battle-progress-glow)) brightness(1.30)}}
 
+/* Time remains a compact radial instrument because it belongs to the current question. */
 .question-timer-hud{--timer-pct:100;position:absolute;z-index:35;right:8px;top:7px;width:48px;height:48px;border-radius:50%;align-items:center;justify-content:center;background:conic-gradient(var(--battle-accent) calc(var(--timer-pct)*1%),rgba(13,25,38,.68) 0);box-shadow:0 2px 7px rgba(0,0,0,.35),0 0 8px color-mix(in srgb,var(--battle-accent) 28%,transparent);pointer-events:none;isolation:isolate;transition:filter .2s,transform .2s}
 .question-timer-hud::before{content:"";position:absolute;inset:5px;border-radius:50%;background:rgba(4,13,28,.94);border:1px solid color-mix(in srgb,var(--battle-accent-soft) 34%,transparent);z-index:-1}
 .question-timer-hud strong{font:900 1rem/1 Georgia,serif;color:#fff;text-shadow:0 1px 4px #000}
@@ -2351,47 +2364,35 @@ body.hud-modern .boss-hp-hud{display:none!important}
 .question-timer-hud.time-critical strong{color:#fff0f0}
 @keyframes modernTimerCritical{50%{transform:scale(1.07);filter:brightness(1.22)}}
 
-/* Modern special gauge mirrors the enemy-side ring without adding another horizontal bar. */
-body.hud-modern .special-hud{--meter-pct:0;left:1.5%;right:auto;top:50%;bottom:auto;width:22%;height:auto;aspect-ratio:1;min-width:0;max-width:none;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:70}
-body.hud-modern .special-hud .special-meter{position:absolute;inset:5%;width:auto;height:auto;border:none;border-radius:50%;clip-path:none;transform:none;overflow:visible;background:conic-gradient(from 140deg,var(--battle-progress-b) calc(var(--meter-pct)*1%),rgba(11,24,36,.42) 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 8px),#000 calc(100% - 7px));mask:radial-gradient(farthest-side,transparent calc(100% - 8px),#000 calc(100% - 7px));filter:drop-shadow(0 0 6px var(--battle-progress-glow));opacity:.82}
-body.hud-modern .special-hud .special-meter::before,body.hud-modern .special-hud .special-meter::after{display:none}
-body.hud-modern .special-hud .special-meter i,body.hud-modern .special-hud .special-meter-shine{display:none}
-body.hud-modern .special-hud::after{content:"SPECIAL";position:absolute;bottom:4%;left:50%;transform:translateX(-50%);font:900 .43rem/1 Arial,sans-serif;letter-spacing:.12em;color:var(--battle-accent-soft);text-shadow:0 1px 3px #000}
-body.hud-modern .special-hud.ready .special-meter{filter:drop-shadow(0 0 8px var(--battle-progress-glow)) brightness(1.18);animation:modernSpecialReady 1s ease-in-out infinite}
-body.hud-modern .special-btn{pointer-events:auto;position:absolute;left:50%;bottom:11%;transform:translateX(-50%);width:auto;min-width:66px;height:28px;padding:0 8px;border-radius:999px;font-size:.58rem;white-space:nowrap}
-@keyframes modernSpecialReady{50%{opacity:1;filter:drop-shadow(0 0 13px var(--battle-progress-glow)) brightness(1.32)}}
+/* The old horizontal special meter is not rendered in arc mode. */
+body.hud-modern .special-hud{z-index:6;left:1.4%;right:auto;top:auto;bottom:5.0%;width:auto;min-width:0;max-width:none;height:auto;transform:none;display:block;pointer-events:none}
+body.hud-modern .special-hud .special-meter{display:none!important}
+body.hud-modern .special-hud::after{display:none!important}
+body.hud-modern .special-btn{pointer-events:auto;position:relative;left:auto;bottom:auto;transform:none;width:auto;min-width:74px;height:29px;padding:0 9px;border-radius:999px;font-size:.60rem;white-space:nowrap}
 
 .hud-mode-toggle{font-size:.72rem}
 
 @media (orientation:landscape) and (max-height:700px){
-  body.hud-modern .hud{min-height:32px;padding:3px 7px;grid-template-columns:minmax(0,1fr) 51px 42px;gap:5px}
-  body.hud-modern .hud .progress-meta{height:24px}.enemy-ring-segments i{width:6px;height:15px;transform:translate(-50%,-50%) rotate(var(--seg-angle)) translateY(calc(-1 * min(8.4vw,82px)))}
-  .enemy-ring-hud strong{font-size:.62rem}.enemy-ring-hud small,body.hud-modern .special-hud::after{font-size:.36rem}.hero-life-hud{top:21%;gap:4px}.hero-life-hud i{width:9px;height:9px}
+  body.hud-modern .hud{margin:5px 5px 0 0;gap:4px}body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{width:36px;height:27px;font-size:.56rem}body.hud-modern .hud .pause-btn{font-size:.72rem}
+  .enemy-arc-hud,.special-arc-hud{top:70%;height:52%;width:10px}.enemy-arc-segments i,.special-arc-segments i{width:4px;height:14px}.hero-life-hud{gap:4px}.hero-life-hud i{width:9px;height:9px}
   .question-timer-hud{width:39px;height:39px;right:6px;top:5px}.question-timer-hud::before{inset:4px}.question-timer-hud strong{font-size:.82rem}
-  body.hud-modern .special-btn{min-width:56px;height:23px;font-size:.49rem}
+  body.hud-modern .special-hud{bottom:4%}body.hud-modern .special-btn{min-width:60px;height:24px;font-size:.50rem}
 }
 @media (orientation:landscape) and (max-height:500px){
-  body.hud-modern .hud{min-height:27px;padding:2px 6px;grid-template-columns:minmax(0,1fr) 46px 38px}
-  body.hud-modern .hud .progress-meta{height:21px}.enemy-ring-segments i{width:5px;height:12px;transform:translate(-50%,-50%) rotate(var(--seg-angle)) translateY(calc(-1 * min(8.0vw,66px)))}
-  .enemy-ring-hud strong{font-size:.54rem}.hero-life-hud{top:23%;gap:3px}.hero-life-hud i{width:8px;height:8px}
+  body.hud-modern .hud .sound-btn,body.hud-modern .hud .pause-btn{width:32px;height:24px;font-size:.50rem}body.hud-modern .hud .pause-btn{font-size:.64rem}
+  .enemy-arc-hud,.special-arc-hud{top:73%;height:48%;width:9px}.enemy-arc-segments i,.special-arc-segments i{width:3px;height:11px}.hero-life-hud{gap:3px}.hero-life-hud i{width:8px;height:8px}
   .question-timer-hud{width:34px;height:34px;right:5px;top:4px}.question-timer-hud strong{font-size:.72rem}
+  body.hud-modern .special-btn{min-width:54px;height:22px;font-size:.46rem}
 }
 @media (orientation:portrait){
-  body.hud-modern .hud{min-height:31px;padding:4px 6px;grid-template-columns:minmax(0,1fr) 42px;gap:5px}
-  body.hud-modern .hud .sound-btn{display:none}body.hud-modern .hud .pause-btn{height:27px;width:42px}
-  body.hud-modern .hud .progress-meta{height:23px}body.hud-modern .hud .progress-meta b{font-size:.68rem}
-  .enemy-ring-hud{right:2%;top:5%;width:31%;height:auto;aspect-ratio:1;transform:none}
-  .enemy-ring-segments i{width:6px;height:14px;transform:translate(-50%,-50%) rotate(var(--seg-angle)) translateY(calc(-1 * min(13.8vw,58px)))}
-  .enemy-ring-hud strong{bottom:6%;font-size:.60rem}.enemy-ring-hud small{bottom:-3%;font-size:.34rem}
-  body.hud-modern .special-hud{left:2%;top:5%;width:31%;height:auto;aspect-ratio:1;transform:none}
-  body.hud-modern .special-hud .special-meter{inset:8%;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px))}
-  body.hud-modern .special-hud::after{bottom:0;font-size:.34rem}
-  body.hud-modern .special-btn{bottom:8%;min-width:58px;height:25px;font-size:.50rem}
-  .hero-life-hud{left:1.4%;top:7.5%;width:20px;gap:4px}.hero-life-hud i{width:9px;height:9px}
+  body.hud-modern .hud{margin:5px 5px 0 0;padding:0;gap:4px}body.hud-modern .hud .sound-btn{display:block;width:34px;height:27px;font-size:.52rem}body.hud-modern .hud .pause-btn{position:static;transform:none;display:block;width:34px;height:27px;font-size:.68rem}
+  .enemy-arc-hud,.special-arc-hud{top:6%;width:9px;height:27%;transform:none}.enemy-arc-hud{right:1px}.special-arc-hud{left:1px}
+  .enemy-arc-segments i,.special-arc-segments i{width:3px;height:12px}
+  .hero-life-hud{left:1.3%;bottom:auto;top:30.5%;gap:4px}.hero-life-hud i{width:8px;height:8px}
+  body.hud-modern .special-hud{left:1.2%;bottom:auto;top:27.8%}body.hud-modern .special-btn{min-width:57px;height:24px;font-size:.48rem}
   .question-timer-hud{width:43px;height:43px;right:8px;top:6px}.question-timer-hud strong{font-size:.88rem}
   body.hud-modern .question-panel{top:33%;padding-top:10px}
-  /* Keep SHIELD status inside the enemy-side defensive effect instead of below the HP area. */
   body.hud-modern .boss-shield-fx b{top:9%;bottom:auto;left:50%;transform:translateX(-50%);font-size:.40rem;padding:2px 6px}
   body.hud-modern .boss-shield-fx{height:108%;width:116%;bottom:-2%}
 }
-@media (prefers-reduced-motion:reduce){.enemy-ring-hud.critical,.question-timer-hud.time-critical,body.hud-modern .special-hud.ready .special-meter{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.enemy-arc-hud.critical,.special-arc-hud.ready,.question-timer-hud.time-critical{animation:none!important}}

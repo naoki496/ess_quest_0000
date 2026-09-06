@@ -227,8 +227,12 @@
     <div id="battleBg" class="battle-bg"></div><div class="battle-shade"></div>
     <div id="heroActor" class="actor hero"><div class="actor-name" id="heroName">ゆうしゃ</div><img id="heroImage" src="./assets/hero.png" alt="主人公"><div id="attackEffect" class="attack-effect" aria-hidden="true"><i class="silver-claw-stroke claw-a"></i><i class="silver-claw-stroke claw-b"></i><i class="silver-claw-stroke claw-c"></i></div></div>
     <div id="heroLifeHud" class="hero-life-hud modern-battle-hud" aria-label="ライフ 3 / 3"><i></i><i></i><i></i></div>
-    <div id="enemyRingHud" class="enemy-ring-hud modern-battle-hud" aria-label="通常問題 0 / 10">
-      <div id="enemyRingSegments" class="enemy-ring-segments" aria-hidden="true"></div>
+    <div id="specialArcHud" class="special-arc-hud modern-battle-hud" aria-label="必殺技ゲージ 0%">
+      <div id="specialArcSegments" class="special-arc-segments" aria-hidden="true"></div>
+      <small>SPECIAL</small>
+    </div>
+    <div id="enemyRingHud" class="enemy-arc-hud modern-battle-hud" aria-label="通常問題 0 / 10">
+      <div id="enemyRingSegments" class="enemy-arc-segments" aria-hidden="true"></div>
       <strong id="enemyRingText">0 / 10</strong>
       <small id="enemyRingLabel">PROGRESS</small>
     </div>
@@ -280,7 +284,7 @@
     <p>タイマーとバトルの動きを止めています。</p>
     <div class="pause-actions">
       <button id="pauseResumeBtn" class="menu-btn primary" type="button">つづける</button>
-      <button id="hudModeToggleBtn" class="menu-btn hud-mode-toggle" type="button" aria-pressed="true">HUD表示：新</button>
+      <button id="hudModeToggleBtn" class="menu-btn hud-mode-toggle" type="button" aria-pressed="true">HUD表示：アーク</button>
       <button id="pauseTitleBtn" class="menu-btn" type="button">タイトルにもどる</button>
     </div>
   </section>
