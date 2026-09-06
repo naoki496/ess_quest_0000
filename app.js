@@ -14,19 +14,31 @@
   // Keep important names on one line on every device. CSS supplies the normal
   // responsive size; this helper only steps the font down further when a long
   // Japanese name would otherwise wrap or overflow on a narrow screen.
+  function visualViewportWidth(){
+    const inner=Math.max(240,Number(window.innerWidth)||240),vv=Number(window.visualViewport?.width)||inner;
+    return Math.max(240,Math.min(inner,vv));
+  }
   function fitSingleLineText(el,{maxWidthRatio=.92,minPx=16}={}){
     if(!el)return;
     el.style.removeProperty('font-size');
-    const maxWidth=Math.max(80,window.innerWidth*maxWidthRatio);
+    const maxWidth=Math.max(80,visualViewportWidth()*maxWidthRatio);
     el.style.maxWidth=`${maxWidth}px`;
     el.style.whiteSpace='nowrap';
     const base=parseFloat(getComputedStyle(el).fontSize)||32;
     let size=base;
     while(el.scrollWidth>maxWidth&&size>minPx){size=Math.max(minPx,size-1);el.style.fontSize=`${size}px`;}
   }
+  function fitBossNameText(el){
+    const portrait=window.matchMedia?.('(orientation: portrait)')?.matches;
+    fitSingleLineText(el,{maxWidthRatio:portrait?.80:.90,minPx:portrait?14:20});
+  }
+  function fitSingleLineWithinViewport(el,{portraitRatio=.80,landscapeRatio=.90,minPx=12}={}){
+    const portrait=window.matchMedia?.('(orientation: portrait)')?.matches;
+    fitSingleLineText(el,{maxWidthRatio:portrait?portraitRatio:landscapeRatio,minPx});
+  }
   function fitVisibleNames(){
     fitSingleLineText(els?.stageOverlayName,{maxWidthRatio:.90,minPx:20});
-    fitSingleLineText($('bossNameText'),{maxWidthRatio:.90,minPx:20});
+    fitBossNameText($('bossNameText'));
     fitSingleLineText(els?.stageClearName,{maxWidthRatio:.90,minPx:18});
     fitSingleLineText(els?.stageName,{maxWidthRatio:.42,minPx:10});
     fitSingleLineText(els?.enemyName,{maxWidthRatio:.31,minPx:9});
@@ -2700,9 +2712,17 @@ function markWorldVisited(world){
     currentBgm=null;
   }
   function showBgmTitleToast(file){
-    if(!file)return;const battlefield=document.querySelector('.battlefield');if(!battlefield)return;let toast=$('bgmTitleToast');
-    if(!toast){toast=document.createElement('div');toast.id='bgmTitleToast';toast.className='bgm-title-toast';battlefield.appendChild(toast);}
-    const title=String(file).replace(/\.mp3$/i,'');toast.innerHTML=`<small>NOW PLAYING</small><strong>♪ ${title}</strong>`;toast.classList.remove('show');void toast.offsetWidth;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2300);
+    if(!file||els.gameScreen?.hidden)return;
+    let toast=$('bgmTitleToast');
+    if(!toast){
+      toast=document.createElement('div');toast.id='bgmTitleToast';toast.className='bgm-title-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');
+      toast.innerHTML='<span class="bgm-title-eq" aria-hidden="true"><i></i><i></i><i></i></span><span class="bgm-title-copy"><small>NOW PLAYING</small><strong></strong></span>';
+      document.body.appendChild(toast);
+    }else if(toast.parentElement!==document.body)document.body.appendChild(toast);
+    const title=String(file).replace(/\.mp3$/i,'');const strong=toast.querySelector('strong');if(strong)strong.textContent=title;
+    if(toast._hideTimer)clearTimeout(toast._hideTimer);
+    toast.classList.remove('show');void toast.offsetWidth;toast.classList.add('show');
+    toast._hideTimer=setTimeout(()=>{toast.classList.remove('show');toast._hideTimer=null;},2600);
   }
   function currentStageBgmFile(){
     const s=currentStage();return bossPhase?s?.bossBgm:s?.bgm;
@@ -2748,7 +2768,7 @@ function markWorldVisited(world){
         player.volume=.32;
         player.currentTime=0;
         await player.play();
-        currentBgm=player;
+        currentBgm=player;showBgmTitleToast('bgm.mp3');
       }catch{}
     }
   }
@@ -3208,14 +3228,14 @@ function setStageOverlayVisible(visible){
       if(kicker)kicker.textContent=endFinalPhase?'TERMINAL ENTITY DETECTED':'ENDWORLD CORRUPTION';
       if(english)english.textContent='';
       if(!hasRewrite&&!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=hasRewrite?boss.baseName:boss.name;
-      fx.hidden=false;fx.className=`boss-name-fx active end-boss-name end-boss-name-${endFinalPhase?'front':(boss.sourceWorld||currentEndSource())}`;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
+      fx.hidden=false;fx.className=`boss-name-fx active end-boss-name end-boss-name-${endFinalPhase?'front':(boss.sourceWorld||currentEndSource())}`;fitBossNameText(text);
       await sleep(hasRewrite?520:760);
       if(hasRewrite){
         fx.classList.add('end-name-corrupting');playEndCorruptionNoise();
         const delayedBgm=startEndBgm?(async()=>{await sleep(520);await playStageBgm();})():null;
         const frames=[.28,.48,.68,.82,.58,.74];
-        for(const level of frames){text.textContent=corruptedEndNameFrame(boss.name,level);fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});await sleep(165);}
-        if(!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=boss.name;fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});
+        for(const level of frames){text.textContent=corruptedEndNameFrame(boss.name,level);fitBossNameText(text);await sleep(165);}
+        if(!endFinalPhase&&String(boss.name||'').startsWith('終'))text.innerHTML=`<span class="end-red-glyph">終</span>${String(boss.name).slice(1)}`;else text.textContent=boss.name;fitBossNameText(text);
         fx.classList.remove('end-name-corrupting');fx.classList.add('end-name-resolved');
         if(delayedBgm)await delayedBgm;
       }else fx.classList.add('end-name-resolved');
@@ -3224,7 +3244,7 @@ function setStageOverlayVisible(visible){
       fx.hidden=true;fx.className='boss-name-fx';if(english)english.textContent='';if(kicker)kicker.textContent='BOSS ENCOUNTER';return;
     }
     if(kicker)kicker.textContent='BOSS ENCOUNTER';if(english)english.textContent='';text.textContent=boss.name;
-    fx.hidden=false;fx.className='boss-name-fx active';fitSingleLineText(text,{maxWidthRatio:.90,minPx:20});await sleep(3000);fx.hidden=true;fx.className='boss-name-fx';
+    fx.hidden=false;fx.className='boss-name-fx active';fitBossNameText(text);await sleep(3000);fx.hidden=true;fx.className='boss-name-fx';
   }
 
   const CUTIN_FOCUS={
@@ -3290,12 +3310,10 @@ function setStageOverlayVisible(visible){
     if(mode!=='end'||!endFinalPhase||index<0||index>=END_FINAL_PRELUDE_COUNT)return;
     const battlefield=document.querySelector('.battlefield');if(!battlefield)return;
     const world=END_FINAL_PRELUDE_WORLDS[index];
-    hideSpecialHudForCutin();document.body.classList.add('end-final-prelude-active');
+    clearQuestionUi();hideSpecialHudForCutin();document.body.classList.add('end-final-prelude-active');
     let fx=$('endFinalPreludeCompressFx');
-    if(!fx){fx=document.createElement('div');fx.id='endFinalPreludeCompressFx';fx.className='end-final-prelude-compress-fx';fx.setAttribute('aria-hidden','true');fx.innerHTML='<i class="prelude-edge edge-a"></i><i class="prelude-edge edge-b"></i><i class="prelude-core"></i><small></small><strong></strong>';battlefield.appendChild(fx);}
-    const worldLabel={back:'裏',crimson:'紅',blue:'蒼',silver:'銀',midori:'翠'}[world]||'';
-    fx.dataset.world=world;fx.querySelector('small').textContent=`WORLD DATA ${index+1} / ${END_FINAL_PRELUDE_COUNT}`;fx.querySelector('strong').textContent=`${worldLabel}界圧縮`;
-    fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');
+    if(!fx){fx=document.createElement('div');fx.id='endFinalPreludeCompressFx';fx.className='end-final-prelude-compress-fx';fx.setAttribute('aria-hidden','true');fx.innerHTML='<i class="prelude-edge edge-a"></i><i class="prelude-edge edge-b"></i><i class="prelude-core"></i>';battlefield.appendChild(fx);}
+    fx.dataset.world=world;fx.classList.remove('active');void fx.offsetWidth;fx.classList.add('active');
     await sleep(820);fx.classList.remove('active');document.body.classList.remove('end-final-prelude-active');restoreSpecialHudAfterCutin();
   }
   async function showEndFinalPreludeComplete(){
@@ -3460,7 +3478,7 @@ function setStageOverlayVisible(visible){
       document.body.classList.add('boss-technique-active');
       banner.querySelector('small').textContent=kicker;
       label.textContent=name;
-      banner.hidden=false;requestAnimationFrame(()=>fitSingleLineText(label,{maxWidthRatio:.82,minPx:12}));banner.classList.remove('active');void banner.offsetWidth;banner.classList.add('active');
+      banner.hidden=false;requestAnimationFrame(()=>fitSingleLineWithinViewport(label,{portraitRatio:.74,landscapeRatio:.82,minPx:11}));banner.classList.remove('active');void banner.offsetWidth;banner.classList.add('active');
       await sleep(920);
       banner.classList.remove('active');await sleep(160);banner.hidden=true;
     }finally{document.body.classList.remove('boss-technique-active');restoreSpecialHudAfterCutin();}
@@ -3642,7 +3660,7 @@ function setStageOverlayVisible(visible){
     clearQuestionUi();locked=true;hideSpecialHudForCutin();document.body.classList.add('boss-technique-active');
     try{
       $('bossStrikeKicker').textContent=kicker;$('bossStrikeTitle').textContent=title;
-      fx.hidden=false;fx.className=`boss-strike-transition ${variant}`;void fx.offsetWidth;
+      fx.hidden=false;fx.className=`boss-strike-transition ${variant}`;fitSingleLineWithinViewport($('bossStrikeTitle'),{portraitRatio:.76,landscapeRatio:.88,minPx:11});void fx.offsetWidth;
       if(variant==='slash')playSE(cutinSE);
       fx.classList.add('active');
       await sleep(760);fx.classList.remove('active');await sleep(120);fx.hidden=true;

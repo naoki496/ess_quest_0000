@@ -2522,3 +2522,70 @@ body.hud-modern .bgm-title-toast{top:43px;left:12px;max-width:min(420px,58vw)}
 }
 
 @media (orientation:landscape) and (max-height:500px){body.hud-modern .hero-life-hud{bottom:9.2%}}
+
+
+/* ===== 2026-09-06 BGM now-playing plate + portrait long-title safety ===== */
+body{--bgm-toast-accent:#d9b45b;--bgm-toast-accent-soft:#fff0b4}
+body[data-mode="back"]{--bgm-toast-accent:#7fa4ba;--bgm-toast-accent-soft:#dcebf4}
+body[data-mode="crimson"]{--bgm-toast-accent:#c85755;--bgm-toast-accent-soft:#ffd4cc}
+body[data-mode="blue"]{--bgm-toast-accent:#79d6ef;--bgm-toast-accent-soft:#dff9ff}
+body[data-mode="silver"]{--bgm-toast-accent:#d8e6ee;--bgm-toast-accent-soft:#f5fbff}
+body[data-mode="midori"]{--bgm-toast-accent:#62d8b1;--bgm-toast-accent-soft:#dcfff4}
+body[data-mode="end"]{--bgm-toast-accent:#a378e8;--bgm-toast-accent-soft:#efe4ff}
+body[data-mode="white"]{--bgm-toast-accent:#b9c9dc;--bgm-toast-accent-soft:#f3f7fc}
+.bgm-title-toast{
+  position:fixed!important;z-index:187!important;
+  left:calc(var(--safe-left) + 12px)!important;top:calc(var(--safe-top) + 12px)!important;
+  width:max-content;min-width:184px;max-width:min(460px,calc(100vw - var(--safe-left) - var(--safe-right) - 24px))!important;
+  display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:9px;
+  padding:7px 18px 8px 10px!important;border:1px solid color-mix(in srgb,var(--bgm-toast-accent) 58%,transparent)!important;
+  border-left:2px solid var(--bgm-toast-accent)!important;border-radius:8px 13px 13px 8px!important;
+  background:linear-gradient(105deg,rgba(4,9,18,.94) 0%,rgba(8,15,28,.91) 74%,color-mix(in srgb,var(--bgm-toast-accent) 13%,rgba(8,15,28,.9)) 100%)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.06),0 0 15px color-mix(in srgb,var(--bgm-toast-accent) 15%,transparent)!important;
+  -webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);overflow:hidden;
+  opacity:0;transform:translateX(-12px);pointer-events:none
+}
+.bgm-title-toast::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--bgm-toast-accent);box-shadow:0 0 10px var(--bgm-toast-accent)}
+.bgm-title-toast::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 0 36%,rgba(255,255,255,.08) 46%,transparent 57%);transform:translateX(-120%);pointer-events:none}
+.bgm-title-toast.show::after{animation:bgmPlateSweep 1.25s .12s ease-out both}
+.bgm-title-eq{height:18px;display:flex;align-items:flex-end;justify-content:center;gap:2px}
+.bgm-title-eq i{display:block;width:3px;min-height:4px;border-radius:2px 2px 0 0;background:var(--bgm-toast-accent);box-shadow:0 0 5px color-mix(in srgb,var(--bgm-toast-accent) 58%,transparent);transform-origin:center bottom}
+.bgm-title-eq i:nth-child(1){height:8px}.bgm-title-eq i:nth-child(2){height:15px}.bgm-title-eq i:nth-child(3){height:11px}
+.bgm-title-toast.show .bgm-title-eq i:nth-child(1){animation:bgmEqA .54s ease-in-out infinite alternate}
+.bgm-title-toast.show .bgm-title-eq i:nth-child(2){animation:bgmEqB .43s ease-in-out infinite alternate}
+.bgm-title-toast.show .bgm-title-eq i:nth-child(3){animation:bgmEqA .62s .09s ease-in-out infinite alternate-reverse}
+.bgm-title-copy{min-width:0;display:block}
+.bgm-title-toast small{display:block;color:color-mix(in srgb,var(--bgm-toast-accent-soft) 62%,#9aa8b8);font:800 .48rem/1.05 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.18em}
+.bgm-title-toast strong{display:block;min-width:0;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f4f8fc;font:800 clamp(.68rem,1.6vw,.88rem)/1.15 Arial,"Yu Gothic",sans-serif;letter-spacing:.035em;text-shadow:0 0 9px color-mix(in srgb,var(--bgm-toast-accent) 20%,transparent)}
+.bgm-title-toast.show{animation:bgmTitleToastPlate 2.58s ease both!important}
+@keyframes bgmTitleToastPlate{0%{opacity:0;transform:translateX(-14px) scale(.985)}10%,78%{opacity:.96;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(8px) scale(.995)}}
+@keyframes bgmPlateSweep{0%{transform:translateX(-120%);opacity:0}20%{opacity:1}100%{transform:translateX(120%);opacity:0}}
+@keyframes bgmEqA{from{transform:scaleY(.45)}to{transform:scaleY(1)}}
+@keyframes bgmEqB{from{transform:scaleY(.34)}to{transform:scaleY(.92)}}
+body.hud-modern .bgm-title-toast{top:calc(var(--safe-top) + 43px)!important}
+
+/* Transition messages and boss/technique names are presentation text: never wrap in portrait. */
+.boss-strike-transition>div{max-width:92vw}
+.boss-strike-transition strong,.boss-technique-banner strong,.boss-name-fx strong{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important}
+@media (orientation:portrait){
+  .bgm-title-toast{left:calc(var(--safe-left) + 8px)!important;top:calc(var(--safe-top) + 8px)!important;max-width:calc(100vw - var(--safe-left) - var(--safe-right) - 16px)!important;min-width:170px;padding:6px 14px 7px 9px!important;grid-template-columns:16px minmax(0,1fr);gap:7px}
+  body.hud-modern .bgm-title-toast{top:calc(var(--safe-top) + 42px)!important}
+  .boss-strike-transition>div{max-width:92vw;padding-left:18px!important;padding-right:18px!important}
+  .boss-name-fx strong{max-width:80vw!important;letter-spacing:.025em!important}
+  .boss-name-fx.active strong{animation:bossNameHitPortrait 3s cubic-bezier(.16,.8,.22,1) both}
+  .boss-name-fx.end-boss-name strong{max-width:80vw!important;letter-spacing:.025em!important;animation:endBossNamePowerPortrait 4.2s cubic-bezier(.14,.82,.18,1) both}
+  .boss-name-fx.end-boss-name.end-name-corrupting strong{animation:endNameCorruptTextPortrait 1.05s steps(6,end) both}
+  .boss-technique-banner{width:min(560px,92%)!important;padding-left:22px!important;padding-right:22px!important}
+  .boss-technique-banner strong{letter-spacing:.045em!important}
+}
+@keyframes bossNameHitPortrait{0%{opacity:0;transform:translateX(10vw) skewX(-5deg) scale(1.08);filter:blur(5px)}15%{opacity:1;transform:translateX(-1vw) skewX(2deg) scale(.985);filter:none}23%{transform:none}80%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.015)}}
+@keyframes endBossNamePowerPortrait{0%{opacity:0;transform:scale(.90);filter:blur(4px)}13%{opacity:1;transform:scale(1.02);filter:none}32%,82%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.01)}}
+@keyframes endNameCorruptTextPortrait{0%{transform:none;filter:blur(0)}20%{transform:translateX(-3px) skewX(-3deg);filter:blur(1px)}40%{transform:translateX(3px) skewX(2deg);filter:blur(.6px)}62%{transform:translateX(-2px) skewX(-2deg);filter:blur(.8px)}82%{transform:translateX(1px) skewX(1deg);filter:blur(.4px)}100%{transform:none;filter:none}}
+@media (orientation:landscape) and (max-height:500px){
+  .bgm-title-toast{left:calc(var(--safe-left) + 7px)!important;top:calc(var(--safe-top) + 7px)!important;padding:5px 11px 6px 8px!important;min-width:158px;grid-template-columns:14px minmax(0,1fr);gap:6px}
+  body.hud-modern .bgm-title-toast{top:calc(var(--safe-top) + 31px)!important}
+}
+@media (prefers-reduced-motion:reduce){.bgm-title-toast.show::after,.bgm-title-toast.show .bgm-title-eq i{animation:none!important}}
+
+/* END FINAL prelude is intentionally textless: only the five world colors collapse. */
+.end-final-prelude-compress-fx small,.end-final-prelude-compress-fx strong{display:none!important}
