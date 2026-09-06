@@ -251,7 +251,7 @@
     collectionCount:$('collectionCount'),collectionGrid:$('collectionGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),hudModeToggleBtn:$('hudModeToggleBtn'),
-    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),specialArcHud:$('specialArcHud'),specialArcSegments:$('specialArcSegments'),enemyRingHud:$('enemyRingHud'),enemyRingSegments:$('enemyRingSegments'),enemyRingText:$('enemyRingText'),enemyRingLabel:$('enemyRingLabel'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
+    battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),compactProgressHud:$('compactProgressHud'),compactProgressFill:$('compactProgressFill'),compactProgressText:$('compactProgressText'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),bossShieldStatus:$('bossShieldStatus'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapVisual:$('mapVisual'),mapImage:$('mapImage'),mapTipCategory:$('mapTipCategory'),mapTipText:$('mapTipText'),mapMessage:$('mapMessage'),mapNextBtn:$('mapNextBtn'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
     stageClearOverlay:$('stageClearOverlay'),stageClearName:$('stageClearName'),
@@ -2522,9 +2522,9 @@ function markWorldVisited(world){
   function syncHudModeButton(){
     if(!els.hudModeToggleBtn)return;
     const modern=hudMode==='modern';
-    els.hudModeToggleBtn.textContent=`HUD表示：${modern?'アーク':'従来'}`;
+    els.hudModeToggleBtn.textContent=`HUD表示：${modern?'薄型':'従来'}`;
     els.hudModeToggleBtn.setAttribute('aria-pressed',modern?'true':'false');
-    els.hudModeToggleBtn.title=modern?'現在はアークHUDです。押すと従来HUDへ切り替えます。':'現在は従来HUDです。押すとアークHUDへ切り替えます。';
+    els.hudModeToggleBtn.title=modern?'現在は薄型HUDです。押すと従来HUDへ切り替えます。':'現在は従来HUDです。押すと薄型HUDへ切り替えます。';
   }
   function applyHudMode(value,{persist=true}={}){
     hudMode=value==='classic'?'classic':'modern';
@@ -2537,54 +2537,40 @@ function markWorldVisited(world){
     updateBossHpHud();updateModernBattleHud();
   }
   function toggleHudMode(){applyHudMode(hudMode==='modern'?'classic':'modern');}
-  function modernNormalProgress(){
-    if(mode==='white')return Math.max(0,Math.min(9,whiteQuestionInDepth));
-    return Math.max(0,Math.min(10,stageQuestion));
-  }
-  function rebuildArcSegments(container,total,side='enemy'){
-    if(!container)return;
-    total=Math.max(1,Number(total)||1);
-    const signature=`${total}:${side}`;
-    if(container.dataset.arcSignature===signature)return;
-    container.dataset.arcSignature=signature;container.replaceChildren();
-    for(let i=0;i<total;i++){
-      const t=total===1?.5:i/(total-1),bow=Math.sin(Math.PI*t);
-      const seg=document.createElement('i');
-      seg.style.setProperty('--seg-y',(t*100).toFixed(3));
-      seg.style.setProperty('--seg-x',(.25+.75*bow).toFixed(3));
-      seg.style.setProperty('--seg-rot',`${((t-.5)*24*(side==='hero'?-1:1)).toFixed(2)}deg`);
-      container.appendChild(seg);
+  let modernHudLastLives=3;
+  function modernPhaseProgress(){
+    const stage=currentStage()||{},normalTotal=Math.max(1,Number(stage.normalCount)||10),bossTotal=Math.max(1,Number(stage.bossCount)||5);
+    if(bossPhase){
+      const value=Math.max(0,Math.min(bossTotal,Number(bossQuestion)||0));
+      return {phase:'boss',value,total:bossTotal,aria:`ボス問題 ${value} / ${bossTotal}`};
     }
+    const value=mode==='white'?Math.max(0,Math.min(normalTotal,whiteQuestionInDepth)):Math.max(0,Math.min(normalTotal,Number(stageQuestion)||0));
+    return {phase:'normal',value,total:normalTotal,aria:`通常問題 ${value} / ${normalTotal}`};
   }
-  function rebuildEnemyRing(total){rebuildArcSegments(els.enemyRingSegments,total,'enemy');}
-  function updateModernSpecialArc(value){
-    if(!els.specialArcHud||!els.specialArcSegments)return;
-    rebuildArcSegments(els.specialArcSegments,10,'hero');
-    const lit=Math.max(0,Math.min(10,Math.floor(Math.max(0,Math.min(100,value))/10+1e-9)));
-    [...els.specialArcSegments.children].forEach((seg,i)=>seg.classList.toggle('active',i<lit));
-    els.specialArcHud.classList.toggle('ready',value>=100);
-    els.specialArcHud.setAttribute('aria-label',`必殺技ゲージ ${Math.round(value)}%`);
+  function animateModernLifeLoss(previous,current){
+    if(!els.heroLifeHud||current>=previous)return;
+    const pips=[...els.heroLifeHud.children];
+    els.heroLifeHud.classList.remove('life-impact');void els.heroLifeHud.offsetWidth;els.heroLifeHud.classList.add('life-impact');
+    for(let i=Math.max(0,current);i<Math.min(3,previous);i++){
+      const pip=pips[i];if(!pip)continue;pip.classList.remove('life-lost');void pip.offsetWidth;pip.classList.add('life-lost');setTimeout(()=>pip.classList.remove('life-lost'),680);
+    }
+    setTimeout(()=>els.heroLifeHud?.classList.remove('life-impact'),720);
   }
   function updateModernBattleHud(){
-    if(!els.heroLifeHud||!els.enemyRingHud)return;
-    const lifePips=[...els.heroLifeHud.children];lifePips.forEach((p,i)=>p.classList.toggle('active',i<lives));
-    els.heroLifeHud.setAttribute('aria-label',`ライフ ${Math.max(0,lives)} / 3`);
-    let total=10,value=modernNormalProgress(),label='',aria=`通常問題 ${value} / ${total}`,critical=false;
-    if(bossPhase){
-      total=mode==='white'?1:5;value=mode==='white'?Math.max(0,1-bossQuestion):Math.max(0,Math.min(5,5-bossQuestion));label='BOSS';aria=`ボスHP ${value} / ${total}`;critical=value===1;
+    if(els.heroLifeHud){
+      const previous=modernHudLastLives,lifePips=[...els.heroLifeHud.children];
+      lifePips.forEach((p,i)=>p.classList.toggle('active',i<lives));
+      els.heroLifeHud.setAttribute('aria-label',`ライフ ${Math.max(0,lives)} / 3`);
+      if(lives<previous)animateModernLifeLoss(previous,lives);
+      modernHudLastLives=lives;
     }
-    rebuildEnemyRing(total);
-    const segments=[...els.enemyRingSegments.children];
-    segments.forEach((seg,i)=>{
-      const active=bossPhase?i<value:i<value;
-      seg.classList.toggle('active',active);seg.classList.toggle('cleared',!bossPhase&&active);seg.classList.toggle('lost',bossPhase&&!active);
-    });
-    els.enemyRingHud.classList.toggle('boss-mode',bossPhase);
-    els.enemyRingHud.classList.toggle('critical',bossPhase&&critical);
-    els.enemyRingHud.classList.toggle('empty',bossPhase&&value<=0);
-    if(els.enemyRingText)els.enemyRingText.textContent=`${value} / ${total}`;
-    if(els.enemyRingLabel)els.enemyRingLabel.textContent=label;
-    els.enemyRingHud.setAttribute('aria-label',aria);
+    if(els.compactProgressHud&&els.compactProgressFill&&els.compactProgressText){
+      const progress=modernPhaseProgress(),pct=progress.total?Math.max(0,Math.min(100,progress.value/progress.total*100)):0;
+      els.compactProgressFill.style.width=`${pct}%`;
+      els.compactProgressText.textContent=`${progress.value} / ${progress.total}`;
+      els.compactProgressHud.classList.toggle('boss-mode',progress.phase==='boss');
+      els.compactProgressHud.setAttribute('aria-label',progress.aria);
+    }
     syncModernTimerHud();
   }
   function syncModernTimerHud(){
@@ -2921,8 +2907,10 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   function updateSpecialHud(){
     if(!els.specialHud||!els.specialFill||!els.specialBtn)return;
     const value=Math.max(0,Math.min(100,specialGauge));
-    els.specialFill.style.width=`${value}%`;els.specialHud.style.setProperty('--meter-pct',value);updateModernSpecialArc(value);
+    els.specialFill.style.width=`${value}%`;els.specialHud.style.setProperty('--meter-pct',value);
     els.specialHud.classList.toggle('ready',value>=100);
+    const specialLabel=['front','back'].includes(mode)?'ひっさつ！':['crimson','blue','silver','midori'].includes(mode)?'ACTION!':'SPECIAL!';
+    els.specialBtn.textContent=specialLabel;els.specialBtn.setAttribute('aria-label',`${specialLabel}を発動`);
     const midoriBlocked=midoriSpecialBlocksAssist();
     const canUse=value>=100&&!midoriBlocked&&!specialActive&&!crimsonMoonShiftBusy&&!silverSpecialBusy&&!blueSpecialBusy&&!paused&&!gameOverActive&&!locked&&!!currentQuestion&&!!timerId&&!els.gameScreen.hidden;
     els.specialBtn.hidden=value<100||midoriBlocked||!currentQuestion||!timerId||paused||gameOverActive||specialActive;
@@ -3235,16 +3223,14 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     specialHudCutinDepth++;
     if(els.specialHud)els.specialHud.classList.add('cutin-hidden');
     if(els.bossHpHud)els.bossHpHud.classList.add('cutin-hidden');
-    if(els.enemyRingHud)els.enemyRingHud.classList.add('cutin-hidden');
-    if(els.specialArcHud)els.specialArcHud.classList.add('cutin-hidden');
+    if(els.compactProgressHud)els.compactProgressHud.classList.add('cutin-hidden');
   }
   function restoreSpecialHudAfterCutin(){
     specialHudCutinDepth=Math.max(0,specialHudCutinDepth-1);
     if(specialHudCutinDepth===0){
       if(els.specialHud){els.specialHud.classList.remove('cutin-hidden');updateSpecialHud();}
       if(els.bossHpHud){els.bossHpHud.classList.remove('cutin-hidden');updateBossHpHud();}
-      if(els.enemyRingHud){els.enemyRingHud.classList.remove('cutin-hidden');updateModernBattleHud();}
-      if(els.specialArcHud){els.specialArcHud.classList.remove('cutin-hidden');updateModernSpecialArc(specialGauge);}
+      if(els.compactProgressHud){els.compactProgressHud.classList.remove('cutin-hidden');updateModernBattleHud();}
     }
   }
   async function showActionCutin(side,imgFile,{variant='finisher',duration=1680}={}){
@@ -3414,7 +3400,7 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
     const rewrite=$('bossRewriteFx');if(rewrite){rewrite.hidden=true;rewrite.classList.remove('active');}
     const reconstruct=$('bossReconstructFx');if(reconstruct){reconstruct.hidden=true;reconstruct.classList.remove('active');}
     const finalConv=$('endFinalConvergenceFx');if(finalConv){finalConv.hidden=true;finalConv.className='end-final-convergence-fx';}
-    const shield=$('bossShieldFx');if(shield){shield.hidden=true;shield.classList.remove('active','breaking');}
+    const shield=$('bossShieldFx');if(shield){shield.hidden=true;shield.classList.remove('active','breaking');}if(els.bossShieldStatus)els.bossShieldStatus.hidden=true;document.body.classList.remove('boss-shield-active');
     const chip=$('bossStrikeChip');if(chip)chip.remove();
   }
   async function showBossTechnique(name,kicker='SPECIAL ATTACK'){
@@ -3616,12 +3602,14 @@ function waitForMapAdvance(){armMapAdvance();return new Promise(resolve=>{mapAdv
   }
   async function showShieldForm(){
     ensureBossSpecialFxLayer();const shield=$('bossShieldFx');if(!shield)return;
+    document.body.classList.add('boss-shield-active');if(els.bossShieldStatus)els.bossShieldStatus.hidden=false;
     shield.hidden=false;shield.classList.remove('breaking');shield.classList.add('active');await sleep(620);
   }
   async function showShieldBreak(){
     const shield=$('bossShieldFx');if(!shield)return;
     playSE(breakSE);
     shield.classList.remove('active');shield.classList.add('breaking');await sleep(680);shield.hidden=true;shield.classList.remove('breaking');
+    document.body.classList.remove('boss-shield-active');if(els.bossShieldStatus)els.bossShieldStatus.hidden=true;
   }
   async function showEquationRewrite(from,to){
     ensureBossSpecialFxLayer();const fx=$('bossRewriteFx');if(!fx)return;
