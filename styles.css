@@ -4793,10 +4793,29 @@ body[data-ui-style="glass"] .title-topbar{
      physical bottom edge / browser gesture area. */
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor-name{
     display:flex!important;
-    bottom:27%!important;
     padding:3px 7px!important;
-    max-width:88%!important;
     font-size:.48rem!important;
+    transform:none!important;
+  }
+  /* Keep metadata off the artwork itself.  On phone landscape the hero label
+     sits just inside the open lane at the hero's lower-right; the enemy label
+     mirrors it at the enemy's lower-left.  Both remain above the resource
+     meters, so SPECIAL and SHIELD keep their own bottom lanes. */
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor.hero .actor-name{
+    left:88%!important;
+    right:auto!important;
+    bottom:22%!important;
+    max-width:min(29vw,190px)!important;
+    justify-content:flex-start!important;
+    text-align:left!important;
+  }
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor.enemy .actor-name{
+    left:auto!important;
+    right:88%!important;
+    bottom:22%!important;
+    max-width:min(31vw,210px)!important;
+    justify-content:flex-end!important;
+    text-align:right!important;
   }
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor-name.enemy-name-with-rarity{
     display:flex!important;
@@ -4805,11 +4824,13 @@ body[data-ui-style="glass"] .title-topbar{
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .enemy-rarity-badge{
     display:inline-flex!important;
   }
+  /* During boss battles give the enemy label one additional vertical step.
+     This guarantees a separate lane above BOSS HP and its SHIELD chip. */
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
     left:auto!important;
-    right:3%!important;
-    bottom:27%!important;
-    max-width:80%!important;
+    right:88%!important;
+    bottom:25%!important;
+    max-width:min(33vw,225px)!important;
   }
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"].hud-modern .hero-life-hud{
     bottom:6.4%!important;
