@@ -255,9 +255,9 @@
 
 
   const els={
-    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),gameScreen:$('gameScreen'),
+    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),creditsScreen:$('creditsScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),titleGradeGuide:$('titleGradeGuide'),
-    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),titleUiStyleBtn:$('titleUiStyleBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
+    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),creditsBtn:$('creditsBtn'),creditsBackBtn:$('creditsBackBtn'),titleUiStyleBtn:$('titleUiStyleBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
     musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicWorldTabs:$('musicWorldTabs'),musicWorldStatus:$('musicWorldStatus'),musicWorldTitle:$('musicWorldTitle'),musicUnlockCount:$('musicUnlockCount'),musicUnlockFill:$('musicUnlockFill'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicElapsed:$('musicElapsed'),musicDuration:$('musicDuration'),musicSeek:$('musicSeek'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     worldWarpList:$('worldWarpList'),worldWarpBackBtn:$('worldWarpBackBtn'),
@@ -821,7 +821,7 @@ function markWorldVisited(world){
     }catch{}
   }
 
-  function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.monsterBookScreen,els.worldWarpScreen,els.dataManagementScreen,els.gameScreen].filter(Boolean).forEach(x=>x.hidden=x!==el);syncPauseButton();}
+  function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.monsterBookScreen,els.worldWarpScreen,els.dataManagementScreen,els.creditsScreen,els.gameScreen].filter(Boolean).forEach(x=>x.hidden=x!==el);syncPauseButton();}
   function setMenuButton(btn,glyph,label){btn.innerHTML=`<span class="menu-glyph" aria-hidden="true">${glyph}</span><span class="menu-label">${label}</span>`;}
   function renderTitle(){
     document.body.dataset.mode=mode;
@@ -1311,7 +1311,7 @@ function markWorldVisited(world){
       c.className=`collection-cell ${owned?`rarity-${it.rarity}`:'locked'}`;
       c.innerHTML=`<span class="cell-icon">${owned?it.icon:'?'}</span><small>${owned?String(it.id).padStart(3,'0'):'???'}</small>`;
       c.title=owned?it.name:'？？？？？？';
-      c.onclick=()=>showItemDetail(it,owned);
+      c.onclick=e=>{showItemDetail(it,owned);if(e.detail>0)requestAnimationFrame(()=>{if(document.activeElement===c)c.blur();});};
       els.collectionGrid.appendChild(c);
     });
     if(els.secretRelicGrid){
@@ -1320,7 +1320,7 @@ function markWorldVisited(world){
         const c=document.createElement('button');
         c.className='collection-cell secret-relic';
         c.innerHTML=`<span class="cell-icon">${r.icon}</span><small>RELIC</small>`;
-        c.title=r.name;c.onclick=()=>showSecretRelicDetail(r);els.secretRelicGrid.appendChild(c);
+        c.title=r.name;c.onclick=e=>{showSecretRelicDetail(r);if(e.detail>0)requestAnimationFrame(()=>{if(document.activeElement===c)c.blur();});};els.secretRelicGrid.appendChild(c);
       });
       if(!foundRelics.length){
         const empty=document.createElement('div');empty.className='secret-relic-empty';
@@ -5445,6 +5445,8 @@ function setStageOverlayVisible(visible){
   if(els.debugOverlay)els.debugOverlay.onclick=e=>{if(e.target===els.debugOverlay)closeDebugPanel();};
 
   els.playBtn.onclick=startAdventure;
+  if(els.creditsBtn)els.creditsBtn.onclick=async()=>{await transitionTo(()=>showOnly(els.creditsScreen),mode,1200);};
+  if(els.creditsBackBtn)els.creditsBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1200);};
   els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode,1450);};
   els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode,1450);};
   els.monsterBookBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.monsterBookScreen);renderMonsterBook();},mode,1450);};
@@ -5474,7 +5476,7 @@ function setStageOverlayVisible(visible){
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;const next=rewardFollowupQueue.shift();if(next)setTimeout(()=>presentRewardNotice(next),180);};
 
   const CANCEL_BUTTON_IDS=new Set([
-    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn','worldWarpBackBtn',
+    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','creditsBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn','worldWarpBackBtn',
     'pauseTitleBtn','pauseCancelTitleBtn','pauseConfirmTitleBtn','gameOverTitleBtn','toTitleBtn'
   ]);
   document.addEventListener('pointerdown',e=>{

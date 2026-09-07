@@ -4546,3 +4546,72 @@ body[data-ui-style="reframe"] .monster-card.boss-card .monster-story-fragment::b
 }
 /* Medium landscape safety: longer archive text must scroll inside the information pane. */
 body[data-ui-style="reframe"] .monster-card-info{overflow:auto!important;-webkit-overflow-scrolling:touch}
+
+
+/* ======================================================================
+   2026-09-07 SCROLL OWNERSHIP FIX / CREDITS
+   Sub screens use their dedicated internal scrollers. This prevents the
+   portrait outer screen, collection list and detail pane from competing for
+   the same gesture and stops pointer focus / scroll anchoring from pulling a
+   previously tapped lower collection cell back into view.
+   ====================================================================== */
+.title-credit-link{
+  align-self:center;margin:9px auto 0;padding:4px 10px;border:0;background:transparent;color:#91a3b6;
+  font:700 .56rem/1.2 "Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;letter-spacing:.10em;cursor:pointer;
+  text-decoration:none;opacity:.86;transition:color .14s ease,opacity .14s ease;
+}
+.title-credit-link:hover,.title-credit-link:focus-visible{color:#fff;opacity:1;outline:none}
+body[data-ui-style="reframe"] .title-credit-link{color:color-mix(in srgb,var(--rf-text) 58%,var(--rf-muted));}
+body[data-ui-style="reframe"] .title-credit-link:hover,
+body[data-ui-style="reframe"] .title-credit-link:focus-visible{color:var(--rf-text)}
+
+.credits-shell{grid-template-rows:auto minmax(0,1fr) auto!important}
+.credits-body{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;display:grid;grid-template-columns:minmax(220px,.34fr) minmax(0,.66fr);gap:12px;padding:2px}
+.credits-creator-card,.credits-terms-card{border:1px solid rgba(235,205,137,.16);border-radius:15px;background:rgba(3,12,24,.52)}
+.credits-creator-card{display:grid;align-content:center;justify-items:center;gap:8px;padding:22px;text-align:center}
+.credits-creator-card small,.credits-terms-head small{color:#93a7bd;font-size:.58rem;font-weight:900;letter-spacing:.18em}
+.credits-creator-card strong{font:800 clamp(2rem,4vw,3.4rem)/1 Georgia,serif;letter-spacing:.08em;color:#fff1c2}
+.credits-creator-card p{margin:0;color:#d8e2ed;font-weight:800}
+.credits-creator-card a{margin-top:6px;color:#9edfff;font-size:.70rem;text-underline-offset:3px}
+.credits-terms-card{padding:18px 20px;text-align:left}
+.credits-terms-head{padding-bottom:11px;border-bottom:1px solid rgba(235,205,137,.14)}
+.credits-terms-head h3{margin:4px 0 0;font-size:1.15rem}
+.credits-copyright{margin:13px 0;color:#c5d1dd;font-size:.72rem;line-height:1.55}
+.credits-terms-card ol{margin:0;padding-left:1.35rem;display:grid;gap:10px}
+.credits-terms-card li{padding-left:4px;color:#dfe8f2;font-size:.76rem;line-height:1.65}
+.credits-terms-card li strong{display:block;margin-bottom:2px;color:#fff0bf;font-size:.77rem}
+.credits-terms-card li span{display:block;color:#c5d2df}
+.credits-terms-card code{padding:.08em .34em;border-radius:5px;background:rgba(255,255,255,.07);color:#e7f5ff;font-size:.92em}
+body[data-ui-style="reframe"] .credits-creator-card,
+body[data-ui-style="reframe"] .credits-terms-card{border-color:rgba(255,255,255,.09);background:rgba(2,8,14,.36)}
+body[data-ui-style="reframe"] .credits-creator-card strong,
+body[data-ui-style="reframe"] .credits-terms-card li strong{color:color-mix(in srgb,var(--ui-accent) 62%,#fff)}
+
+body[data-ui-style="reframe"] .collection-grid-wrap,
+body[data-ui-style="reframe"] .collection-detail{overflow-anchor:none}
+
+@media (orientation:portrait){
+  body[data-ui-style="reframe"]{overflow:hidden!important}
+  body[data-ui-style="reframe"] .sub-screen{overflow:hidden!important;align-items:center!important}
+  body[data-ui-style="reframe"] .sub-screen>.sub-shell{min-height:0!important}
+  body[data-ui-style="reframe"] .collection-layout{grid-template-rows:minmax(0,1fr) minmax(0,34vh)!important}
+  body[data-ui-style="reframe"] .collection-detail{height:34vh!important;max-height:none!important;overflow:auto!important;-webkit-overflow-scrolling:touch}
+  body[data-ui-style="reframe"] .collection-grid-wrap,
+  body[data-ui-style="reframe"] .shop-list,
+  body[data-ui-style="reframe"] .monster-book-viewport,
+  body[data-ui-style="reframe"] .data-management-body,
+  body[data-ui-style="reframe"] .credits-body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .credits-body{grid-template-columns:1fr;align-content:start}
+  .credits-creator-card{padding:14px}
+  .credits-terms-card{padding:14px}
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"] .collection-layout{grid-template-rows:minmax(0,1fr) minmax(0,29vh)!important}
+  body[data-ui-style="reframe"] .collection-detail{height:29vh!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .title-credit-link{margin-top:4px;font-size:.46rem}
+  .credits-body{gap:7px}
+  .credits-creator-card{padding:10px;gap:4px}.credits-creator-card strong{font-size:1.65rem}
+  .credits-terms-card{padding:9px 12px}.credits-terms-card ol{gap:5px}.credits-terms-card li{font-size:.60rem;line-height:1.42}.credits-copyright{font-size:.58rem;margin:7px 0}
+}
