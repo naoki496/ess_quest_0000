@@ -4615,3 +4615,121 @@ body[data-ui-style="reframe"] .collection-detail{overflow-anchor:none}
   .credits-creator-card{padding:10px;gap:4px}.credits-creator-card strong{font-size:1.65rem}
   .credits-terms-card{padding:9px 12px}.credits-terms-card ol{gap:5px}.credits-terms-card li{font-size:.60rem;line-height:1.42}.credits-copyright{font-size:.58rem;margin:7px 0}
 }
+
+/* ======================================================================
+   2026-09-07 UI STYLE ENTRY / PORTRAIT ACTOR MIRRORING
+   NEW stays the primary layout. GLASS remains an explicit comparison view.
+   Smartphone portrait adjustments are deliberately isolated from landscape,
+   tablet portrait (>=600px) and the GLASS skin.
+   ====================================================================== */
+
+/* The legacy title used the generic utility-button font size, which made
+   "GLASS" visually much louder than the NEW pill. Keep both states compact. */
+body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn{
+  width:auto!important;
+  min-width:50px!important;
+  height:34px!important;
+  padding:0 9px!important;
+  border-radius:999px!important;
+  font-size:.57rem!important;
+  letter-spacing:.08em!important;
+}
+body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn span{
+  font:900 .57rem/1 Arial,"Yu Gothic",sans-serif!important;
+  letter-spacing:.08em!important;
+}
+@media (orientation:landscape) and (max-height:700px){
+  body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn{height:31px!important;min-width:46px!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn{height:27px!important;min-width:42px!important;padding:0 7px!important}
+  body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn span{font-size:.50rem!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn{height:34px!important;min-width:48px!important}
+}
+
+/* Title-only confirmation. UI switching is intentionally unavailable from PAUSE. */
+.ui-style-confirm-overlay{
+  position:fixed;inset:0;z-index:110;display:grid;place-items:center;
+  padding:calc(12px + var(--safe-top)) calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+  background:rgba(1,6,14,.78);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)
+}
+.ui-style-confirm-overlay[hidden]{display:none!important}
+.ui-style-confirm-card{
+  width:min(520px,calc(100vw - 24px));padding:22px;border-radius:20px;
+  background:linear-gradient(180deg,rgba(9,22,42,.98),rgba(5,14,29,.99));
+  border:1px solid rgba(235,210,151,.28);box-shadow:0 24px 58px rgba(0,0,0,.52);text-align:center
+}
+.ui-style-confirm-card>small{color:#e8ca7d;letter-spacing:.16em;font-size:.62rem}
+.ui-style-confirm-card h2{margin:7px 0 10px;font:700 1.45rem/1.2 Georgia,"Yu Mincho",serif;color:#fff0c9}
+.ui-style-confirm-card p{margin:0;color:#cfdaea;font-size:.78rem;line-height:1.75}
+.ui-style-confirm-card .ui-style-confirm-note{margin-top:9px;color:#9fb1c7;font-size:.68rem}
+.ui-style-confirm-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:9px;margin-top:18px}
+.ui-style-confirm-actions .menu-btn{min-height:42px;margin:0}
+body[data-ui-style="reframe"] .ui-style-confirm-card{
+  border-color:var(--rf-line)!important;background:linear-gradient(155deg,rgba(7,17,29,.96),rgba(5,13,24,.98))!important;box-shadow:var(--rf-shadow)!important
+}
+body[data-ui-style="reframe"] .ui-style-confirm-card>small{color:var(--rf-accent-bright)!important}
+body[data-ui-style="reframe"] .ui-style-confirm-card h2{font-family:var(--font-ui-gothic)!important;color:var(--rf-text)!important}
+body[data-ui-style="reframe"] .ui-style-confirm-card p{color:var(--rf-muted)!important}
+body[data-ui-style="reframe"] .ui-style-confirm-card .ui-style-confirm-note{color:var(--rf-faint)!important}
+@media (orientation:portrait) and (max-width:599px){
+  .ui-style-confirm-card{padding:18px 16px;border-radius:17px}
+  .ui-style-confirm-card h2{font-size:1.2rem}
+  .ui-style-confirm-card p{font-size:.72rem;line-height:1.65}
+  .ui-style-confirm-actions{grid-template-columns:1fr;gap:7px;margin-top:14px}
+  .ui-style-confirm-actions .menu-btn{min-height:40px}
+}
+
+/* Smartphone portrait only: preserve all established vertical coordinates.
+   The change is horizontal composition + information-lane placement only:
+     enemy art -> upper-right, enemy metadata -> its free left lane
+     hero art  -> lower-left, hero resources -> its free right lane
+   No landscape/tablet/GLASS selector is touched by this block. */
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"].hud-modern .actor.enemy{
+    left:auto!important;right:0!important;width:46%!important;
+  }
+  body[data-ui-style="reframe"].hud-modern .actor.hero{
+    left:0!important;right:auto!important;
+  }
+
+  body[data-ui-style="reframe"].hud-modern .actor.enemy .actor-name,
+  body[data-ui-style="reframe"].hud-modern .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    display:flex!important;left:auto!important;right:100%!important;top:42%!important;bottom:auto!important;
+    width:max-content!important;max-width:50vw!important;justify-content:flex-end!important;text-align:right!important;
+  }
+  body[data-ui-style="reframe"].hud-modern .actor.hero .actor-name{
+    display:block!important;left:100%!important;right:auto!important;top:auto!important;bottom:65%!important;
+    width:max-content!important;max-width:50vw!important;text-align:left!important;
+  }
+
+  body[data-ui-style="reframe"].hud-modern .hero-life-hud{
+    left:45%!important;right:auto!important;
+  }
+  body[data-ui-style="reframe"].hud-modern .special-hud{
+    left:45%!important;right:4%!important;width:auto!important;min-width:0!important;max-width:none!important;transform:none!important;
+  }
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+    left:4%!important;right:auto!important;width:50%!important;min-width:0!important;max-width:220px!important;transform:none!important;
+  }
+}
+
+/* Tighten the GLASS title utility row so the style selector stays on the same
+   line instead of falling into an implicit grid row on narrow portrait screens. */
+body[data-ui-style="glass"] .title-topbar{
+  grid-template-columns:minmax(0,1fr) auto auto auto auto auto!important;
+}
+@media (orientation:portrait){
+  body[data-ui-style="glass"] .title-topbar{
+    grid-template-columns:minmax(0,1fr) auto auto auto auto!important;
+  }
+  body[data-ui-style="glass"] .title-topbar .ui-style-entry-btn{justify-self:end!important}
+}
+
+/* Separate the hero resource rows in the smartphone right-hand information lane. */
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"].hud-modern .hero-life-hud{bottom:8.5%!important}
+  body[data-ui-style="reframe"].hud-modern .special-hud{bottom:3%!important}
+}

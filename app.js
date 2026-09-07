@@ -258,7 +258,7 @@
   const els={
     titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),creditsScreen:$('creditsScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),titleGradeGuide:$('titleGradeGuide'),
-    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),creditsBtn:$('creditsBtn'),creditsBackBtn:$('creditsBackBtn'),titleUiStyleBtn:$('titleUiStyleBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
+    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),creditsBtn:$('creditsBtn'),creditsBackBtn:$('creditsBackBtn'),titleUiStyleBtn:$('titleUiStyleBtn'),uiStyleConfirmOverlay:$('uiStyleConfirmOverlay'),uiStyleConfirmMessage:$('uiStyleConfirmMessage'),uiStyleConfirmNote:$('uiStyleConfirmNote'),uiStyleConfirmCancelBtn:$('uiStyleConfirmCancelBtn'),uiStyleConfirmAcceptBtn:$('uiStyleConfirmAcceptBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
     musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicWorldTabs:$('musicWorldTabs'),musicWorldStatus:$('musicWorldStatus'),musicWorldTitle:$('musicWorldTitle'),musicUnlockCount:$('musicUnlockCount'),musicUnlockFill:$('musicUnlockFill'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicElapsed:$('musicElapsed'),musicDuration:$('musicDuration'),musicSeek:$('musicSeek'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     worldWarpList:$('worldWarpList'),worldWarpBackBtn:$('worldWarpBackBtn'),
@@ -266,7 +266,7 @@
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopDetail:$('shopDetail'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionSecretCount:$('collectionSecretCount'),collectionGrid:$('collectionGrid'),secretRelicGrid:$('secretRelicGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
     monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
-    progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),hudModeToggleBtn:$('hudModeToggleBtn'),uiStyleToggleBtn:$('uiStyleToggleBtn'),
+    progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),hudModeToggleBtn:$('hudModeToggleBtn'),
     battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),compactProgressHud:$('compactProgressHud'),compactProgressFill:$('compactProgressFill'),compactProgressText:$('compactProgressText'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),bossShieldStatus:$('bossShieldStatus'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapVisual:$('mapVisual'),mapImage:$('mapImage'),mapTipCategory:$('mapTipCategory'),mapTipText:$('mapTipText'),mapMessage:$('mapMessage'),mapNextBtn:$('mapNextBtn'),
     stageOverlay:$('stageOverlay'),stagePreview:$('stagePreview'),stageOverlayLabel:$('stageOverlayLabel'),stageOverlayName:$('stageOverlayName'),
@@ -2908,15 +2908,10 @@ function markWorldVisited(world){
   function writeUiStyle(value){try{localStorage.setItem(UI_STYLE_KEY,value);}catch{}}
   function syncUiStyleControls(){
     const isNew=uiStyle==='reframe';
-    if(els.uiStyleToggleBtn){
-      els.uiStyleToggleBtn.textContent=`UI STYLE：${isNew?'NEW':'GLASS'}`;
-      els.uiStyleToggleBtn.setAttribute('aria-pressed',isNew?'true':'false');
-      els.uiStyleToggleBtn.title=isNew?'現在はNEW UIです。押すとGLASS UIへ切り替えます。':'現在はGLASS UIです。押すとNEW UIへ切り替えます。';
-    }
     if(els.titleUiStyleBtn){
       els.titleUiStyleBtn.innerHTML=`<span>${isNew?'NEW':'GLASS'}</span>`;
-      els.titleUiStyleBtn.setAttribute('aria-label',`UIスタイル：${isNew?'NEW':'GLASS'}。切り替える`);
-      els.titleUiStyleBtn.title=`UI STYLE：${isNew?'NEW':'GLASS'}`;
+      els.titleUiStyleBtn.setAttribute('aria-label',`UIスタイル：${isNew?'NEW':'GLASS'}。表示を切り替える`);
+      els.titleUiStyleBtn.title=`UI STYLE：${isNew?'NEW':'GLASS'} / ${isNew?'標準':'比較用旧レイアウト'}`;
     }
   }
   function applyUiStyle(value,{persist=true}={}){
@@ -2930,7 +2925,32 @@ function markWorldVisited(world){
     syncUiStyleControls();
     requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);scheduleChoiceFit();});
   }
-  function toggleUiStyle(){applyUiStyle(uiStyle==='reframe'?'glass':'reframe');}
+  let pendingUiStyle=null;
+  function closeUiStyleConfirm(){
+    pendingUiStyle=null;
+    if(els.uiStyleConfirmOverlay)els.uiStyleConfirmOverlay.hidden=true;
+    if(els.titleUiStyleBtn&&!els.titleScreen.hidden)requestAnimationFrame(()=>els.titleUiStyleBtn.focus({preventScroll:true}));
+  }
+  function requestUiStyleToggle(){
+    const next=uiStyle==='reframe'?'glass':'reframe';
+    pendingUiStyle=next;
+    if(!els.uiStyleConfirmOverlay){applyUiStyle(next);pendingUiStyle=null;return;}
+    const toGlass=next==='glass';
+    if(els.uiStyleConfirmMessage)els.uiStyleConfirmMessage.textContent=toGlass
+      ?'GLASS UIは比較用の旧レイアウトです。切り替えると、画面内の配置や余白などが一部変わります。ゲーム内容やセーブデータには影響しません。'
+      :'標準のNEW UIへ戻します。切り替えると、画面内の配置や余白などが一部変わります。ゲーム内容やセーブデータには影響しません。';
+    if(els.uiStyleConfirmNote)els.uiStyleConfirmNote.textContent=toGlass?'標準表示はNEW UIです。':'NEW UIを標準表示として使用します。';
+    if(els.uiStyleConfirmAcceptBtn)els.uiStyleConfirmAcceptBtn.textContent=toGlass?'GLASS UIに切り替える':'NEW UIに切り替える';
+    els.uiStyleConfirmOverlay.hidden=false;
+    requestAnimationFrame(()=>els.uiStyleConfirmAcceptBtn?.focus());
+  }
+  function confirmUiStyleToggle(){
+    const next=pendingUiStyle;
+    pendingUiStyle=null;
+    if(els.uiStyleConfirmOverlay)els.uiStyleConfirmOverlay.hidden=true;
+    if(next)applyUiStyle(next);
+    if(els.titleUiStyleBtn&&!els.titleScreen.hidden)requestAnimationFrame(()=>els.titleUiStyleBtn.focus({preventScroll:true}));
+  }
   let modernHudLastLives=3;
   function bossQuestionTotal(){return mode==='end'&&endFinalPhase?END_FINAL_TOTAL_QUESTIONS:(mode==='white'?1:5);}
   function bossFinalActionIndex(){return bossQuestionTotal()-1;}
@@ -5488,8 +5508,10 @@ function setStageOverlayVisible(visible){
   if(els.specialBtn)els.specialBtn.onclick=activateSpecialMove;
   els.pauseResumeBtn.onclick=resumeGame;
   if(els.hudModeToggleBtn)els.hudModeToggleBtn.onclick=toggleHudMode;
-  if(els.uiStyleToggleBtn)els.uiStyleToggleBtn.onclick=toggleUiStyle;
-  if(els.titleUiStyleBtn)els.titleUiStyleBtn.onclick=toggleUiStyle;
+  if(els.titleUiStyleBtn)els.titleUiStyleBtn.onclick=requestUiStyleToggle;
+  if(els.uiStyleConfirmCancelBtn)els.uiStyleConfirmCancelBtn.onclick=closeUiStyleConfirm;
+  if(els.uiStyleConfirmAcceptBtn)els.uiStyleConfirmAcceptBtn.onclick=confirmUiStyleToggle;
+  if(els.uiStyleConfirmOverlay)els.uiStyleConfirmOverlay.onclick=e=>{if(e.target===els.uiStyleConfirmOverlay)closeUiStyleConfirm();};
   els.pauseTitleBtn.onclick=showPauseConfirm;
   els.pauseCancelTitleBtn.onclick=showPauseMenu;
   els.pauseConfirmTitleBtn.onclick=returnTitleFromPause;
@@ -5500,7 +5522,7 @@ function setStageOverlayVisible(visible){
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;const next=rewardFollowupQueue.shift();if(next)setTimeout(()=>presentRewardNotice(next),180);};
 
   const CANCEL_BUTTON_IDS=new Set([
-    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','creditsBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn','worldWarpBackBtn',
+    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','creditsBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn','worldWarpBackBtn','uiStyleConfirmCancelBtn',
     'pauseTitleBtn','pauseCancelTitleBtn','pauseConfirmTitleBtn','gameOverTitleBtn','toTitleBtn'
   ]);
   document.addEventListener('pointerdown',e=>{
