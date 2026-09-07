@@ -4033,3 +4033,280 @@ body[data-ui-style="reframe"].crimson-genma-reveal .equation-box{box-shadow:inse
   }
   body[data-ui-style="reframe"] .monster-card p{max-width:58ch!important}
 }
+
+/* ======================================================================
+   2026-09-07 ROUND 3 / NON-BATTLE UI INTEGRATION
+   Scope: collection / monster encyclopedia / world gate.
+   Battle presentation is intentionally untouched in this round.
+   ====================================================================== */
+
+/* Reading rule: the composition may stay centered, but Japanese prose itself
+   is left-aligned. A narrower measure and slightly larger type use desktop /
+   tablet space as a reading surface instead of leaving an empty-looking panel. */
+body[data-ui-style="reframe"] .collection-detail p{
+  width:min(100%,42ch)!important;
+  margin:12px auto 0!important;
+  text-align:left!important;
+  text-wrap:pretty;
+  overflow-wrap:anywhere;
+}
+body[data-ui-style="reframe"] .monster-card p{
+  width:min(100%,48ch)!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+  text-align:left!important;
+  text-wrap:pretty;
+  overflow-wrap:anywhere;
+}
+
+@media (orientation:landscape) and (min-width:1000px) and (min-height:501px){
+  body[data-ui-style="reframe"] .collection-detail{padding:22px 20px!important}
+  body[data-ui-style="reframe"] .collection-detail h3{font-size:1.34rem!important;line-height:1.3!important}
+  body[data-ui-style="reframe"] .collection-detail p{
+    max-width:38ch!important;font-size:.91rem!important;line-height:1.88!important;
+  }
+  body[data-ui-style="reframe"] .monster-card{
+    height:min(540px,80dvh)!important;
+  }
+  body[data-ui-style="reframe"] .monster-card p{
+    max-width:46ch!important;font-size:.94rem!important;line-height:1.92!important;
+  }
+}
+@media (orientation:landscape) and (min-width:700px) and (max-width:999px){
+  body[data-ui-style="reframe"] .collection-detail p{font-size:.80rem!important;line-height:1.72!important;max-width:38ch!important}
+  body[data-ui-style="reframe"] .monster-card p{font-size:.80rem!important;line-height:1.72!important;max-width:44ch!important}
+}
+@media (orientation:portrait) and (min-width:600px){
+  body[data-ui-style="reframe"] .collection-detail p{font-size:.84rem!important;line-height:1.78!important;max-width:40ch!important}
+  body[data-ui-style="reframe"] .monster-card p{font-size:.84rem!important;line-height:1.78!important;max-width:44ch!important}
+}
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"] .collection-detail p{width:100%!important;margin-top:7px!important;text-align:left!important}
+  body[data-ui-style="reframe"] .monster-card p{width:100%!important;text-align:left!important}
+}
+
+/* WORLD GATE: restore the pre-REFRAME core verbatim. The new central accent
+   was not an improvement; the ring may use the NEW layout while its centre
+   returns to the established visual language. */
+body[data-ui-style="reframe"] .world-gate-core{
+  position:absolute!important;z-index:2!important;left:50%!important;top:50%!important;
+  width:clamp(92px,16vw,158px)!important;height:auto!important;aspect-ratio:1!important;
+  transform:translate(-50%,-50%)!important;border-radius:50%!important;
+  display:grid!important;place-items:center!important;text-align:center!important;
+  color:#e9f8ff!important;font:800 clamp(.58rem,1.1vw,.82rem)/1.28 Georgia,serif!important;
+  letter-spacing:.13em!important;text-shadow:0 0 12px #73e9ff!important;
+  background:radial-gradient(circle,#e9fbff 0 3%,#5ac9e8 4% 6%,rgba(42,126,178,.72) 7% 18%,rgba(24,53,92,.83) 36%,rgba(5,13,29,.96) 68%)!important;
+  border:1px solid rgba(164,239,255,.58)!important;
+  box-shadow:0 0 20px rgba(82,224,255,.35),0 0 55px rgba(66,125,255,.18),inset 0 0 28px rgba(255,255,255,.12)!important;
+}
+body[data-ui-style="reframe"] .world-gate-core i{
+  position:absolute!important;inset:8%!important;border-radius:50%!important;
+  background:none!important;box-shadow:none!important;
+  border:1px dashed rgba(255,231,169,.45)!important;
+  animation:worldCoreSpin 10s linear infinite!important;transform-origin:50% 50%!important;
+}
+body[data-ui-style="reframe"] .world-gate-core span{
+  position:relative!important;z-index:1!important;
+  font:inherit!important;letter-spacing:inherit!important;color:inherit!important;
+}
+/* The ring already appends 「現在地」 to the Japanese world label. The extra
+   English CURRENT badge added by REFRAME duplicated that information and could
+   collide with the world name, so it is removed. */
+body[data-ui-style="reframe"] .world-ring-node.current::after{display:none!important;content:none!important}
+
+@media (orientation:landscape) and (max-height:700px){
+  body[data-ui-style="reframe"] .world-gate-core{width:clamp(70px,18vh,112px)!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .world-gate-core{width:clamp(54px,19vh,72px)!important;font-size:.43rem!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .world-gate-core{width:clamp(74px,24vw,118px)!important}
+}
+@media (orientation:portrait) and (max-width:420px){
+  body[data-ui-style="reframe"] .world-gate-core{width:clamp(65px,22vw,88px)!important;font-size:.47rem!important}
+}
+
+/* ========================================================================== */
+/* 2026-09-07 integration round 3 correction: mirrored boss resources +       */
+/* compact-name readability.                                                  */
+/* ========================================================================== */
+
+/* Character / monster names are small, glance-read labels: keep them Gothic. */
+body[data-ui-style="reframe"] .actor-name,
+body[data-ui-style="reframe"] .enemy-rarity-badge,
+body[data-ui-style="reframe"] .enemy-name-text{
+  font-family:var(--font-ui-gothic)!important;
+  font-weight:800!important;
+}
+
+/* Horizontal battle grammar:
+   hero side  [LIFE] -> [hero name]
+   boss side  [BOSS HP] <- [boss name]
+   Therefore the boss meter must sit to the LEFT of the boss-name lane. */
+@media (orientation:landscape){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+    left:auto!important;
+    right:18.5%!important;
+    bottom:4.2%!important;
+    width:min(15vw,176px)!important;
+    min-width:118px!important;
+    max-width:176px!important;
+    transform:none!important;
+    align-items:flex-end!important;
+  }
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    left:auto!important;
+    right:4%!important;
+    bottom:2.2%!important;
+    max-width:72%!important;
+  }
+}
+@media (orientation:landscape) and (max-height:700px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+    right:18.5%!important;
+    bottom:3%!important;
+    width:min(16vw,150px)!important;
+    min-width:104px!important;
+  }
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    right:3%!important;
+  }
+}
+@media (orientation:landscape) and (max-height:500px){
+  /* Compact landscape intentionally keeps actor names hidden; the meter still
+     occupies the mirrored resource lane rather than the far-right name lane. */
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+    right:18%!important;
+    bottom:2%!important;
+    width:min(17vw,120px)!important;
+    min-width:88px!important;
+  }
+}
+
+/* Portrait: keep HP left of the enemy-name block instead of attaching it to
+   the right edge. This preserves the same semantic order without forcing a
+   desktop geometry into a narrow screen. */
+@media (orientation:portrait){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+    left:4%!important;
+    right:auto!important;
+    top:29.5%!important;
+    bottom:auto!important;
+    width:34%!important;
+    min-width:104px!important;
+    max-width:180px!important;
+    transform:none!important;
+  }
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    left:auto!important;
+    right:0!important;
+    bottom:0!important;
+    max-width:72%!important;
+  }
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){top:26.5%!important}
+}
+
+/* ========================================================================== */
+/* 2026-09-07 ROUND 4 / actor separation polish + END branch relocation       */
+/* ========================================================================== */
+
+/*
+  NEW battle presentation intentionally keeps the old four-corner ornaments
+  disabled. They framed the viewport well in the legacy skin, but in the new
+  full-bleed battlefield they compete with the actors and question layer.
+  Character separation is handled instead by static local contrast cues.
+*/
+body[data-ui-style="reframe"] .battle-corner{display:none!important}
+
+/* Static actor separation: no pulsing, no aura animation, no full-screen FX.
+   The soft backplate and grounding shadow are deliberately CSS-only and do not
+   animate, keeping the cost and visual noise low. */
+body[data-ui-style="reframe"] .actor::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:7%;right:7%;bottom:1.5%;height:88%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 57%,
+      color-mix(in srgb,var(--ui-accent) 13%,rgba(255,255,255,.17)) 0%,
+      color-mix(in srgb,var(--ui-accent) 6%,rgba(255,255,255,.07)) 34%,
+      rgba(255,255,255,.025) 48%,
+      transparent 72%);
+  opacity:.54;
+}
+body[data-ui-style="reframe"] .actor::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:17%;right:17%;bottom:1.4%;height:7.5%;
+  pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.44) 0%,rgba(0,0,0,.20) 42%,transparent 73%);
+  opacity:.82;
+}
+body[data-ui-style="reframe"] .actor.hero::before{opacity:.58}
+body[data-ui-style="reframe"] .actor.enemy::before{opacity:.48}
+body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy::before{
+  left:3%;right:3%;height:94%;opacity:.68;
+  background:
+    radial-gradient(ellipse at 50% 55%,
+      color-mix(in srgb,var(--ui-accent) 17%,rgba(255,255,255,.19)) 0%,
+      color-mix(in srgb,var(--ui-accent) 7%,rgba(255,255,255,.08)) 38%,
+      rgba(255,255,255,.022) 54%,
+      transparent 75%);
+}
+body[data-ui-style="reframe"] .actor-sprite{position:relative;z-index:1}
+body[data-ui-style="reframe"] .actor>img,
+body[data-ui-style="reframe"] .actor-sprite img{
+  position:relative;z-index:1;
+  filter:
+    drop-shadow(0 12px 14px rgba(0,0,0,.56))
+    drop-shadow(0 0 3px rgba(255,255,255,.28))!important;
+}
+
+/* On very small screens the backplate must remain subordinate to the question. */
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .actor::before{left:12%;right:12%;height:82%;opacity:.42}
+  body[data-ui-style="reframe"] .actor::after{left:22%;right:22%;height:6%;opacity:.70}
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy::before{opacity:.54}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .actor::before{left:10%;right:10%;height:90%;opacity:.50}
+  body[data-ui-style="reframe"] .actor::after{left:22%;right:22%;height:7%;opacity:.74}
+}
+
+/* END: remove the incidental label attached to the question card. If the
+   'broken UI' motif is used, make it a deliberate battlefield annotation in
+   a safe peripheral lane instead of letting it peek from behind the problem. */
+body[data-ui-style="reframe"][data-mode="end"] .question-panel::after{
+  display:none!important;content:none!important;
+}
+body[data-ui-style="reframe"][data-mode="end"] .battlefield::before{
+  content:"// BRANCH";
+  position:absolute;
+  z-index:5;
+  left:1.25%;top:7%;
+  min-width:76px;
+  padding:4px 9px 4px 11px;
+  pointer-events:none;
+  color:rgba(215,197,246,.78);
+  background:linear-gradient(90deg,rgba(12,8,20,.80),rgba(12,8,20,.24),transparent);
+  border-left:2px solid rgba(183,142,245,.74);
+  font:800 clamp(.46rem,.72vw,.64rem)/1 var(--font-ui-gothic);
+  letter-spacing:.18em;
+  text-shadow:0 1px 6px rgba(0,0,0,.88);
+  transform:skewX(-8deg);
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"][data-mode="end"] .battlefield::before{
+    top:9%;left:.8%;min-width:62px;padding:3px 6px 3px 8px;font-size:.40rem;opacity:.78;
+  }
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"][data-mode="end"] .battlefield::before{
+    left:2.2%;top:3.1%;min-width:70px;font-size:.44rem;
+  }
+}
