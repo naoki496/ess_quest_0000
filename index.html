@@ -7,7 +7,7 @@
 <title>さんすうクエスト</title>
 <link rel="stylesheet" href="./styles.css">
 </head>
-<body data-mode="front" data-stage="0">
+<body data-mode="front" data-stage="0" data-ui-style="reframe">
 <div id="transitionFx" class="transition-fx" hidden><div class="transition-cover"></div><div class="transition-tiles"></div><div class="transition-grid"></div><div class="transition-core"></div><div class="transition-sigil">✦</div></div>
 
 <section id="titleScreen" class="screen title-screen">
@@ -25,6 +25,7 @@
       <div class="title-wallet"><span>所持ゴルド</span><strong id="titleGold">0 G</strong></div>
       <button id="musicBtn" class="music-entry-btn" type="button" aria-label="BGM鑑賞" title="BGM鑑賞">♫</button>
       <button id="dataManagementBtn" class="music-entry-btn data-entry-btn" type="button" aria-label="データ管理" title="データ管理">▣</button>
+      <button id="titleUiStyleBtn" class="music-entry-btn ui-style-entry-btn" type="button" aria-label="UIスタイルを切り替える" title="UIスタイルを切り替える"><span>UI</span></button>
       <span id="debugBadge" class="debug-badge" hidden>DEBUG</span>
     </div>
 
@@ -115,10 +116,13 @@
 
 <section id="shopScreen" class="screen sub-screen" hidden>
   <div class="sub-bg"></div>
-  <div class="sub-shell panel-gold">
+  <div class="sub-shell panel-gold shop-shell">
     <header class="sub-header"><div><small>ITEM SHOP</small><h2>ショップ</h2></div><div class="wallet">所持 <strong id="shopGold">0 G</strong></div></header>
     <div id="shopFilters" class="filters"></div>
-    <div class="shop-viewport"><div id="shopList" class="shop-list"></div></div>
+    <div class="shop-layout">
+      <div class="shop-viewport"><div id="shopList" class="shop-list"></div></div>
+      <aside id="shopDetail" class="shop-detail" aria-live="polite"><div class="shop-detail-icon">◆</div><small>ITEM SHOP</small><h3>アイテムを えらぼう</h3><p>一覧からアイテムを選ぶと、ここに詳細が表示されます。</p></aside>
+    </div>
     <footer class="sub-footer"><button id="shopBackBtn" class="back-btn">タイトルにもどる</button></footer>
   </div>
 </section>
@@ -289,7 +293,7 @@
     <p>タイマーとバトルの動きを止めています。</p>
     <div class="pause-actions">
       <button id="pauseResumeBtn" class="menu-btn primary" type="button">つづける</button>
-      <button id="hudModeToggleBtn" class="menu-btn hud-mode-toggle" type="button" aria-pressed="true">HUD表示：薄型</button>
+      <button id="uiStyleToggleBtn" class="menu-btn ui-style-toggle" type="button" aria-pressed="true">UI STYLE：NEW</button>
       <button id="pauseTitleBtn" class="menu-btn" type="button">タイトルにもどる</button>
     </div>
   </section>
