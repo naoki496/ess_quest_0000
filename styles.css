@@ -4849,3 +4849,219 @@ body[data-ui-style="glass"] .title-topbar{
 @media (orientation:landscape) and (max-width:1000px) and (max-height:275px){
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .title-sub{display:none!important}
 }
+
+
+/* ======================================================================
+   2026-09-07 BOSS AURA LAYER RESTORATION
+   The legacy boss halo / particle language is restored on a dedicated,
+   absolutely-positioned child layer.  It never participates in layout, so
+   actor/HUD/question coordinates cannot be displaced by the effect itself.
+   Crimson LAST uses the same FINAL tier as the other non-END final bosses.
+   ====================================================================== */
+
+/* Dedicated visual-only layer. Hidden for normal enemies and END road bosses. */
+body[data-ui-style="reframe"] .actor.enemy>.boss-aura-layer{
+  position:absolute!important;
+  inset:0!important;
+  display:none;
+  pointer-events:none!important;
+  overflow:visible!important;
+}
+body[data-ui-style="reframe"].world-boss-aura-active .actor.enemy.world-boss-aura>.boss-aura-layer,
+body[data-ui-style="reframe"][data-mode="end"].end-boss-corruption-active .actor.enemy.end-corrupted-boss>.boss-aura-layer{
+  display:block;
+}
+body[data-ui-style="reframe"] .boss-aura-ring,
+body[data-ui-style="reframe"] .boss-aura-particles{
+  position:absolute;
+  display:block;
+  pointer-events:none;
+}
+
+/* NEW uses ::before / ::after for its static local contrast plate and ground shadow.
+   Older boss CSS also used those pseudos. Fully normalise only boss pseudos back to
+   the existing NEW static geometry, then render the legacy boss FX on the new layer. */
+body[data-ui-style="reframe"] .actor.enemy.world-boss-aura::before,
+body[data-ui-style="reframe"] .actor.enemy.end-corrupted-boss::before{
+  content:""!important;
+  position:absolute!important;
+  z-index:0!important;
+  left:0!important;right:0!important;top:auto!important;bottom:.5%!important;
+  width:auto!important;height:100%!important;aspect-ratio:auto!important;
+  transform:none!important;border-radius:0!important;
+  -webkit-mask:none!important;mask:none!important;
+  filter:none!important;mix-blend-mode:normal!important;animation:none!important;
+  background:
+    radial-gradient(ellipse at 50% 54%,
+      color-mix(in srgb,var(--ui-accent) 27%,rgba(255,255,255,.22)) 0%,
+      color-mix(in srgb,var(--ui-accent) 14%,rgba(255,255,255,.10)) 34%,
+      rgba(2,7,13,.25) 54%,
+      rgba(1,4,9,.32) 64%,
+      transparent 79%)!important;
+  opacity:.78!important;
+}
+body[data-ui-style="reframe"] .actor.enemy.world-boss-aura::after,
+body[data-ui-style="reframe"] .actor.enemy.end-corrupted-boss::after{
+  content:""!important;
+  position:absolute!important;
+  z-index:0!important;
+  inset:auto!important;
+  left:14%!important;right:14%!important;top:auto!important;bottom:.7%!important;
+  width:auto!important;height:9%!important;aspect-ratio:auto!important;
+  transform:none!important;border-radius:0!important;
+  -webkit-mask:none!important;mask:none!important;
+  filter:none!important;mix-blend-mode:normal!important;animation:none!important;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.60) 0%,rgba(0,0,0,.34) 40%,rgba(0,0,0,.08) 64%,transparent 77%)!important;
+  background-size:auto!important;
+  opacity:.90!important;
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .actor.enemy.world-boss-aura::before,
+  body[data-ui-style="reframe"] .actor.enemy.end-corrupted-boss::before{opacity:.66!important}
+  body[data-ui-style="reframe"] .actor.enemy.world-boss-aura::after,
+  body[data-ui-style="reframe"] .actor.enemy.end-corrupted-boss::after{
+    left:20%!important;right:20%!important;height:7%!important;opacity:.78!important
+  }
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .actor.enemy.world-boss-aura::after,
+  body[data-ui-style="reframe"] .actor.enemy.end-corrupted-boss::after{
+    left:18%!important;right:18%!important;height:8%!important
+  }
+}
+
+/* ---------- ordinary-world stage boss / final boss ---------- */
+body[data-ui-style="reframe"].world-boss-aura-active .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-ring{
+  z-index:0;
+  left:50%;top:50%;width:132%;height:auto;aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:
+    radial-gradient(circle,transparent 0 48%,color-mix(in srgb,var(--boss-aura-a) 22%,transparent) 51% 55%,transparent 58%),
+    conic-gradient(from 18deg,transparent 0 12%,color-mix(in srgb,var(--boss-aura-a) 72%,transparent) 17%,transparent 28% 42%,color-mix(in srgb,var(--boss-aura-b) 58%,transparent) 49%,transparent 59% 76%,color-mix(in srgb,var(--boss-aura-a) 62%,transparent) 84%,transparent 94%);
+  -webkit-mask:radial-gradient(circle,transparent 0 47%,#000 50% 57%,transparent 61%);
+  mask:radial-gradient(circle,transparent 0 47%,#000 50% 57%,transparent 61%);
+  opacity:.54;
+  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--boss-aura-a) 72%,transparent));
+  animation:worldBossHalo 14s linear infinite;
+}
+body[data-ui-style="reframe"].world-boss-aura-active .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  z-index:2;
+  inset:-5%;
+  opacity:.48;mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 18% 22%,var(--boss-aura-b) 0 1.7px,transparent 3.5px),
+    radial-gradient(circle at 82% 19%,var(--boss-aura-a) 0 1.8px,transparent 3.7px),
+    radial-gradient(circle at 76% 72%,var(--boss-aura-c) 0 1.5px,transparent 3.2px),
+    radial-gradient(circle at 26% 77%,var(--boss-aura-a) 0 1.7px,transparent 3.5px),
+    radial-gradient(circle at 52% 11%,var(--boss-aura-b) 0 1.4px,transparent 3px);
+  background-size:47px 53px,61px 59px,53px 67px,71px 63px,57px 71px;
+  animation:worldBossParticles 7.6s ease-in-out infinite alternate;
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-ring{
+  width:145%;opacity:.80;
+  filter:drop-shadow(0 0 13px color-mix(in srgb,var(--boss-aura-a) 88%,transparent)) drop-shadow(0 0 25px color-mix(in srgb,var(--boss-aura-b) 34%,transparent));
+  background:
+    radial-gradient(circle,transparent 0 43%,color-mix(in srgb,var(--boss-aura-b) 20%,transparent) 45% 48%,transparent 50% 54%,color-mix(in srgb,var(--boss-aura-a) 34%,transparent) 56% 61%,transparent 64%),
+    conic-gradient(from 0deg,transparent 0 7%,var(--boss-aura-a) 12%,transparent 20% 31%,var(--boss-aura-b) 39%,transparent 48% 61%,var(--boss-aura-a) 69%,transparent 78% 89%,var(--boss-aura-b) 94%,transparent);
+  -webkit-mask:radial-gradient(circle,transparent 0 42%,#000 45% 49%,transparent 51% 54%,#000 56% 62%,transparent 65%);
+  mask:radial-gradient(circle,transparent 0 42%,#000 45% 49%,transparent 51% 54%,#000 56% 62%,transparent 65%);
+  animation-duration:10.5s;
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  inset:-11%;opacity:.72;
+  filter:drop-shadow(0 0 7px color-mix(in srgb,var(--boss-aura-a) 68%,transparent));
+  animation:worldFinalSignature 5.7s ease-in-out infinite alternate;
+}
+/* Crimson independent LAST deliberately shares this same FINAL tier through
+   data-boss-aura-tier="final"; it receives only the Crimson world signature. */
+body[data-ui-style="reframe"][data-boss-aura-tier="final"][data-boss-aura-world="front"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  background:radial-gradient(ellipse at 50% 94%,rgba(255,248,212,.22),transparent 36%),radial-gradient(circle at 19% 26%,#fff8cf 0 2px,transparent 4px),radial-gradient(circle at 82% 22%,#ffe48a 0 2px,transparent 4px),radial-gradient(circle at 72% 65%,#fff 0 1.7px,transparent 3.7px),radial-gradient(circle at 30% 74%,#f6cf62 0 2px,transparent 4px),repeating-linear-gradient(101deg,transparent 0 15%,rgba(255,232,142,.10) 15.4% 16%,transparent 16.6% 30%);
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"][data-boss-aura-world="back"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  background:linear-gradient(rgba(115,230,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(124,91,255,.13) 1px,transparent 1px),radial-gradient(circle at 22% 24%,#82f1ff 0 2px,transparent 4px),radial-gradient(circle at 80% 29%,#a986ff 0 2px,transparent 4px),radial-gradient(circle at 68% 75%,#7be7ff 0 1.8px,transparent 3.8px);background-size:31px 31px,31px 31px,67px 71px,73px 61px,59px 79px;
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"][data-boss-aura-world="crimson"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  background:radial-gradient(ellipse at 50% 88%,rgba(230,45,70,.20),transparent 44%),radial-gradient(ellipse at 17% 24%,#ff9b65 0 2px,transparent 4px),radial-gradient(ellipse at 80% 30%,#d93655 0 2.4px,transparent 4.5px),radial-gradient(ellipse at 72% 72%,#ffd09c 0 1.8px,transparent 4px),conic-gradient(from 18deg at 50% 52%,transparent 0 13%,rgba(215,48,71,.15) 16%,transparent 20% 44%,rgba(255,142,89,.13) 48%,transparent 53% 77%,rgba(215,48,71,.12) 82%,transparent 87%);
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"][data-boss-aura-world="blue"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  background:radial-gradient(ellipse at 50% 58%,rgba(109,207,255,.18),transparent 50%),repeating-linear-gradient(180deg,transparent 0 12%,rgba(153,233,255,.09) 12.5% 13.3%,transparent 13.8% 24%),radial-gradient(circle at 20% 28%,#dff9ff 0 2px,transparent 4px),radial-gradient(circle at 82% 25%,#79b9ff 0 2px,transparent 4px),radial-gradient(circle at 72% 74%,#a8efff 0 1.8px,transparent 3.8px);
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"][data-boss-aura-world="silver"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  background:conic-gradient(from 0deg at 50% 50%,transparent 0 8%,rgba(238,248,255,.20) 8.4% 8.9%,transparent 9.4% 24%,rgba(157,189,255,.18) 24.5% 25%,transparent 25.5% 45%,rgba(238,248,255,.18) 45.4% 46%,transparent 46.5% 67%,rgba(207,234,255,.17) 67.5% 68.2%,transparent 68.7% 87%,rgba(238,248,255,.18) 87.4% 88%,transparent 88.5%),radial-gradient(circle at 23% 28%,#eef8ff 0 2px,transparent 4px),radial-gradient(circle at 78% 24%,#bddbff 0 2px,transparent 4px),radial-gradient(circle at 70% 76%,#fff 0 1.8px,transparent 3.8px);
+}
+body[data-ui-style="reframe"][data-boss-aura-tier="final"][data-boss-aura-world="midori"] .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{
+  background:radial-gradient(ellipse at 50% 92%,transparent 0 20%,rgba(56,212,173,.20) 21% 22%,transparent 24% 31%,rgba(185,255,231,.14) 32% 33%,transparent 35%),radial-gradient(circle at 19% 28%,#b9ffe7 0 2px,transparent 4px),radial-gradient(circle at 81% 25%,#38d4ad 0 2.2px,transparent 4.2px),radial-gradient(circle at 72% 71%,#7ef4d7 0 2px,transparent 4px),radial-gradient(circle at 27% 73%,#d8fff2 0 1.7px,transparent 3.7px);
+}
+
+/* ---------- END region bosses / END FINAL ---------- */
+body[data-ui-style="reframe"][data-mode="end"].end-boss-corruption-active .actor.enemy.end-corrupted-boss>.boss-aura-layer>.boss-aura-ring{
+  z-index:0;
+  left:50%;top:49%;width:174%;height:auto;aspect-ratio:1;
+  transform:translate(-50%,-50%) rotate(0deg);border-radius:50%;
+  background:conic-gradient(from 8deg,
+    transparent 0 8deg,var(--end-boss-accent) 9deg 27deg,transparent 28deg 51deg,
+    var(--end-boss-a) 52deg 76deg,transparent 77deg 109deg,var(--end-boss-fringe) 110deg 126deg,
+    transparent 127deg 168deg,var(--end-boss-accent) 169deg 193deg,transparent 194deg 230deg,
+    var(--end-boss-a) 231deg 251deg,transparent 252deg 299deg,var(--end-boss-fringe) 300deg 317deg,transparent 318deg 360deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 48%,#000 49% 52%,transparent 53% 59%,#000 60% 64%,transparent 65% 100%);
+  mask:radial-gradient(circle,transparent 0 48%,#000 49% 52%,transparent 53% 59%,#000 60% 64%,transparent 65% 100%);
+  opacity:.82;
+  filter:blur(.15px) drop-shadow(0 0 11px var(--end-boss-a)) drop-shadow(0 0 28px color-mix(in srgb,var(--end-boss-fringe) 58%,transparent));
+  animation:endCorruptRing 8.5s linear infinite;
+}
+body[data-ui-style="reframe"][data-mode="end"].end-boss-corruption-active .actor.enemy.end-corrupted-boss>.boss-aura-layer>.boss-aura-particles{
+  z-index:2;
+  inset:-18% -22% -12%;
+  opacity:.84;mix-blend-mode:screen;
+  background:
+    radial-gradient(circle at 12% 20%,var(--end-boss-accent) 0 1.8px,transparent 3px),
+    radial-gradient(circle at 82% 13%,var(--end-boss-fringe) 0 2px,transparent 3.5px),
+    radial-gradient(circle at 93% 58%,var(--end-boss-accent) 0 2.2px,transparent 3.7px),
+    radial-gradient(circle at 18% 76%,var(--end-boss-a) 0 2.2px,transparent 3.8px),
+    radial-gradient(circle at 56% 5%,var(--end-boss-fringe) 0 1.8px,transparent 3.2px),
+    linear-gradient(119deg,transparent 0 42%,color-mix(in srgb,var(--end-boss-accent) 68%,transparent) 42.35% 42.75%,transparent 43.1% 100%),
+    linear-gradient(61deg,transparent 0 67%,color-mix(in srgb,var(--end-boss-fringe) 55%,transparent) 67.2% 67.6%,transparent 68% 100%);
+  background-size:31px 37px,43px 49px,59px 67px,41px 53px,67px 61px,100% 100%,100% 100%;
+  filter:drop-shadow(0 0 8px var(--end-boss-a));
+  animation:endCorruptParticles 4.2s ease-in-out infinite alternate;
+}
+/* END FINAL uses the same fixed relative center/size on every medium; only its
+   signature changes to the complete concentric-ring form. */
+body[data-ui-style="reframe"][data-mode="end"][data-stage="final"][data-end-boss-world="front"].end-boss-corruption-active .actor.enemy.end-corrupted-boss>.boss-aura-layer>.boss-aura-ring{
+  background:conic-gradient(from 0deg,var(--end-boss-accent),var(--end-boss-a) 28%,#2e163d 42%,var(--end-boss-fringe) 58%,var(--end-boss-a) 76%,var(--end-boss-accent));
+  -webkit-mask:radial-gradient(circle,transparent 0 49%,#000 50% 53%,transparent 54% 60%,#000 61% 64%,transparent 65%);
+  mask:radial-gradient(circle,transparent 0 49%,#000 50% 53%,transparent 54% 60%,#000 61% 64%,transparent 65%);
+  opacity:.92;
+}
+
+/* The previous FINAL-only actor size overrode the established responsive enemy
+   sizes (especially portrait). Correct the END FINAL enemy only to the same
+   dimensions already used by every other boss at each breakpoint. No other
+   actor, HUD, question panel or device layout is touched. */
+body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor.enemy{
+  width:31%!important;height:78%!important;
+}
+@media (orientation:landscape) and (max-height:700px){
+  body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor.enemy{width:28%!important;height:73%!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor.enemy{width:26%!important;height:68%!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor.enemy{width:72%!important;height:27%!important}
+}
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"].hud-modern[data-mode="end"][data-stage="final"] .actor.enemy{width:46%!important}
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor.enemy{height:24%!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  body[data-ui-style="reframe"] .boss-aura-ring,
+  body[data-ui-style="reframe"] .boss-aura-particles{animation:none!important}
+  body[data-ui-style="reframe"].world-boss-aura-active .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-ring{opacity:.46}
+  body[data-ui-style="reframe"].world-boss-aura-active .actor.enemy.world-boss-aura>.boss-aura-layer>.boss-aura-particles{opacity:.34}
+  body[data-ui-style="reframe"][data-mode="end"].end-boss-corruption-active .actor.enemy.end-corrupted-boss>.boss-aura-layer>.boss-aura-ring{opacity:.66}
+  body[data-ui-style="reframe"][data-mode="end"].end-boss-corruption-active .actor.enemy.end-corrupted-boss>.boss-aura-layer>.boss-aura-particles{opacity:.58}
+}
