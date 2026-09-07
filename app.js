@@ -578,6 +578,78 @@
 const ITEMS=buildItems();
 const rarityLabel={common:'コモン',uncommon:'アンコモン',rare:'レア'};
 
+  // A second lore layer for the COLLECTION detail. The first paragraph stays item-specific;
+  // this short fragment adds provenance / rumours without turning the screen into a synopsis.
+  const COLLECTION_STORY_FRAGMENT_POOLS={
+    neutral:{
+      common:['旅人組合の古い預かり帳には、こうした実用品が持ち主の名もなく何度も戻ってきた記録がある。','持ち主を示す印は消えているが、修理痕だけは旅が一度で終わらなかったことを伝えている。','古い道具目録では、同じ品が別々の土地で同じ時期に使われた例がいくつも残っている。'],
+      uncommon:['出所の異なる品が同じ荷箱から見つかる例があり、旅人の移動だけでは説明しきれないこともある。','古い収蔵記録では、持ち主よりも「どこから来たか」を示す欄だけが不自然に書き直されている。','同型の品が遠く離れた土地から同時期に見つかり、記録官が照合を中止した例が残る。'],
+      rare:['収蔵庫の照合では、同じ意匠が複数世界の記録に現れ、単なる交易品とは考えにくいとされている。','年代の合わない修理材が混じっており、品そのものが長い時間を越えて移動した可能性がある。','来歴を追うほど記録は一つの土地から外れ、最後には「境界外」という曖昧な分類だけが残る。']
+    },
+    light:{
+      common:['王国の古い旅程表には、森・洞窟・塔・城を一本の巡礼路として記したものがある。','人々の暮らしを支えた森や鉱山の記録には、魔物側にも同じ土地を守る理由があったと読める箇所がある。','古い王国文書では、魔物を一様な侵略者とせず、土地ごとの集団として記した時代があったらしい。'],
+      uncommon:['塔の観測記録には、人と魔物の区分より「継承される力」の方を重視した記述が残る。','王城の修復記録を追うと、人間側と魔物側の双方で同じ工房印が使われていた時期がある。','古い儀礼書では勇者と魔王を別系統ではなく、対になる役目として扱った痕跡が見つかる。'],
+      rare:['王家と魔王側の記録を重ねると、同じ紋章や職人名が現れ、完全に別の歴史とは言い切れない。','塔の上位記録には、魔王討伐が一度ではなく異なる年代に何度も繰り返された形跡がある。','継承記録の末尾には、倒された側の力が次の担い手へ移る仕組みを示す断片が残っている。']
+    },
+    back:{
+      common:['都市の備品台帳では、安全魔法ほど細かな制限があり、軍用品だけ別の規格で管理されている。','魔物発生地点と時空雑音の観測地点は、都内地図の上で何度も重なっている。','前線記録には、十代の術者だけが高出力装備へ適合した例が多いと記されている。'],
+      uncommon:['軍用化された魔法の資料には、供給元を示す欄だけ黒塗りになった頁が不自然なほど多い。','安全規格を外した術式ほど、外部からの供給量を示す数値が急激に増える傾向がある。','都庁周辺の設備図には、封鎖装置より「外部供給線」と読める配管の方が多く描かれている。'],
+      rare:['高出力術式の使用記録と、別世界の生命反応低下が同時刻に並ぶ報告が残されている。','最終計画書では、異世界との恒常接続が都市発展の前提として扱われ、代価についての記述だけがない。','時空の門を閉じる設備より、開いたまま維持するための制御系の方が遥かに大規模だった。']
+    },
+    crimson:{
+      common:['城下の古い台帳には、人名の横へ後から番号や「妖」の印を加えた頁が残っている。','妖怪の持ち物とされる品の一部に、かつての人間用兵籍と同じ管理印が見つかっている。','村や社の記録では、妖怪を討つ以前に「元の名」を知っていた者がいた形跡がある。'],
+      uncommon:['古い医療記録と妖怪の身体特徴が一致する例があり、分類の境界そのものが疑われている。','役所の資料には「再調整」「安定」という語があり、怪異の記録というより実験報告に近い。','山城へ送られた物資目録には、兵器より拘束具や薬剤の方が多く記録された時期がある。'],
+      rare:['山城地下の資料では「妖怪」より「変異体」という呼称の方が古く、逃走個体の追跡簿も残る。','逃走記録に並ぶ地名は、後世に妖怪の集落と呼ばれた場所といくつも一致している。','天下統一用の兵を作る計画は中止命令が見つからず、研究記録だけがある時点で途切れている。']
+    },
+    blue:{
+      common:['夏の記録には、同じ日付や同じ蝉の声が何度も書き直された頁が残っている。','誰もいない場所ほど、祭囃子や夕方のチャイムだけが鮮明に聞こえたという記録が多い。','少年の記憶にないはずの場所にも、彼の筆跡に似た落書きが残ることがある。'],
+      uncommon:['少年の記憶と成人の筆跡が同じ場所に重なり、どちらが先に書かれたか判別できない資料がある。','「楽しい夏」と書き直された記録ほど、人の名前だけが抜け落ちているという共通点がある。','夕暮れ以降の時刻記録には、夜になった後でも再び同じ夕方へ戻る不自然な頁がある。'],
+      rare:['少年と成人の筆跡が同じ記憶を別の言葉で記し、二人を別人とする方が不自然な資料が残る。','過去を楽しい夏へ修正した記録の末尾には、現在の自己まで失う危険が短く記されている。','懐かしい景色を完全に再現した資料ほど、そこにいるはずの家族や友人の記録だけが欠けている。']
+    },
+    silver:{
+      common:['雪原で拾われる古い札の多くに、すでに消えたサーカス団の番号印が残っている。','朽ちた展示品には、この雪の世界には存在しない青空や街路が描かれたものがある。','猛獣の拘束痕と団員の管理番号が同じ形式だったという古い記録が残っている。'],
+      uncommon:['団員名簿には人名より個体番号が多く、「廃棄」「再調整」という語が繰り返されている。','世界の外を描いた展示物ほど厳重に封じられ、閲覧記録だけが意図的に削られている。','サーカス団の帳簿では、出演順より生存確認や調整履歴の欄の方が細かく残されている。'],
+      rare:['帳簿には「本体」「投影」という分類がある一方、どちらを本物とするかの基準は途中から失われている。','世界の果ての記録には、同じ少女を二つの番号で同時に追跡した形跡が残っている。','二つの個体記録は途中から内容が入れ替わり、どちらが先に存在したのか判別できなくなっている。']
+    },
+    midori:{
+      common:['古い海図には、既知の群島より先へ伸びる消された航路線がいくつも残っている。','宝島を目指した船の記録では、金銀より羅針盤や機械部品を積んで帰った例が多い。','遺跡の装置は人名ではなく、特定の航路座標へ反応するように作られているらしい。'],
+      uncommon:['宝島の資料で「宝」と呼ばれているものは、金銀ではなく巨大な機械装置を指す場合がある。','黒帆船団の命令書には、海賊船長を倒すより「装置を壊さず奪え」とする記述が残る。','海図の端に記された第七の航路だけは、潮流ではなく星の配置を基準に描かれている。'],
+      rare:['最深部の座標記録は海上ではなく、複数世界の外側を流れる時空河を示している。','宝島に残された「世界を滅ぼす力」は兵器ではなく、世界の境界を越える装置そのものを指す可能性がある。','界外航路の記録では、海を離れた後も船が航行を続け、羅針盤だけが北を指さなくなる。']
+    },
+    cross:{
+      common:['異なる土地の刻印が同じ品に重なる例は少なくなく、旅人の移動だけでは説明できないものもある。','複数の土地で似た材質が見つかるが、どの工房にも製造記録が残っていない例がある。','地図の端を越えた場所を示す印は、世界ごとに形が違っても同じ位置関係を持つことがある。'],
+      uncommon:['六つの世界で似た材質や意匠が確認され、偶然の一致とするには数が多すぎる。','境界付近から回収された品ほど、異なる世界の温度・塩分・魔力痕が同時に残っている。','世界ごとの年代記を重ねると、同じ形の品がほぼ同時期に別々の場所へ現れている。'],
+      rare:['境界観測では、世界同士を隔てる壁より、その外側を流れる共通の時空河が示唆されている。','六つの座標を結ぶ線は一つの土地へ向かわず、すべて世界の外側にある同じ流れへ接続している。','来歴の最後に「境界外」とだけ記された品は、どの世界の収蔵庫にも少数ずつ存在している。']
+    }
+  };
+  function itemStoryFragment(it){
+    if(!it)return'';
+    const tag=it.storyTag&&COLLECTION_STORY_FRAGMENT_POOLS[it.storyTag]?it.storyTag:'neutral';
+    const tier=it.rarity==='rare'?'rare':it.rarity==='uncommon'?'uncommon':'common';
+    const pool=COLLECTION_STORY_FRAGMENT_POOLS[tag]?.[tier]||COLLECTION_STORY_FRAGMENT_POOLS.neutral[tier];
+    return pool[(Math.max(1,Number(it.id)||1)-1)%pool.length]||'';
+  }
+  const SECRET_RELIC_STORY_FRAGMENTS={
+    common_master:'紅の古い研究目録では、同じ識別形式が「兵」と「妖怪」の双方に用いられていた。',
+    uncommon_master:'サーカス団の帳簿では、この番号は出演順ではなく生存確認の管理欄へ紐づいている。',
+    rare_master:'六座標を結ぶ線は一つの地点で止まらず、その外側を流れる同じ時空河へ向かっている。',
+    front_sr_master:'塔の古い認証記録には、勇者と魔王を別資格として扱わない時代の痕跡がある。',
+    front_ssr_master:'羅針盤が示す座標の一部は、光の世界の地図には最初から存在しない。',
+    back_sr_master:'復号資料には、術式出力と別世界の生命反応低下が同時刻に並ぶ頁が残る。',
+    back_ssr_master:'「発展」の余白には、誰の生命を代価とするのかを書いた者はいない。',
+    world3_sr_master:'封印庫の管理票では、標本に人名ではなく実験番号が付されている。',
+    world3_ssr_master:'計画図の端には「逃走個体の再収容」という追記が何度も重ねられている。',
+    blue_sr_master:'二つの筆跡には長い年月の隔たりがあるはずなのに、紙の劣化だけは同じだった。',
+    blue_ssr_master:'円盤を見た者の記録には「懐かしいのに、自分の記憶ではない」という同じ言葉が残る。',
+    world4_sr_master:'結晶中の少女は、観察者より先に世界の外へ視線を向けることがある。',
+    world4_ssr_master:'二つの番号のどちらを原個体とするか、帳簿の記述は途中から逆転している。',
+    midori_sr_arcenciel:'航路図の第七線だけは海図の端で終わらず、星座のような座標へ続いている。',
+    midori_ssr_singularity:'固定座標を海図へ写すと、どの海域にも一致せず、地図そのものの外へ落ちる。',
+    end_clear_broken_sword:'折れた刃には勇者の紋章だった刻みと、後から重ねられた魔王印の両方が残る。',
+    end_book_graduation:'最後の頁だけは空白で、これ以後の世界を誰が記すのかは決められていない。'
+  };
+  function secretRelicStoryFragment(r){return SECRET_RELIC_STORY_FRAGMENTS[r?.id]||'';}
+
 // Hidden collection items double as achievement flags and future content switches.
 // They stay outside the normal 1-100 pool so the shop, normal rewards, and 100 / 100
 // completion counter keep their existing meaning.
@@ -1257,9 +1329,13 @@ function markWorldVisited(world){
       }
     }
   }
-  function showSecretRelicDetail(r){els.collectionDetail.innerHTML=`<div class="detail-no secret-label">SECRET RELIC</div><div class="detail-icon secret-relic-frame">${r.icon}</div><h3>${r.name}</h3><p class="detail-rarity secret-rarity">SECRET RELIC</p><div class="detail-divider"></div><p>${r.flavor}</p>`;}
+  function showSecretRelicDetail(r){
+    const fragment=secretRelicStoryFragment(r);
+    els.collectionDetail.innerHTML=`<div class="detail-no secret-label">SECRET RELIC</div><div class="detail-icon secret-relic-frame">${r.icon}</div><h3>${r.name}</h3><p class="detail-rarity secret-rarity">SECRET RELIC</p><div class="detail-divider"></div><p class="detail-description">${r.flavor}</p>${fragment?`<p class="detail-story-fragment"><span>記録断片</span>${fragment}</p>`:''}`;
+  }
   function showItemDetail(it,owned){
-    els.collectionDetail.innerHTML=owned?`<div class="detail-no">No.${String(it.id).padStart(3,'0')}</div><div class="detail-icon rarity-frame-${it.rarity}">${it.icon}</div><h3>${it.name}</h3><p class="detail-rarity rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><div class="detail-divider"></div><p>${it.flavor}</p>`:`<div class="detail-no">UNKNOWN</div><div class="detail-icon locked-detail-icon">?</div><h3>？？？？？？</h3><div class="detail-divider"></div><p>まだ手に入れていないアイテムです。説明文は入手後に解放されます。</p>`;
+    const fragment=owned?itemStoryFragment(it):'';
+    els.collectionDetail.innerHTML=owned?`<div class="detail-no">No.${String(it.id).padStart(3,'0')}</div><div class="detail-icon rarity-frame-${it.rarity}">${it.icon}</div><h3>${it.name}</h3><p class="detail-rarity rarity-${it.rarity}">${rarityLabel[it.rarity]}</p><div class="detail-divider"></div><p class="detail-description">${it.flavor}</p>${fragment?`<p class="detail-story-fragment"><span>記録断片</span>${fragment}</p>`:''}`:`<div class="detail-no">UNKNOWN</div><div class="detail-icon locked-detail-icon">?</div><h3>？？？？？？</h3><div class="detail-divider"></div><p>まだ手に入れていないアイテムです。説明文は入手後に解放されます。</p>`;
   }
   function monsterBookEntries(){
     if(mode==='end')return END_MONSTERS;
@@ -1301,6 +1377,26 @@ function markWorldVisited(world){
   const NORMAL_MONSTER_ROLE_LINES={"front":["は、周囲の環境に溶け込みながら旅人の様子をうかがう、ごく身近な住人だ。","は、人の残した道具や食べ物にも興味を示し、生活圏のすぐそばまで姿を見せる。","は、土地の魔力に適応した性質を持ち、近づく者へ小さな妨害を仕掛けてくる。","は、縄張り意識が強く、仲間や巣を守る時だけ普段以上の力を見せる。","は、その土地の異変が濃くなる頃に姿を見せる。昔から凶兆として語られてきた存在でもある。","は、地域の生態系で頂点に近い力を持ち、他の魔物さえ近寄らない一帯を支配する。","は、目撃記録そのものが少ない伝承級の個体。土地に積もった長い記憶をまとっている。"],"back":["は、都市の物陰へ素早く入り込み、人間の生活用品を自分の巣へ持ち去る。","は、看板や電線の影に潜み、周囲の魔力反応が強くなると突然姿を現す。","は、電子機器や信号へ干渉する性質を持ち、近くでは表示や音声に小さな乱れが生じる。","は、都市設備の動きと奇妙に同期し、まるで決められた巡回経路を守るように行動する。","は、時空の乱れを敏感に察知する個体。裂け目が近い場所ほど輪郭が鮮明になる。","は、軍用化された魔力にも耐える高出力個体で、通常装備では足止めすら難しい。","は、別世界の法則を強く残した希少個体。都市に存在するだけで周囲の現実感を歪ませる。"],"crimson":["は、里の暮らしに紛れるように現れ、人の目を盗んで小さないたずらを繰り返す。","は、昔話の妖怪そのものに見えるが、行動には妙に人間らしい癖が残っている。","は、山野の気配をまとい、獲物を追うより縄張りから侵入者を追い払うことを優先する。","は、道具や建物に執着し、決まった手順を何度も繰り返すような不可解な習性を持つ。","は、他の妖異より感情の揺れが激しく、怒りや悲しみに似た反応を見せることがある。","は、妖怪の群れをまとめるほどの力を持つ一方、古い人名に反応したという記録も残る。","は、土地の伝承では説明しきれない異常個体。身体の一部に人工物のような痕跡が見つかっている。"],"blue":["は、少年の記憶にある夏の生き物そのものに見えるが、近づくと敵意だけが不自然に強い。","は、遊び場の周囲を同じ順路で何度も巡り、まるで夏の一場面を再生しているように動く。","は、夕立や蝉時雨など特定の夏の音に反応し、その瞬間だけ輪郭が鮮明になる。","は、人のいない場所ほど活発になり、誰かがいたはずの空間を埋めるように姿を現す。","は、忘れたい記憶へ近づくほど強くなる。姿よりも、見た者が抱く既視感の方が恐ろしい。","は、少年期の憧れや恐れが極端な形で現れたような存在で、現実の生態から大きく外れている。","は、記憶の深部でだけ現れる異常個体。同じ姿を見た者でも、細部の証言が一致しない。"],"silver":["は、雪と氷の中で身を守る術を知り、音を立てず少女の進路を遠くから観察する。","は、寒さをものともせず活動し、雪面に残す足跡だけが途中で不自然に消えることがある。","は、凍った光や鏡面に反応し、自分の姿を別の場所へ映すような奇妙な行動を取る。","は、かつての演目や展示の動きを覚えているように、同じ仕草を正確に繰り返す。","は、サーカス団の気配が近づくほど攻撃的になる。首輪や糸の痕跡を持つ個体もいる。","は、雪原の猛獣さえ従わせるほど強く、この閉ざされた世界で独自の支配圏を持つ。","は、誰かの願いや失敗の記憶から形作られたような存在で、倒しても「本体」がどこにあるのか分からない。"],"midori":["は、港や船の残飯を狙って現れ、海賊たちの隙を見つけることだけは妙に上手い。","は、潮流を読む能力に長け、船より先に嵐や海流の変化を察知して移動する。","は、船具や積み荷を利用する知恵を持ち、単なる野生生物とは思えない行動を見せる。","は、縄張りへ入った船を執拗に追跡し、波や岩礁まで利用して進路を塞ぐ。","は、海底遺跡や古い航路に近い場所でのみ確認される。未知の装置へ強く反応する。","は、船団単位で警戒されるほどの強敵で、海賊の間では遭遇そのものが一つの武勇譚になる。","は、伝説の航路にだけ現れる希少個体。時折、海ではない景色を身体に映すことがある。"]};
   const STANDARD_BOSS_MONSTER_FLAVOR={"boss-front-1":"人々に恵みをもたらす森の最奥に根を張る古木の王。森を荒らす者には容赦しないが、小さな命を守る姿から「侵略者」とだけ呼ぶには複雑な存在でもある。","boss-front-2":"鉱山洞窟の巨大晶脈と共に生きる晶竜。採掘が深くなるほど活動を強め、土地の富と地底の生態が同じ場所でせめぎ合っていることを示す。","boss-front-3":"上位存在へ繋がる魔法塔を守る大魔導師。塔に蓄積された膨大な知識を扱い、勇者へ「魔王は一度倒せば終わる存在ではない」という長い戦いの影を示す。","boss-front-4":"かつて王族の城だった場所を守る黒騎将。勇者の迷いを見抜き、魔物にもまた生きるための正義があると刃を交えながら問いかける。","boss-front-5":"玉座で待つ魔王。人と魔物の対立が何代にもわたり循環してきたことを知り、その仕組みごと背負う存在として勇者の最後の決断を待つ。","boss-back-1":"渋谷のネオンと群衆の残響を縄張りに変えた巨大鼠。混乱した都市でいち早く環境へ適応し、魔物出現が一時的な事故ではないことを印象づける。","boss-back-2":"浅草の無数の灯りを束ねる鬼。祭りの景色を思わせる華やかさと凶暴さを併せ持ち、都市の日常が異界へ塗り替わる境目に立つ。","boss-back-3":"電波と時空雑音を喰らって成長した竜。高塔から放たれる信号の乱れを追うことで、魔物たちが遠い時空の彼方と繋がっている可能性を示す。","boss-back-4":"都庁の防衛線に立つ機甲騎将。都市の魔法技術と機械装甲を取り込んだ姿は、敵と味方の技術がすでに同じ場所へ集まりつつあることを物語る。","boss-back-5":"組織最高峰の戦績を持つ星晶魔導騎。軍事装甲をまとい、自らが信じる世界の発展のため時空の門を守る。少女とは力ではなく、他世界をどう扱うかという思想で対立する。","boss-crimson-1":"実りの里を荒らす大入道。雲のように膨れ上がる巨体で村を脅かすが、その動きには野生の妖怪というより、何かに駆り立てられているような不自然さがある。","boss-crimson-2":"山奥の社を支配する烏天狗。風と高低差を自在に使い、剣士を翻弄する。正気を失った妖怪たちの中でも、戦い方だけは異様なほど洗練されている。","boss-crimson-3":"古宿そのものを幻惑の舞台へ変える支配人。休息を求めた旅人へ偽りの安堵を見せ、現実と妖術の境目を巧みに入れ替える。","boss-crimson-4":"不気味な金属音と共に現れる鬼武者。剣士が知る「勘兵衛」の面影を残しながら、感情を失ったかのように正確な攻撃だけを繰り返す。","boss-crimson-5":"剣士へ妖怪退治を依頼した山城の主。妖怪騒動の裏側を知る立場にあり、天下統一のために積み重ねられた実験と犠牲を前にしてなお、自らの正義を曲げない。","boss-crimson-last":"将軍の右腕とされる剣聖。長く続く戦いの仕組みそのものを体現するような剣客で、互いの正義に決着がつかないまま、剣士との果てなき勝負へ踏み込む。","boss-blue-1":"夏草の王者として少年の前に立つ巨大カブトムシ。昆虫採集の思い出が、なぜ「倒すべき敵」として再生されているのかという最初の違和感を残す。","boss-blue-2":"秘密基地の周囲を支配する巨大な蜂王。楽しいはずの遊び場に友人の姿はなく、巣を守る羽音だけが夏の記憶を必要以上に鮮明にする。","boss-blue-3":"誰もいない夏祭りを終わらせまいとする祭主。灯りも囃子も賑やかなのに人だけが欠けた空間で、少年が読んだ怪異の記憶を次々と呼び起こす。","boss-blue-4":"昼と夜の境目に立つ時守。夏祭りの夜から突然夕暮れへ戻った時間の矛盾を抱え、帰るべき場所へ進もうとする少年を静かに引き止める。","boss-blue-5":"過去を楽しい夏へ書き換えようとする残像。辛い記憶を消せば救われると囁く一方、それを受け入れることが現在の自分を否定することにもなる。","boss-silver-1":"サーカス団の試験役として現れる怪力道化。世界の外へ行く資格を測ると言い、鉄球と笑い声で少女の夢そのものを試す。","boss-silver-2":"朽ちた美術館で少女を待つ奇術師。外の世界を知ることに価値があるのかと問い、鏡と幻影を使って進む理由を揺さぶる。","boss-silver-3":"雪嶺の猛獣を従える女性。少女と似た境遇の獣たちを力で支配し、「外など存在しない、この世界で生きればいい」と誘いかける。","boss-silver-4":"長く余興を失ったサーカス団を率いる団長。少女を「かつて捨てた失敗作」と呼び、世界の外を見る資格を最後の試験として突きつける。","boss-silver-5":"世界の果てで待つ、少女と瓜二つの写し身。どちらが本物か、どちらが夢から生まれた存在かを決めるため、鏡合わせの戦いを始める。","boss-midori-1":"港湾を取り仕切る総督。懸賞金を理由に出航を止め、海賊船長の野望を最初に阻む。港の秩序と自由な航海、そのどちらを選ぶかを力で示そうとする。","boss-midori-2":"群島そのものを喰らうほど巨大な海獣。宝の島への近道を塞ぐ自然の脅威で、船団に「危険を承知で進む覚悟」があるかを試す。","boss-midori-3":"遺跡島に眠る未知の装置を守る巨像。嵐を越えるためのオーパーツへ近づく者を、製造者の消えた今も黙々と排除し続ける。","boss-midori-4":"最強と名高い黒帆船団を率いる大提督。海賊船長と同じ宝を求め、奪うために艦隊戦を仕掛けるが、その存在はやがて宝島突破の計画にも組み込まれていく。","boss-midori-5":"宝島の最深部で時空を渡る機械を守る古き神。金銀財宝ではない「世界の外へ行く手段」を宝と呼ぶ少女に、引き返す最後の機会を与える。"};
   const ELITE_MONSTER_FLAVOR={"front-6":"森の奥で群れを導く白銀の狼。人里へ近づくことは少ないが、伐採が古木の根へ及ぶと必ず姿を現す。森を守る側にも明確な縄張りと秩序があることを示す個体だ。","front-7":"泉の近くでしか目撃されない虹羽の一角獣。羽根の色は見る者ごとにわずかに異なり、塔へ向かう旅人の前にだけ現れたという古い記録も残る。","front-13":"晶脈から切り出したような鎧をまとう騎士。胸甲の内側には古い採掘組合の紋章があり、地底の富を守る役目が人と魔物のどちらに属したのか判然としない。","front-14":"鉱山最深部の巨大晶脈と一体化した地底竜。採掘が進んだ年代ほど活動記録が増えており、土地の繁栄と地下の生態が同じ資源を奪い合ってきたことを物語る。","front-20":"塔の観測階に巣を持つ星詠みのグリフォン。夜空ではなく塔内部の光輪を見つめ続け、上層へ向かう者だけを選ぶように行く手を塞ぐ。","front-21":"決まった時刻に同じ回廊を巡回する魔導獣。同一の傷が数百年前の記録にも描かれており、塔の仕組みが一度きりではなく何度も同じ役目を繰り返してきた可能性を匂わせる。","front-27":"黒炎をまとう竜騎士。装甲には人間側の城塞技術と魔族側の術式が同時に使われ、城がどちらか一方だけの歴史で語れない場所だったことを示している。","front-28":"かつて城の礼拝堂に似た姿の像があったとされる堕天獣。現在は魔物として恐れられるが、古い石版では人々を守る翼ある存在として描かれている。","front-34":"玉座へ続く魔界で最も強い魔力へ従う竜。人か魔物かを見分ける様子はなく、ただ「継承された力」の持ち主を主として認める習性がある。","front-35":"魔王交代の前後にだけ出現記録が残る終焉獣。年代の異なる文書にほぼ同じ姿で描かれており、勇者と魔王の戦いが一度きりではなかったことを静かに示す。","back-6":"渋谷の魔力漏出地点を巡回する三頭獣。軍用魔法を使用した直後ほど攻撃性が増し、都市の魔力と異世界由来の生体反応が同じ波形を示すことがある。","back-7":"交差点の光を身体へ映す幻光獣。体表の模様は交通網ではなく、観測された時空裂け目の座標線と一致するという解析結果が残っている。","back-13":"浅草の灯りを束ねて操る百灯鬼。提灯の炎は燃料を使わず、周辺の魔導設備からわずかなエネルギーを奪って明るさを保っている。","back-14":"九本の尾すべてが異なる波長で発光する希少個体。尾先の光を結ぶと、都市上空に存在しないはずの円環状の座標が浮かび上がる。","back-20":"高塔の電波雑音を食べて成長する電磁竜。受信記録を逆算すると、雑音の一部は東京のどの送信設備からも発信されていない。","back-21":"都市規格と一致しない合金を含む天空機竜。機体の一部だけは現地の軍用規格で修復されており、魔物と人間の技術が戦場で混ざり始めた痕跡を残す。","back-27":"都庁防衛網と同期する都市守護機。敵味方の判定基準が一部欠損しており、命令元の欄には組織名ではなく「門の維持」とだけ記録されている。","back-28":"複数の都市設備を一体化して動く超機神。非常時手順書には『外部供給線の確保を最優先』という項目があるが、その供給元は黒塗りにされている。","back-34":"時空の門から直接魔力を受け取る騎士。こちら側で出力が上がるほど、門の向こうの観測値が低下するため、研究班の一部は測定そのものを中止したという。","back-35":"裂け目から漏れる魔力を食らい続ける次元獣。尾を噛む円環の姿は、エネルギーを使うほど別の場所から補われるこの世界の魔法体系そのものを思わせる。","crimson-6":"里の古狐の中でも長命な個体。眠っている時だけ人間の古い名前を口にするという記録があり、村の老人の一部はその名を知っていた。","crimson-7":"稲穂の鎧をまとう大将格。胴の内側から武家の兵籍札に似た木片が見つかっているが、妖怪に人間の軍籍がある理由は説明されていない。","crimson-13":"山中で旅人を襲う山姥。背中には古傷では説明できない規則的な縫合痕があり、薬草に対して妙に詳しい行動を見せる。","crimson-14":"巨大な土蜘蛛。腹部の硬い殻の下から金属製の小札が見つかり、そこには名ではなく番号だけが刻まれていた。","crimson-20":"古宿の宿帳に宿った妖異。頁には客名と並んで用途不明の番号列があり、後半になるほど人名が減って番号だけが残っている。","crimson-21":"百年使われたという巨大湯釜。内壁の下層には温度と時間を繰り返し記録した刻線があり、宿の道具というより実験設備に近い。","crimson-27":"城下の商いに紛れる百目の商人。集める品は金ではなく薬瓶や金属片が多く、帳簿には『安定』『再調整』など商取引とは思えない語が並ぶ。","crimson-28":"夜だけ現れる大型の鬼。手首と足首に古い拘束痕が残り、鐘の音に合わせて決まった動きを繰り返す様子は野生の妖怪には見えない。","crimson-34":"剣士の動きを寸分違わず模倣する影武者。古い武芸帳にある特定流派の型だけは教えられずとも完璧に再現し、失われた兵士の記憶を残しているように見える。","crimson-35":"中身の見えない修羅の鎧。誰も着ていないはずなのに脈動に似た振動があり、古い人名を呼ぶと一瞬だけ動きが止まるという証言がある。","blue-6":"すすき野を支配する巨大バッタ。虫取り網を見ると攻撃を止めて距離を取る習性があり、敵というより少年の記憶にある『捕まえる側と逃げる側』を再演しているようにも見える。","blue-7":"空高く飛び続ける巨大オニヤンマ。どれだけ時間が経っても翼に映る夏雲の形が変わらず、空そのものが同じ一瞬を繰り返しているように見える。","blue-13":"秘密基地の周囲を巡回する大カマキリ。地面に残る古いチョークの名前を避けて歩くが、その名前を呼べる者は少年のほかに誰もいない。","blue-14":"山中に現れる巨大なヤママユ。鱗粉が積もると子どもの筆跡に似た『またあした』の文字が浮かび、風が吹くとすぐ消える。","blue-20":"夜空の花火を丸ごと飲み込む怪異。人の歓声が聞こえる場所には現れず、誰もいない祭り会場ほど大きく成長する。","blue-21":"祭りの面を幾重にもまとった神格めいた怪異。並ぶ面のいくつかは少年が知っているはずの顔に見えるが、名前だけがどうしても思い出せない。","blue-27":"夕暮れの遊具から伸びる巨大な影。公園にいる者の数より影が一つ多く、日が沈むほど『帰る者』の方へゆっくり近づいてくる。","blue-28":"黄昏の道に現れる帰宅者。『みんな帰ろう』とだけ繰り返し、門を出た瞬間に足跡も声も消える。誰の家へ帰るのかを尋ねても答えない。","blue-34":"机いっぱいに宿題を広げた怪異。子どもの計算の下から成人の筆跡が透けて見え、同じ頁に二つの年代の記憶が重なっている。","blue-35":"散らかった部屋そのものが形を持ったような主。家族の生活用品を身にまとっているのに、人の声だけは一度も再現しない。","silver-6":"雪原を音もなく飛ぶ白梟。巣には古いサーカス券の半券が混じり、狼の群れが近づくとそれだけを雪の下へ隠す。","silver-7":"永久凍土の下から現れる巨大獣。首の周囲に古い輪状の傷があり、野生ではなく何かに長く繋がれていた時期があったらしい。","silver-13":"美術館の展示室を歩く白磁の獣。表面の絵付けには、この雪の世界には存在しない青空と街路が描かれている。","silver-14":"完成しないまま凍りついた絵画の怪異。見るたび少女の顔が少しずつ人形に近づき、画家の署名だけが最後まで空白のまま残る。","silver-20":"雪嶺の吹雪をまとって飛ぶ竜。鱗の下には細い拘束具の痕があり、猛獣使いの笛に似た音へ過敏に反応する。","silver-21":"山頂付近だけに現れる巨大な白鳥。翼の羽根が不自然なほど同じ長さに切り揃えられ、野生個体には見られない訓練痕を残す。","silver-27":"大天幕で演目を繰り返す白獅子。客席が空でも拍手の合図を待ち、鳴らないベルに合わせて同じ跳躍を何度でもやり直す。","silver-28":"氷漬けの装飾をまとった象王。皮膚の下に薄れた演目番号が残り、何十年も前に終わったはずの興行順を今も守っている。","silver-34":"銀色の糸で人形を操る正体不明の存在。糸を辿っても天井や手元には繋がらず、最後は何もない空間へ消えていく。","silver-35":"舞台道具と壊れた鏡が集まって生まれた終幕の獣。鏡面には狼少女が二人映り、一方だけがこちらの動きよりわずかに早く動く。","midori-6":"港の用心棒として知られる大型個体。腰布の裏から海賊船長の懸賞書の切れ端が見つかり、誰かに狙う相手を指定されていた形跡がある。","midori-7":"金貨袋を背負う怪盗。実際には金貨よりコンパスや海図ばかりを盗み、港の外へ向かう航路情報を集めている。","midori-13":"岩礁を縄張りにする巨大鮫。体に刺さった古い船板の材質は、この海域のどの造船所でも使われていない。","midori-14":"群島を渡り歩く大海亀。甲羅の傷を線で結ぶと既知の潮流図と一致するが、その一部は海図の端より先へ続いている。","midori-20":"遺跡の祭壇を守る翠晶の守護者。特定のオーパーツを近づけると一瞬だけ攻撃を止め、持ち主を照合するような光を放つ。","midori-21":"石碑の溝に巣を作る希少な番虫。背甲の歯形は遺跡内部の巨大歯車と同じ間隔で、装置の一部として設計された可能性がある。","midori-27":"黒帆船団の鉤爪水兵。装備の内側には『船長を仕留めるな、装置を奪え』という短い命令文が刻まれている。","midori-28":"黒鉄砲撃長と呼ばれる砲戦の達人。火力より航路封鎖を優先し、海賊船長が持つオーパーツを壊さない射線だけを選ぶ。","midori-34":"秘宝島深部の宝物守。金銀には反応せず、円環状の機械へ近づく者だけを排除するため、『宝』という呼び名自体が後世の誤解だった可能性がある。","midori-35":"七つの海を渡ったと噂される亡霊船長。航海日誌にはこの世界の海図にない『第七の潮路』が記され、最後の頁だけ星空の図で終わっている。"};
+  const MONSTER_STORY_FRAGMENT_POOLS={
+    front:{surface:['森の古い掟では、人か魔物かより「森を傷つけたか」が争いの基準だったという。','鉱山の帳簿には、晶脈を資源ではなく「地底の生活圏」として記した頁が残る。','塔の観測記録には、同じ魔王討伐が異なる年代に何度も記されている。'],deep:['王城の石工印には、人間側と魔物側の双方で使われた同じ工房名が見つかる。','古い認証式では、勇者と魔王は別系統ではなく「継承者」として一括されている。','玉座の継承記録は、魔王が倒れるたび次の因子継承が始まることを示している。']},
+    back:{surface:['都市の安全魔法と軍用術式は、基礎配列の大半を共有している。','魔物発生地点と時空雑音の観測地点は、地図上で何度も重なっている。','前線記録では、十代の術者だけが高出力装備へ適合した例が多い。'],deep:['高出力魔法の使用直後、別世界側の生命反応が落ちる記録が残る。','都庁の門は封鎖設備ではなく、外部供給線として設計された形跡がある。','最終計画書では、異世界との恒常接続が都市発展の前提として扱われている。']},
+    crimson:{surface:['古い村帳には、人名の横へ後から「妖」の印を加えた頁が残る。','城下の医療記録と妖怪の身体特徴が一致する例が複数報告されている。','鐘や笛に反応して同じ動きを繰り返す個体が、各地で目撃されている。'],deep:['山城の資料では「妖怪」より「変異体」という呼称の方が古い。','逃走個体の追跡簿には、後に妖怪の集落となった地名が並んでいる。','兵を作る研究の中止命令は見つからず、記録だけが途中で途切れている。']},
+    blue:{surface:['同じ夏の日付が何度も書き直された日記が、町の各所で見つかる。','誰もいない場所ほど、祭囃子や蝉の声だけが鮮明に残るという。','少年の記憶にないはずの場所にも、彼の筆跡に似た落書きが残る。'],deep:['少年と成人の筆跡が同じ記憶を別の言葉で記した資料がある。','「楽しい夏」へ書き換えた記録ほど、人の名前だけが抜け落ちている。','現実を消して作った安寧は、現在の自分の記憶まで薄くする危険があると記されている。']},
+    silver:{surface:['雪原で見つかる古い札の多くに、サーカス団の個体番号が残る。','朽ちた展示品には、この世界には存在しない青空や街が描かれている。','猛獣の拘束痕と団員の管理番号が同じ形式だったという記録がある。'],deep:['団の帳簿では「廃棄」「再調整」「投影」が人名より頻繁に使われている。','世界の果ての記録には、同じ少女を二つの番号で同時に追跡した形跡がある。','「本体」と「投影」の欄は途中から入れ替わり、どちらが先か分からなくなっている。']},
+    midori:{surface:['古い航海日誌には、海図の外へ続く「第七の潮路」が何度も記されている。','宝島を目指した船の多くは、金銀よりコンパスや海図ばかり集めていたという。','遺跡の装置は持ち主ではなく、特定の航路座標へ反応することがある。'],deep:['宝島の最深部で「宝」と呼ばれたものは、世界間航行装置そのものだった。','装置が固定した座標は海上ではなく、複数世界の外側を指している。','時空河へ出た船の記録では、羅針盤が一度も北を指していない。']},
+    end:{surface:['時空河では、過去世界の景色と敵の記憶が同じ場所へ重なって現れる。','同じ敵でも、元の世界より強い個体が別の支流から流れ着くことがある。','世界座標が近づくほど、異なる土地の音や光が一つの戦場へ混ざり始める。'],deep:['五つの支流を示す観測線は、最後には光の世界の旧座標へ収束している。','圧縮された座標では、過去の勝敗そのものが別の形で再演される。','終端記録には「争いをなくすため世界を一つにする」という計画の断片が残る。']}
+  };
+  function monsterStoryFragment(m){
+    if(!m)return'';
+    // A few END records are already deliberately long enough to function as the full archive entry.
+    // Do not pad those just to fill desktop space.
+    if(monsterFlavor(m).length>150)return'';
+    const world=(m.world==='end'||mode==='end')?'end':(m.world||mode),set=MONSTER_STORY_FRAGMENT_POOLS[world];if(!set)return'';
+    const pool=(m.boss||Number(m.rarity)>=3)?set.deep:set.surface;
+    const stage=Math.max(0,Number(m.stage)||0),idNum=Number(String(m.id||'').split('-').pop())||1;
+    return pool[(stage+idNum+(m.boss?1:0))%pool.length]||'';
+  }
+
   function normalMonsterFlavor(m){
     if((m.rarity===4||m.rarity===5)&&ELITE_MONSTER_FLAVOR[m.id])return ELITE_MONSTER_FLAVOR[m.id];
     const world=m.world||mode;
@@ -1342,7 +1438,9 @@ function markWorldVisited(world){
     els.monsterCardImage.onerror=()=>{els.monsterCardImage.onerror=null;els.monsterCardImage.src=monsterPlaceholder(m,!!m.boss);};els.monsterCardImage.src=`./assets/${m.img}`;
     els.monsterCardWorld.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':'終の世界';
     els.monsterCardStage.textContent=m.endFinalBoss?'FINAL':m.lastBoss?'LAST BOSS':m.sourceWorld?`${END_REGION_CONFIG[m.sourceWorld]?.name||'終の領域'}`:`STAGE ${m.stage+1}`;
-    els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;els.monsterCardText.textContent=monsterFlavor(m);
+    els.monsterCardEncounter.textContent=`遭遇 ${effectiveEncounterCount(mode,m.id)||1}`;
+    els.monsterCardText.textContent=monsterFlavor(m);
+    const fragment=monsterStoryFragment(m);if(fragment){const span=document.createElement('span');span.className='monster-story-fragment';span.textContent=fragment;els.monsterCardText.appendChild(span);}
     const slimeLike=!m.boss&&m.name.includes('スライム');els.monsterCard.className=`monster-card rarity-monster-${m.rarity}${m.boss?' boss-card':''}${slimeLike?' slime-card':''}`;els.monsterCardOverlay.hidden=false;
   }
   function closeMonsterCard(){els.monsterCardOverlay.hidden=true;}
@@ -1455,131 +1553,223 @@ function markWorldVisited(world){
     const choices=shuffle([answer,...wrong.slice(0,2)]);
     return{expression:parts.text,displayExpression:parts.display||parts.text,htmlExpression:parts.html,answer,choices,...extra};
   }
+  // END WORLD question generators: every route stays inside a Grade-6 arithmetic band.
+  // The source world controls the *kind* of thinking; route rank only increases composition/steps.
+  // Keep prompts compact because END must remain playable on 320px portrait layouts.
+  function endFracAdd(a,b){return normFraction(a.n*b.d+b.n*a.d,a.d*b.d);}
+  function endFracSub(a,b){return normFraction(a.n*b.d-b.n*a.d,a.d*b.d);}
+  function endFracMul(a,b){return normFraction(a.n*b.n,a.d*b.d);}
+  function endFracDiv(a,b){return normFraction(a.n*b.d,a.d*b.n);}
+  function endFracSpan(f){return fractionHtml(normFraction(f.n,f.d));}
+  function endFracText(f){const x=normFraction(f.n,f.d);return `${x.n}/${x.d}`;}
+
+  // 翠：条件整理・単位・図形・規則性。単純換算だけでは終わらせない。
   function makeEndMidoriQuestion(step=stageQuestion){
     const raw=Math.max(0,Number(step)||0),hard=raw>=10,k=raw%10;
     if(k===0){
-      const cup=pick(hard?[250,300,400,500]:[300,400,500]),count=pick(hard?[8,10,12,15,16]:[6,8,10,12]),totalMl=cup*count,l=normalizeChoiceNumber(totalMl/1000);
-      return endNumericQuestion(`${l}Lの水を${cup}mLずつ分ける。何本分？`,count,[totalMl/cup+1,Math.max(1,count-1),totalMl/100]);
+      for(let i=0;i<200;i++){
+        const cup=pick(hard?[200,250,300,400]:[200,250,300]),d=pick([4,5,8]),n=rand(1,Math.min(3,d-1)),bottles=pick(hard?[8,10,12,15,16]:[6,8,10,12]);
+        const remain=cup*bottles,total=remain*d/(d-n);if(!Number.isInteger(total)||total<1500||total>8000)continue;
+        const l=normalizeChoiceNumber(total/1000),answer=bottles;
+        return endNumericQuestion(`${l}Lの${n}/${d}を使い、残りを${cup}mLずつ分ける。何本分？`,answer,[Math.round(total/cup),Math.max(1,answer-1),answer+2]);
+      }
     }
     if(k===1){
-      const km=pick(hard?[4.2,5.6,6.4,7.5]:[2.4,3.6,4.8,5.2]),m=pick([650,750,850,950]),answer=Math.round(km*1000-m);
-      return endNumericQuestion(`${km}kmの道のうち${m}m進んだ。残りは？m`,answer,[Math.round(km*1000+m),Math.round(km*100-m),Math.max(0,answer-100)]);
+      const total=pick(hard?[4800,5600,6400,7200]:[3200,3600,4800,6000]),d=pick([4,5,8]),n=pick([1,2,3].filter(v=>v<d)),walked=total*n/d;
+      if(!Number.isInteger(walked))return makeEndMidoriQuestion(raw);
+      const answer=total-walked;
+      return endNumericQuestion(`${normalizeChoiceNumber(total/1000)}kmの道を${n}/${d}進んだ。残りは何m？`,answer,[walked,total,Math.max(0,answer-100)]);
     }
     if(k===2){
-      const w=pick(hard?[14,16,18]:[10,12,14]),h=pick(hard?[10,12,14]:[8,10,12]),cw=pick([2,3,4]),ch=pick([3,4,5]),answer=w*h-cw*ch;
-      return endNumericQuestion(`たて${h}cm、横${w}cmの長方形から${ch}cm×${cw}cmを切り取った。面積は？cm²`,answer,[w*h,cw*ch,w*h+cw*ch]);
+      const w=pick(hard?[18,20,24,28]:[16,18,20,24]),h=pick(hard?[12,15,16,18]:[10,12,14,16]),cw=pick([2,3,4,5]),ch=pick([3,4,5,6]),cuts=hard?2:pick([1,2]),answer=w*h-cw*ch*cuts;
+      return endNumericQuestion(`縦${h}cm、横${w}cm。${ch}×${cw}cmを${cuts}か所切り取る。残りの面積は？`,answer,[w*h,w*h-cw*ch,cw*ch*cuts]);
     }
     if(k===3){
-      const a=pick(hard?[12,14,16]:[8,10,12]),b=pick([5,6,7]),c=pick(hard?[8,10,12]:[5,6,8]),d=pick([3,4,5]),answer=a*b+c*d;
-      return endNumericQuestion(`${a}×${b}cmの長方形と${c}×${d}cmの長方形を重ねずにつないだ。面積は？cm²`,answer,[a*b,c*d,a*b-c*d]);
+      const a=pick(hard?[12,15,18,20]:[10,12,15,16]),b=pick([6,8,10,12]),c=pick([4,5,6,8]),d=pick([4,5]),n=pick([1,2,3].filter(v=>v<d)),volume=a*b*c,answer=volume*n/d;
+      if(!Number.isInteger(answer))return makeEndMidoriQuestion(raw);
+      return endNumericQuestion(`${a}×${b}×${c}cmの直方体。体積の${n}/${d}は何cm³？`,answer,[volume,volume-answer,answer*d]);
     }
     if(k===4){
-      const first=pick([2,3,4,5]),diff=pick(hard?[4,5,6]:[2,3,4]),n=pick(hard?[18,20,24,25]:[12,15,16,18]),answer=first+(n-1)*diff;
+      const first=pick([2,3,4,5,7]),diff=pick(hard?[5,6,7,8]:[3,4,5,6]),n=pick(hard?[24,25,30,32]:[15,18,20,24]),answer=first+(n-1)*diff;
       return endNumericQuestion(`${first}, ${first+diff}, ${first+2*diff}, … の${n}番目は？`,answer,[first+n*diff,first+(n-2)*diff,n*diff]);
     }
     if(k===5){
-      const n=pick(hard?[12,14,16,18]:[8,9,10,12]),answer=n*(n+1)/2;
-      return endNumericQuestion(`1番目1個、2番目2個…${n}番目${n}個。全部で何個？`,answer,[n*n,n*(n-1)/2,answer-n]);
+      const n=pick(hard?[16,18,20,24]:[12,14,16,18]),answer=n*(n+1)/2;
+      return endNumericQuestion(`1個、2個、3個…${n}個と並べる。全部で何個？`,answer,[n*n,n*(n-1)/2,answer-n]);
     }
     if(k===6){
-      const n=pick(hard?[7,8,9]:[5,6,7]),all=n*(n-1)/2,forbidden=hard?2:1,answer=all-forbidden;
-      const condition=hard?'AとB、CとDの2組は同時に選べない':'AとBは同時に選べない';
-      return endNumericQuestion(`${n}人から2人を選ぶ。${condition}。何通り？`,answer,[all,n*(n-1),Math.max(1,answer-1)]);
+      const n=pick(hard?[8,9,10]:[7,8,9]),all=n*(n-1)/2,forbidden=hard?2:1,answer=all-forbidden;
+      return endNumericQuestion(`${n}人から2人を選ぶ。指定された${forbidden}組は選べない。何通り？`,answer,[all,all-forbidden-1,n*(n-1)]);
     }
     if(k===7){
-      const right=hard?pick([3,4,5]):pick([2,3,4]),up=hard?pick([3,4]):pick([2,3]),answer=combination(right+up,right);
-      return endNumericQuestion(`右に${right}回、上に${up}回動く最短経路は何通り？`,answer,[right*up,Math.max(1,answer-right),answer+up]);
+      const right=hard?pick([4,5]):pick([3,4]),up=hard?pick([3,4]):pick([2,3]),answer=combination(right+up,right);
+      return endNumericQuestion(`右${right}回、上${up}回の最短経路は何通り？`,answer,[right*up,Math.max(1,answer-right),answer+up]);
     }
     if(k===8){
-      const lo=hard?40:20,hi=hard?70:40,mul=hard?6:4,candidates=[];for(let x=lo+1;x<hi;x++)if(x%2===0&&x%mul===0)candidates.push(x);
-      const answer=pick(candidates);let wrong1=answer+2<hi?answer+2:answer-2;if(wrong1%mul===0)wrong1+=(wrong1+2<hi?2:-2);let wrong2=answer+1<hi?answer+1:answer-1;if(wrong2%2===0)wrong2+=(wrong2+1<hi?1:-1);
-      return{expression:`偶数で、${lo}より大きく${hi}より小さく、${mul}の倍数。どれ？`,answer,choices:shuffle([answer,wrong1,wrong2])};
+      for(let i=0;i<200;i++){
+        const a=pick(hard?[6,8,9,12]:[4,6,8]),b=pick(hard?[8,10,12,15]:[6,8,10]),l=a*b/gcd(a,b),lo=l*pick([1,2,3])-rand(3,8),hi=lo+pick([18,24,30,36]);
+        const candidates=[];for(let x=lo+1;x<hi;x++)if(x%a===0&&x%b===0)candidates.push(x);if(candidates.length!==1)continue;
+        const answer=candidates[0],pool=shuffle([...Array(hi-lo-1)].map((_,j)=>lo+1+j).filter(v=>v!==answer));
+        return{expression:`${lo}より大きく${hi}より小さい、${a}と${b}の両方の倍数は？`,answer,choices:shuffle([answer,...pool.slice(0,2)])};
+      }
     }
-    if(Math.random()<.5){
-      const labels=shuffle(hard?['A','B','C','D']:['A','B','C']);
-      if(hard){const[a,b,c,d]=labels,answer=`${a}→${c}→${b}→${d}`;return{expression:`${a}は${b}より先。${c}は${a}より後で${b}より先。${d}は${c}より後。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}→${d}`,`${a}→${b}→${c}→${d}`])};}
-      const[a,b,c]=labels,answer=`${a}→${c}→${b}`;return{expression:`${a}は${b}より前。${c}は${a}より後で${b}より前。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}`,`${b}→${c}→${a}`])};
-    }
-    const colors=shuffle(['赤','青','緑']),answer=colors[2];
-    return{expression:hard?`${colors[0]}・${colors[1]}・${colors[2]}の箱。宝は${colors[0]}ではない。${colors[1]}には鍵があり、宝と鍵は別。宝は？`:`${colors[0]}・${colors[1]}・${colors[2]}の箱。宝は${colors[0]}でも${colors[1]}でもない。宝は？`,answer,choices:shuffle(colors)};
+    const labels=shuffle(['A','B','C','D']),[a,b,c,d]=labels,answer=`${a}→${c}→${b}→${d}`;
+    return{expression:`${a}は${b}より先。${c}は${a}より後で${b}より先。${d}は最後。正しい順は？`,answer,choices:shuffle([answer,`${c}→${a}→${b}→${d}`,`${a}→${b}→${c}→${d}`])};
   }
+
+  // 紅：計算順序・小数・分数。文章量ではなく式構造で難度を作る。
   function makeEndCrimsonQuestion(step=stageQuestion){
     const raw=Math.max(0,Number(step)||0),hard=raw>=10,k=raw%10;
-    if(k===0)return exactDivision(hard?'threeByTwoHard':'threeByTwo');
+    if(k===0){
+      const div=pick([1.2,1.5,2.4,2.5]),q=pick(hard?[24,30,36,40,48]:[12,16,20,24,30]),a=normalizeChoiceNumber(div*q),c=pick([2.4,3.6,4.8,6.4]),answer=normalizeChoiceNumber(q-c);
+      return endNumericQuestion(`${a} ÷ ${div} − ${c}`,answer,[normalizeChoiceNumber(a/(div-c)),q,normalizeChoiceNumber(q+c)]);
+    }
     if(k===1){
-      const a=pick(hard?[18.6,24.8,35.7,42.6]:[12.4,16.8,21.5,28.6]),b=pick([3.7,4.8,5.6,6.9]),c=pick([1.5,2.4,3.2,4.5]),answer=normalizeChoiceNumber(a+b-c);
-      return endNumericQuestion(`${a} + ${b} − ${c}`,answer,[normalizeChoiceNumber(a+b+c),normalizeChoiceNumber(a-b-c),normalizeChoiceNumber(answer+1)]);
+      const a=pick(hard?[18.4,24.6,32.8,41.5]:[12.4,16.8,21.6,28.5]),b=pick([2.4,3.6,4.5,5.8]),m=pick(hard?[2.5,3.2,4.5]:[1.5,2.4,3.2]),answer=normalizeChoiceNumber((a-b)*m);
+      return endNumericQuestion(`(${a} − ${b}) × ${m}`,answer,[normalizeChoiceNumber(a-b*m),normalizeChoiceNumber((a+b)*m),normalizeChoiceNumber(a-b)]);
     }
     if(k===2){
-      const a=pick(hard?[4.8,6.4,7.5,8.4]:[2.4,3.6,4.5,5.2]),m=pick(hard?[8,9,12]:[4,5,6,8]),c=pick([1.2,2.4,3.6,4.8]),answer=normalizeChoiceNumber(a*m+c);
-      return endNumericQuestion(`${a} × ${m} + ${c}`,answer,[normalizeChoiceNumber((a+c)*m),normalizeChoiceNumber(a+m+c),normalizeChoiceNumber(a*m-c)]);
+      const a=pick(hard?[6.4,7.5,8.4,9.6]:[4.8,5.6,6.4,7.2]),b=pick(hard?[8,12,15]:[5,6,8,10]),d=pick([1.2,1.5,2.4]),q=pick([4,5,6,8]),c=normalizeChoiceNumber(d*q),answer=normalizeChoiceNumber(a*b+c/d);
+      return endNumericQuestion(`${a} × ${b} + ${c} ÷ ${d}`,answer,[normalizeChoiceNumber((a*b+c)/d),normalizeChoiceNumber(a*(b+c/d)),normalizeChoiceNumber(a*b+c)]);
     }
-    if(k===3||k===7){
-      const d=pick(hard?[10,12,15,16]:[8,10,12]),n1=pick([3,4,5,6]),n2=pick([1,2,3]),n3=pick([1,2]),minus=k===7;
-      let num=minus?n1+n2-n3:n1+n2+n3;if(num<=0||num===d)num+=1;const ans=normFraction(num,d);
-      const op2=minus?'−':'+';const text=`${n1}/${d} + ${n2}/${d} ${op2} ${n3}/${d}`;
-      const html=`${fractionHtml({n:n1,d})}<span class="fraction-op">+</span>${fractionHtml({n:n2,d})}<span class="fraction-op">${op2}</span>${fractionHtml({n:n3,d})}<span class="fraction-op">=</span><span class="fraction-q">?</span>`;
-      return endFractionQuestion({text,html},ans,[normFraction(Math.max(1,num-1),d)]);
+    if(k===3){
+      const a=normFraction(pick([2,3,4,5]),pick([5,7,8,9])),b=normFraction(pick([2,3,4]),pick([5,6,7,8])),c=normFraction(1,pick([4,5,6,8])),p=endFracMul(a,b),ans=endFracAdd(p,c);
+      const text=`${endFracText(a)} × ${endFracText(b)} + ${endFracText(c)}`,html=`${endFracSpan(a)}<span class="fraction-op">×</span>${endFracSpan(b)}<span class="fraction-op">+</span>${endFracSpan(c)}<span class="fraction-op">=</span><span class="fraction-q">?</span>`;
+      return endFractionQuestion({text,html},ans,[endFracMul(endFracAdd(a,b),c),endFracAdd(a,c)]);
     }
     if(k===4){
-      const a=pick(hard?[480,640,720,840]:[240,360,480,600]),b=pick([12,15,18,24]),c=pick([6,8,10,12]),answer=a-b*c;
-      return endNumericQuestion(`${a} − ${b} × ${c}`,answer,[(a-b)*c,a-(b+c),a-b]);
+      for(let i=0;i<200;i++){
+        const a=normFraction(pick([3,4,5,6,7]),pick([5,6,7,8,9])),b=normFraction(pick([1,2,3]),pick([4,5,6,7])),c=normFraction(1,pick([5,6,8,10])),q=endFracDiv(a,b),ans=endFracSub(q,c);if(ans.n<=0)continue;
+        const text=`${endFracText(a)} ÷ ${endFracText(b)} − ${endFracText(c)}`,html=`${endFracSpan(a)}<span class="fraction-op">÷</span>${endFracSpan(b)}<span class="fraction-op">−</span>${endFracSpan(c)}<span class="fraction-op">=</span><span class="fraction-q">?</span>`;
+        return endFractionQuestion({text,html},ans,[q,endFracAdd(q,c)]);
+      }
     }
     if(k===5){
-      const d=pick(hard?[18,24,32,36]:[12,15,18,20]),q=pick(hard?[14,16,18,20]:[8,10,12,14]),total=d*q,extra=pick([15,20,25,30]),answer=q+extra;
-      return endNumericQuestion(`${total} ÷ ${d} + ${extra}`,answer,[total/(d+extra),q,answer+d]);
+      const a=pick(hard?[48,60,72,84]:[30,36,42,48]),b=pick([1.2,1.5,2.4,2.5]),c=pick([8,10,12,15]),d=pick([2.4,3.6,4.8]),answer=normalizeChoiceNumber(a-b*c+d);
+      if(answer<=0)return makeEndCrimsonQuestion(raw);
+      return endNumericQuestion(`${a} − ${b} × ${c} + ${d}`,answer,[normalizeChoiceNumber((a-b)*c+d),normalizeChoiceNumber(a-b*(c+d)),normalizeChoiceNumber(a-b*c-d)]);
     }
     if(k===6){
-      const a=pick([2.4,3.2,4.8,6.4]),m=pick(hard?[10,12,15]:[5,6,8,10]),d=pick([2,4,5]),answer=normalizeChoiceNumber(a*m/d);
-      return endNumericQuestion(`${a} × ${m} ÷ ${d}`,answer,[normalizeChoiceNumber(a*(m/d+1)),normalizeChoiceNumber(a*m),normalizeChoiceNumber(answer*10)]);
+      const d=pick([4,5,8,10]),q=pick(hard?[120,160,180,200]:[60,80,100,120]),a=d*q,c=pick([12,18,24,30]),m=pick([3,4,5,6]),e=pick([8,12,16,20]),answer=a/d+c*m-e;
+      return endNumericQuestion(`${a} ÷ ${d} + ${c} × ${m} − ${e}`,answer,[(a/d+c)*(m-e),a/(d+c)*m-e,a/d+c+m-e]);
+    }
+    if(k===7){
+      const a=normFraction(1,pick([2,3,4])),b=normFraction(1,pick([3,4,5,6])),c=normFraction(pick([2,3]),pick([4,5,6,8])),sum=endFracAdd(a,b),ans=endFracMul(sum,c);
+      const text=`(${endFracText(a)} + ${endFracText(b)}) × ${endFracText(c)}`,html=`<span class="fraction-paren">(</span>${endFracSpan(a)}<span class="fraction-op">+</span>${endFracSpan(b)}<span class="fraction-paren">)</span><span class="fraction-op">×</span>${endFracSpan(c)}<span class="fraction-op">=</span><span class="fraction-q">?</span>`;
+      return endFractionQuestion({text,html},ans,[endFracAdd(a,endFracMul(b,c)),endFracMul(a,c)]);
     }
     if(k===8){
-      const a=pick(hard?[900,1200,1500]:[480,600,720]),d=pick([6,8,10,12]),q=a/d,c=pick([24,36,48,60]),m=pick([2,3,4]),answer=q+c*m;
-      return endNumericQuestion(`${a} ÷ ${d} + ${c} × ${m}`,answer,[(a/d+c)*m,a/(d+c)*m,q+c+m]);
+      const a=pick(hard?[900,1200,1500,1800]:[480,600,720,900]),b=pick([80,120,160,200]),c=pick([20,30,40,50]),m=pick([2,3,4,5]),answer=a-(b-c)*m;
+      return endNumericQuestion(`${a} − (${b} − ${c}) × ${m}`,answer,[(a-b+c)*m,a-b-c*m,a-(b+c)*m]);
     }
-    const a=pick([12.5,18.4,24.6,32.8]),b=pick([2,4,5,8]),c=pick([1.2,2.4,3.6]),answer=normalizeChoiceNumber(a+c*b);
-    return endNumericQuestion(`${a} + ${c} × ${b}`,answer,[normalizeChoiceNumber((a+c)*b),normalizeChoiceNumber(a+c+b),normalizeChoiceNumber(answer-c)]);
+    const a=pick(hard?[1200,1600,2000,2400]:[600,800,1000,1200]),d=pick([4,5,8,10]),n=pick([1,2,3]),mult=pick([400,600,800,1000,1200]),term=mult*n/d;if(!Number.isInteger(term))return makeEndCrimsonQuestion(raw);const answer=a+term;
+    const text=`${a} + ${n}/${d} × ${mult}`,html=`${a}<span class="fraction-op">+</span>${endFracSpan({n,d})}<span class="fraction-op">×</span>${mult}<span class="fraction-op">=</span><span class="fraction-q">?</span>`;
+    return endNumericQuestion(text,answer,[a+mult,a+n*mult,Math.max(0,a-term)],{displayExpression:`${text} = ?`,htmlExpression:html});
   }
+
+  // 銀：小6の正統派（分数・比・円・比例/反比例）を一段複合する。
   function makeEndSilverQuestion(step=stageQuestion){
     const raw=Math.max(0,Number(step)||0),hard=raw>=10,k=raw%10;
-    if(k===0)return fractionProductQuestion('×',true,hard);
-    if(k===1)return fractionProductQuestion('×',false,hard);
-    if(k===2)return fractionProductQuestion('÷',true,hard);
-    if(k===3)return fractionProductQuestion('÷',false,hard);
-    if(k===4)return ratioQuestion(hard?'split':'missing');
-    if(k===5)return ratioQuestion('split');
-    if(k===6)return circleQuestion(Math.random()<.5?'areaDiameter':'areaRadius',hard);
-    if(k===7)return proportionalQuestion(hard?'use':'hole');
-    if(k===8)return inverseQuestion(hard?'use':'hole');
-    const a=pick(hard?[48,60,72,84]:[30,36,42,48]),r1=pick([2,3,4]),r2=pick([3,4,5]),sum=r1+r2,unit=a/sum;
-    if(Number.isInteger(unit))return endNumericQuestion(`${a}個を ${r1}:${r2} に分ける。多い方は何個？`,unit*Math.max(r1,r2),[unit*Math.min(r1,r2),a/sum,a-Math.max(r1,r2)]);
-    return ratioQuestion('split');
+    if(k===0)return fractionProductQuestion('×',false,true);
+    if(k===1)return fractionProductQuestion('÷',false,true);
+    if(k===2){
+      for(let i=0;i<200;i++){
+        const r1=pick([2,3,4]),r2=pick([3,4,5,6]),unit=pick(hard?[8,10,12,15]:[6,8,10,12]),total=(r1+r2)*unit,use=pick([4,6,8,10]),large=Math.max(r1,r2)*unit,answer=large-use;if(answer<=0)continue;
+        return endNumericQuestion(`全部${total}個を${r1}:${r2}に分ける。多い方から${use}個使うと残りは？`,answer,[large,Math.min(r1,r2)*unit-use,total-use]);
+      }
+    }
+    if(k===3){
+      const r=pick(hard?[8,10,12,15]:[5,6,8,10]),circ=normalizeChoiceNumber(2*r*3.14),answer=normalizeChoiceNumber(r*r*3.14);
+      return endNumericQuestion(`円周${circ}cmの円。面積は？cm²（円周率3.14）`,answer,[normalizeChoiceNumber(circ*circ/3.14),circ,normalizeChoiceNumber(2*r*3.14)]);
+    }
+    if(k===4){
+      const r=pick(hard?[6,8,10,12]:[4,5,6,8]),side=2*r,square=side*side,circle=normalizeChoiceNumber(r*r*3.14),answer=normalizeChoiceNumber(square-circle);
+      return endNumericQuestion(`一辺${side}cmの正方形から半径${r}cmの円を切り取る。残りは？cm²`,answer,[circle,square,normalizeChoiceNumber(square-2*r*3.14)]);
+    }
+    if(k===5){
+      const x1=pick([3,4,5,6]),y1=pick([12,18,20,24,30]),x2=x1*pick(hard?[3,4,5]:[2,3,4]),answer=y1/x1*x2;
+      if(!Number.isInteger(answer))return makeEndSilverQuestion(raw);
+      return endNumericQuestion(`xとyは比例。x=${x1}でy=${y1}。x=${x2}のときyは？`,answer,[y1*x2,answer/x1,y1+x2]);
+    }
+    if(k===6){
+      const people1=pick([3,4,5,6]),days1=pick([12,15,18,20,24]),work=people1*days1,people2=pick([6,8,10,12]),answer=work/people2;if(!Number.isInteger(answer))return makeEndSilverQuestion(raw);
+      return endNumericQuestion(`${people1}人で${days1}日かかる仕事。${people2}人なら何日？`,answer,[days1*people2/people1,days1,Math.max(1,answer-1)]);
+    }
+    if(k===7){
+      const a=pick([4,5,6,8]),b=pick([3,4,5,6]),m=pick(hard?[3,4]:[2,3]),answer=a*b*m*m;
+      return endNumericQuestion(`${a}×${b}cmの長方形を縦横とも${m}倍。面積は？cm²`,answer,[a*b*m,a*b+m,2*(a+b)*m]);
+    }
+    if(k===8){
+      const total=pick(hard?[84,96,108,120]:[60,72,84,90]),r1=pick([2,3,4]),r2=pick([3,4,5]),sum=r1+r2;if(total%sum!==0)return makeEndSilverQuestion(raw);const unit=total/sum,part=unit*Math.max(r1,r2),d=pick([2,3,4]),answer=part/d;if(!Number.isInteger(answer))return makeEndSilverQuestion(raw);
+      return endNumericQuestion(`${total}を${r1}:${r2}に分ける。多い方の1/${d}は？`,answer,[part,unit,part*d]);
+    }
+    for(let i=0;i<200;i++){
+      const a=pick([3,4,5]),b=pick([4,5,6,7]),unit=pick(hard?[10,12,15]:[6,8,10]),total=(a+b)*unit,small=Math.min(a,b)*unit,add=pick([4,6,8,10]),answer=small+add;
+      return endNumericQuestion(`全部${total}を${a}:${b}に分ける。小さい方に${add}加えると？`,answer,[small,total-small,unit+add]);
+    }
   }
+
+  // 蒼：平均・単位量・速さ・割合を二段階の短い文章題にする。
   function makeEndBlueQuestion(step=stageQuestion){
     const raw=Math.max(0,Number(step)||0),hard=raw>=10,k=raw%10;
-    if(k===0)return decimalTimesDecimalQuestion(hard?'hundredths':'decimalAnswer');
-    if(k===1)return finiteDecimalDivisionQuestion(hard?'complex':'finite');
-    if(k===2)return unlikeFractionQuestion(hard?'simplify':'multiple');
-    if(k===3)return unlikeFractionQuestion('subtract');
-    if(k===4)return hard?averageTotalQuestion():averageQuestion(4);
-    if(k===5)return perUnitQuestion(hard?'area':'item');
-    if(k===6)return speedQuestion(hard?(Math.random()<.5?'distance':'time'):'speed');
-    if(k===7)return percentageQuestion(hard?'rate':'part');
-    if(k===8)return percentageQuestion('base');
-    return percentageQuestion(Math.random()<.5?'discount':'increase');
+    if(k===0){
+      const each=pick(hard?[1.25,1.5,1.75,2.4]:[1.2,1.25,1.5,2]),count=pick([4,5,6,8]),used=pick([1.2,1.5,2.4,3]),answer=normalizeChoiceNumber(each*count-used);if(answer<=0)return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`1本${each}Lを${count}本。${used}L使った。残りは何L？`,answer,[normalizeChoiceNumber(each*count),normalizeChoiceNumber(each*(count-1)),normalizeChoiceNumber(answer+used)]);
+    }
+    if(k===1){
+      const each=pick([0.4,0.5,0.6,0.8]),bags=pick(hard?[12,15,16,18]:[8,10,12,15]),total=normalizeChoiceNumber(each*bags),used=pick([2,3,4]),answer=bags-used;
+      return endNumericQuestion(`${total}kgを${each}kgずつ袋に分け、${used}袋使う。残りは何袋？`,answer,[bags,bags+used,Math.max(1,answer-1)]);
+    }
+    if(k===2){
+      const d1=pick([2,3,4,5]),d2=pick([3,4,5,6,8]);let a=normFraction(1,d1),b=normFraction(1,d2),used=endFracAdd(a,b);if(used.n>=used.d)return makeEndBlueQuestion(raw);const ans=endFracSub({n:1,d:1},used);
+      const text=`全体の${endFracText(a)}と${endFracText(b)}を使った。残りは？`,html=`全体の${endFracSpan(a)}と${endFracSpan(b)}を使った。残りは？`;
+      return endFractionQuestion({text,html},ans,[used,a,b]);
+    }
+    if(k===3){
+      const total=pick(hard?[720,840,960,1200]:[480,600,720,840]),d=pick([4,5,8,10]),n=pick([1,2,3]),used=total*n/d;if(!Number.isInteger(used))return makeEndBlueQuestion(raw);const extra=pick([40,60,80,100]),answer=total-used-extra;if(answer<=0)return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`${total}mの${n}/${d}を進み、さらに${extra}m進んだ。残りは？`,answer,[total-used,total-extra,used+extra]);
+    }
+    if(k===4){
+      const avg=pick(hard?[72,75,78,80,84]:[65,70,72,75,80]),vals=[rand(55,90),rand(55,90),rand(55,90)],answer=avg*4-vals.reduce((a,b)=>a+b,0);if(answer<40||answer>100)return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`4回の平均${avg}点。3回が${vals.join('、')}点。4回目は？`,answer,[avg*4,avg,Math.max(0,answer-avg)]);
+    }
+    if(k===5){
+      const area1=pick([12,15,18,20,24]),mass1=pick([6,8,9,10,12]),area2=pick(hard?[30,36,40,48]:[24,30,32,36]),answer=mass1/area1*area2;if(!Number.isInteger(answer))return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`${area1}m²に${mass1}kg使う。同じ割合で${area2}m²なら何kg？`,answer,[mass1*area2,mass1+area2,answer+mass1]);
+    }
+    if(k===6){
+      const speed=pick(hard?[4.8,5.4,6,7.2]:[3.6,4.8,6]),minutes=pick([30,40,45,50]),total=pick([4.8,6,7.2,8,9,10]),travel=normalizeChoiceNumber(speed*minutes/60),answer=normalizeChoiceNumber(total-travel);if(answer<=0)return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`全長${total}km。時速${speed}kmで${minutes}分進む。残りは？km`,answer,[travel,total+travel,normalizeChoiceNumber(total-speed)]);
+    }
+    if(k===7){
+      const price=pick(hard?[3200,3600,4800,5600]:[2400,3000,3600,4000]),rate=pick([20,25,30,40]),pay=pick([5000,6000,10000]),sale=price*(100-rate)/100,answer=pay-sale;if(answer<0||!Number.isInteger(answer))return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`${price}円を${rate}%引き。${pay}円払うとおつりは？`,answer,[sale,pay-price,price*rate/100]);
+    }
+    if(k===8){
+      const rate=pick([25,30,40,50,60]),base=pick(hard?[300,360,420,480,600]:[200,240,300,360,400]),part=base*rate/100,absentRate=pick([10,20,25]),absent=base*absentRate/100,answer=base-absent;if(!Number.isInteger(part)||!Number.isInteger(answer))return makeEndBlueQuestion(raw);
+      return endNumericQuestion(`${part}人は全体の${rate}%です。全体の${absentRate}%が欠席。出席は何人？`,answer,[base,part,base-part]);
+    }
+    const base=pick(hard?[2400,3000,3600,4800]:[1600,2000,2400,3000]),rate=pick([10,20,25]),increase=base*rate/100,used=pick([200,300,400,500]),answer=base+increase-used;if(!Number.isInteger(answer))return makeEndBlueQuestion(raw);
+    return endNumericQuestion(`${base}円を${rate}%増やし、${used}円使う。残りは？`,answer,[base+increase,base-used,increase-used]);
   }
+
+  // 裏：□を小学校算数の逆算として扱い、小数・分数・括弧まで組み合わせる。
   function makeEndBackQuestion(step=stageQuestion){
     const raw=Math.max(0,Number(step)||0),hard=raw>=10,k=raw%10;
-    if(k===0){const x=rand(hard?40:20,hard?120:80),a=rand(12,35),m=pick(hard?[4,5,6]:[2,3,4]),total=(x+a)*m;return endNumericQuestion(`ある数に${a}を足し、${m}倍すると${total}。元の数は？`,x,[total/m,x+a,Math.max(1,x-a)]);}
-    if(k===1){const x=rand(hard?30:12,hard?90:60),m=pick(hard?[7,8,9]:[4,5,6]),c=rand(15,60),total=x*m+c;return endNumericQuestion(`□ × ${m} + ${c} = ${total}。□は？`,x,[Math.floor(total/m),x+c,x*m]);}
-    if(k===2){const a=rand(hard?300:120,hard?900:480),b=rand(12,36),c=rand(8,24),answer=a+b*c;return endNumericQuestion(`${a} + ${b} × ${c}`,answer,[(a+b)*c,a+b+c,a+b]);}
-    if(k===3){const a=rand(hard?40:20,hard?100:70),b=rand(10,45),c=pick([3,4,5,6]),d=rand(5,30),answer=(a+b)*c-d;return endNumericQuestion(`(${a} + ${b}) × ${c} − ${d}`,answer,[a+b*c-d,(a+b)*(c-d),answer+d]);}
-    if(k===4){const x=rand(hard?40:15,hard?140:80),m=pick([4,5,6,8,10]),total=x*m;return endNumericQuestion(`□ × ${m} = ${total}。□は？`,x,[total-m,x+m,total/m+1]);}
-    if(k===5){const x=pick(hard?[240,300,360,420,480]:[120,160,200,240,280]),d=pick([4,5,8,10]),c=rand(15,45),total=x/d+c;return endNumericQuestion(`□ ÷ ${d} + ${c} = ${total}。□は？`,x,[(total-c)/d,total*d,x+c*d]);}
-    if(k===6){const a=rand(20,80),b=rand(10,50),c=pick([3,4,5]),answer=`${a} + ${b*c}`,wrong1=`${a+b} × ${c}`,wrong2=`${a+b} + ${c}`;return{expression:`${a} + ${b} × ${c} と同じ値になる式は？`,answer,choices:shuffle([answer,wrong1,wrong2])};}
-    if(k===7){const x=rand(hard?50:20,hard?150:90),a=rand(15,45),m=pick([3,4,5]),total=x+a,answer=x*m;return endNumericQuestion(`ある数に${a}を足すと${total}。その元の数の${m}倍は？`,answer,[total*m,(x+a)*m-a,x+a*m]);}
-    if(k===8){const a=rand(hard?500:200,hard?1200:800),b=rand(20,90),c=pick([3,4,5,6]),d=rand(10,50),answer=a-(b-d)*c;return endNumericQuestion(`${a} − (${b} − ${d}) × ${c}`,answer,[(a-b+d)*c,a-b-d*c,a-(b+d)*c]);}
-    const x=rand(hard?30:12,hard?100:60),a=pick([4,5,6,8]),b=rand(10,40),total=x*a-b,answer=x;return endNumericQuestion(`ある数を${a}倍して${b}引くと${total}。元の数は？`,answer,[(total+b)/a+1,total/a,(total-b)/a]);
+    if(k===0){const x=rand(hard?40:24,hard?120:80),a=rand(12,35),m=pick(hard?[4,5,6]:[3,4,5]),total=(x+a)*m;return endNumericQuestion(`(□ + ${a}) × ${m} = ${total}。□は？`,x,[total/m,x+a,Math.max(1,x-a)]);}
+    if(k===1){const d=pick([1.2,1.5,2,2.4,2.5]),x=pick(hard?[60,72,84,90,120]:[36,48,60,72,80]),c=pick([6,8,10,12]),total=normalizeChoiceNumber(x/d-c);if(!Number.isFinite(total)||total<=0)return makeEndBackQuestion(raw);return endNumericQuestion(`□ ÷ ${d} − ${c} = ${total}。□は？`,x,[normalizeChoiceNumber((total+c)/d),normalizeChoiceNumber(total*d),normalizeChoiceNumber(x-c*d)]);}
+    if(k===2){const x=pick(hard?[40,48,60,72,80]:[24,30,36,40,48]),m=pick([1.2,1.5,2.4,2.5]),c=pick([6,8,12,15]),total=normalizeChoiceNumber(x*m+c);return endNumericQuestion(`□ × ${m} + ${c} = ${total}。□は？`,x,[normalizeChoiceNumber((total-c)/m+1),normalizeChoiceNumber(total/m),normalizeChoiceNumber(x+c)]);}
+    if(k===3){const x=pick(hard?[60,72,84,96,120]:[36,48,60,72]),a=pick([6,8,12,15]),m=pick([1.2,1.5,2.4]),total=normalizeChoiceNumber((x-a)*m);return endNumericQuestion(`(□ − ${a}) × ${m} = ${total}。□は？`,x,[normalizeChoiceNumber(total/m),normalizeChoiceNumber(total/m-a),normalizeChoiceNumber(x+a)]);}
+    if(k===4){
+      const d=pick([4,5,8,10]),n=pick([1,2,3]),x=pick(hard?[80,100,120,160,200]:[60,80,100,120]),total=x*n/d;if(!Number.isInteger(total))return makeEndBackQuestion(raw);
+      const text=`□ × ${n}/${d} = ${total}。□は？`,html=`□<span class="fraction-op">×</span>${endFracSpan({n,d})}<span class="fraction-op">=</span>${total}。□は？`;
+      return endNumericQuestion(text,x,[total*d,Math.max(1,x-total),x*d/n+1],{displayExpression:text,htmlExpression:html});
+    }
+    if(k===5){const d=pick([1.2,1.5,2.4,2.5]),x=pick(hard?[72,90,120,144,180]:[48,60,72,90,120]),c=pick([8,10,12,15]),total=normalizeChoiceNumber(x/d+c);return endNumericQuestion(`□ ÷ ${d} + ${c} = ${total}。□は？`,x,[normalizeChoiceNumber((total-c)/d),normalizeChoiceNumber(total*d),normalizeChoiceNumber(x+c*d)]);}
+    if(k===6){const a=rand(hard?80:40,hard?180:120),b=rand(12,40),c=pick([3,4,5,6]),answer=`${a} + ${b*c}`,wrong1=`${a+b} × ${c}`,wrong2=`${a+b} + ${c}`;return{expression:`${a} + ${b} × ${c} と同じ値の式は？`,answer,choices:shuffle([answer,wrong1,wrong2])};}
+    if(k===7){const x=rand(hard?50:30,hard?150:100),a=rand(15,45),m=pick([3,4,5]),total=x+a,answer=x*m;return endNumericQuestion(`ある数に${a}を足すと${total}。元の数の${m}倍は？`,answer,[total*m,(x+a)*m-a,x+a*m]);}
+    if(k===8){const a=pick(hard?[600,720,840,960]:[360,480,600,720]),b=pick([1.2,1.5,2.4]),c=pick([20,30,40,50]),m=pick([3,4,5]),answer=normalizeChoiceNumber(a-(b*c)*m);if(answer<=0)return makeEndBackQuestion(raw);return endNumericQuestion(`${a} − (${b} × ${c}) × ${m}`,answer,[normalizeChoiceNumber((a-b*c)*m),normalizeChoiceNumber(a-b*(c*m+1)),normalizeChoiceNumber(a-b*c)]);}
+    const x=pick(hard?[72,84,96,120,144]:[48,60,72,84,96]),a=pick([8,12,16,20]),d=pick([4,5,6,8]),total=(x+a)/d;if(!Number.isInteger(total))return makeEndBackQuestion(raw);return endNumericQuestion(`(□ + ${a}) ÷ ${d} = ${total}。□は？`,x,[total*d,total*d+a,Math.max(1,x-a)]);
   }
   function endRouteDifficultyRank(){return mode==='end'&&!endFinalPhase?Math.max(0,Math.min(4,stageIndex)):0;}
   function endEffectiveStep(step,boss=false,rank=endRouteDifficultyRank()){

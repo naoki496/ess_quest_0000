@@ -4447,3 +4447,102 @@ body[data-ui-style="reframe"] .title-sub{
     border-radius:11px!important;
   }
 }
+
+/* ======================================================================
+   2026-09-07 COLLECTION / MONSTER LORE LAYER
+   Direct description stays primary. A quieter "record fragment" adds story
+   flavour on large screens while compact screens keep the copy scrollable.
+   ====================================================================== */
+body[data-ui-style="reframe"] .collection-detail,
+body[data-ui-style="reframe"] .monster-card-info{
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+body[data-ui-style="reframe"] .collection-detail .detail-description{
+  margin-bottom:0!important;
+}
+body[data-ui-style="reframe"] .collection-detail .detail-story-fragment{
+  position:relative;
+  margin-top:13px!important;
+  padding:13px 0 0!important;
+  border-top:1px solid color-mix(in srgb,var(--ui-accent) 26%,rgba(255,255,255,.10));
+  color:#aebdca!important;
+  font-size:.88em!important;
+  line-height:1.78!important;
+}
+body[data-ui-style="reframe"] .collection-detail .detail-story-fragment>span{
+  display:block;
+  margin:0 0 7px;
+  color:color-mix(in srgb,var(--ui-accent) 72%,#eef6ff);
+  font:800 .68rem/1 var(--font-ui-gothic);
+  letter-spacing:.16em;
+}
+body[data-ui-style="reframe"] .collection-detail:has(.secret-label) .detail-story-fragment{
+  border-top-color:rgba(255,214,114,.25);
+}
+body[data-ui-style="reframe"] .collection-detail:has(.secret-label) .detail-story-fragment>span{
+  color:#f2d27f;
+}
+body[data-ui-style="reframe"] .monster-card .monster-story-fragment{
+  display:block;
+  margin-top:15px;
+  padding-top:13px;
+  border-top:1px solid color-mix(in srgb,var(--ui-accent) 25%,rgba(255,255,255,.10));
+  color:#aebdca;
+  font-size:.91em;
+  line-height:1.78;
+}
+body[data-ui-style="reframe"] .monster-card .monster-story-fragment::before{
+  content:"記録断片";
+  display:block;
+  margin-bottom:7px;
+  color:color-mix(in srgb,var(--ui-accent) 72%,#eef6ff);
+  font:800 .68rem/1 var(--font-ui-gothic);
+  letter-spacing:.16em;
+}
+body[data-ui-style="reframe"] .monster-card.boss-card .monster-story-fragment{
+  border-top-color:rgba(255,92,118,.25);
+}
+body[data-ui-style="reframe"] .monster-card.boss-card .monster-story-fragment::before{
+  color:#ff9bad;
+}
+@media (orientation:landscape) and (min-width:1000px) and (min-height:501px){
+  body[data-ui-style="reframe"] .collection-detail .detail-story-fragment{
+    margin-top:16px!important;padding-top:15px!important;font-size:.88rem!important;line-height:1.86!important;
+  }
+  body[data-ui-style="reframe"] .monster-card .monster-story-fragment{
+    margin-top:18px;padding-top:15px;font-size:.88rem;line-height:1.88;
+  }
+}
+@media (orientation:landscape) and (min-width:700px) and (max-width:999px),
+       (orientation:portrait) and (min-width:600px){
+  body[data-ui-style="reframe"] .collection-detail .detail-story-fragment,
+  body[data-ui-style="reframe"] .monster-card .monster-story-fragment{
+    margin-top:11px!important;padding-top:10px!important;line-height:1.66!important;
+  }
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .collection-detail .detail-story-fragment,
+  body[data-ui-style="reframe"] .monster-card .monster-story-fragment{
+    margin-top:7px!important;padding-top:7px!important;font-size:.90em!important;line-height:1.42!important;
+  }
+  body[data-ui-style="reframe"] .collection-detail .detail-story-fragment>span,
+  body[data-ui-style="reframe"] .monster-card .monster-story-fragment::before{
+    margin-bottom:4px;font-size:.44rem!important;
+  }
+}
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"] .collection-detail{
+    overflow:auto!important;-webkit-overflow-scrolling:touch;
+  }
+  body[data-ui-style="reframe"] .collection-detail .detail-story-fragment,
+  body[data-ui-style="reframe"] .monster-card .monster-story-fragment{
+    margin-top:9px!important;padding-top:9px!important;font-size:.92em!important;line-height:1.58!important;
+  }
+  body[data-ui-style="reframe"] .collection-detail .detail-story-fragment>span,
+  body[data-ui-style="reframe"] .monster-card .monster-story-fragment::before{
+    margin-bottom:5px;font-size:.52rem!important;
+  }
+}
+/* Medium landscape safety: longer archive text must scroll inside the information pane. */
+body[data-ui-style="reframe"] .monster-card-info{overflow:auto!important;-webkit-overflow-scrolling:touch}
