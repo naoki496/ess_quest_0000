@@ -4310,3 +4310,140 @@ body[data-ui-style="reframe"][data-mode="end"] .battlefield::before{
     left:2.2%;top:3.1%;min-width:70px;font-size:.44rem;
   }
 }
+
+/* ========================================================================== */
+/* 2026-09-07 ROUND 5 / actor contrast, cut-in motion, timer grammar, title   */
+/* ========================================================================== */
+
+/* 1) Actor/background separation — static only. No pulse/blink is reintroduced.
+   A slightly firmer light-to-dark local backplate makes pale/dark/green actors
+   readable against similarly colored scenery without reviving the legacy aura. */
+body[data-ui-style="reframe"] .actor::before{
+  left:4%!important;right:4%!important;bottom:.5%!important;height:94%!important;
+  background:
+    radial-gradient(ellipse at 50% 55%,
+      color-mix(in srgb,var(--ui-accent) 24%,rgba(255,255,255,.20)) 0%,
+      color-mix(in srgb,var(--ui-accent) 12%,rgba(255,255,255,.10)) 31%,
+      rgba(3,8,14,.20) 51%,
+      rgba(2,6,11,.29) 61%,
+      transparent 77%)!important;
+}
+body[data-ui-style="reframe"] .actor.hero::before{opacity:.72!important}
+body[data-ui-style="reframe"] .actor.enemy::before{opacity:.63!important}
+body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy::before{
+  left:0!important;right:0!important;height:100%!important;opacity:.78!important;
+  background:
+    radial-gradient(ellipse at 50% 54%,
+      color-mix(in srgb,var(--ui-accent) 27%,rgba(255,255,255,.22)) 0%,
+      color-mix(in srgb,var(--ui-accent) 14%,rgba(255,255,255,.10)) 34%,
+      rgba(2,7,13,.25) 54%,
+      rgba(1,4,9,.32) 64%,
+      transparent 79%)!important;
+}
+body[data-ui-style="reframe"] .actor::after{
+  left:14%!important;right:14%!important;bottom:.7%!important;height:9%!important;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.60) 0%,rgba(0,0,0,.34) 40%,rgba(0,0,0,.08) 64%,transparent 77%)!important;
+  opacity:.90!important;
+}
+/* Keep a restrained static rim on the sprites themselves. World/boss-specific
+   stronger effects later in the cascade can still replace this when required. */
+body[data-ui-style="reframe"] .actor>img,
+body[data-ui-style="reframe"] .actor-sprite img{
+  filter:
+    drop-shadow(0 13px 15px rgba(0,0,0,.62))
+    drop-shadow(0 0 4px rgba(255,255,255,.38))
+    drop-shadow(0 0 9px color-mix(in srgb,var(--ui-accent) 16%,transparent))!important;
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .actor::before{left:8%!important;right:8%!important;height:88%!important;opacity:.55!important}
+  body[data-ui-style="reframe"] .actor.hero::before{opacity:.61!important}
+  body[data-ui-style="reframe"] .actor.enemy::before{opacity:.52!important}
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy::before{opacity:.66!important}
+  body[data-ui-style="reframe"] .actor::after{left:20%!important;right:20%!important;height:7%!important;opacity:.78!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .actor::before{left:7%!important;right:7%!important;height:94%!important}
+  body[data-ui-style="reframe"] .actor.hero::before{opacity:.65!important}
+  body[data-ui-style="reframe"] .actor.enemy::before{opacity:.58!important}
+  body[data-ui-style="reframe"] .actor::after{left:18%!important;right:18%!important;height:8%!important}
+}
+
+/* 2) Cut-in motion — legacy directional rush restored, but fitted to the NEW
+   presentation duration. Individual translate/scale properties intentionally
+   coexist with the preserved legacy facing transform. */
+body[data-ui-style="reframe"] .boss-cutin .cutin-art{
+  will-change:translate,scale,opacity!important;
+}
+body[data-ui-style="reframe"] .boss-cutin.hero-cutin .cutin-art{
+  animation:reframeHeroCutinRush var(--cutin-duration,1280ms) cubic-bezier(.14,.76,.20,1) both!important;
+}
+body[data-ui-style="reframe"] .boss-cutin.enemy-cutin .cutin-art{
+  animation:reframeEnemyCutinRush var(--cutin-duration,1280ms) cubic-bezier(.14,.76,.20,1) both!important;
+}
+@keyframes reframeHeroCutinRush{
+  0%,7%{opacity:0;translate:-20vw 1.5%;scale:1.06}
+  22%{opacity:1;translate:-2vw 0;scale:1.11}
+  38%,76%{opacity:1;translate:4.5vw -1%;scale:1.16}
+  88%{opacity:.94;translate:7vw -1.5%;scale:1.18}
+  100%{opacity:0;translate:14vw -2%;scale:1.22}
+}
+@keyframes reframeEnemyCutinRush{
+  0%,7%{opacity:0;translate:20vw 1.5%;scale:1.06}
+  22%{opacity:1;translate:2vw 0;scale:1.11}
+  38%,76%{opacity:1;translate:-4.5vw -1%;scale:1.16}
+  88%{opacity:.94;translate:-7vw -1.5%;scale:1.18}
+  100%{opacity:0;translate:-14vw -2%;scale:1.22}
+}
+@media (prefers-reduced-motion:reduce){
+  body[data-ui-style="reframe"] .boss-cutin.hero-cutin .cutin-art,
+  body[data-ui-style="reframe"] .boss-cutin.enemy-cutin .cutin-art{
+    animation:reframeCutinReduced var(--cutin-duration,1280ms) ease both!important;
+  }
+  @keyframes reframeCutinReduced{0%,8%{opacity:0}22%,78%{opacity:1}100%{opacity:0}}
+}
+
+/* 3) Visual grammar: TIMER is circular only. Progress / HP / SPECIAL remain bars. */
+body[data-ui-style="reframe"].hud-modern .question-timer-hud{
+  width:40px!important;height:40px!important;border-radius:50%!important;
+  background:conic-gradient(var(--ui-accent) calc(var(--timer-pct)*1%),rgba(255,255,255,.12) 0)!important;
+}
+body[data-ui-style="reframe"].hud-modern .question-timer-hud::before{
+  content:none!important;display:none!important;background:none!important;box-shadow:none!important;
+}
+body[data-ui-style="reframe"].hud-modern .question-timer-hud::after{
+  content:""!important;display:block!important;position:absolute!important;inset:3px!important;
+  border-radius:50%!important;background:rgba(3,10,18,.92)!important;z-index:-1!important;
+}
+
+/* 4) Title subtitle readability — a restrained translucent ribbon rather than
+   a heavy opaque card. It becomes more definite in portrait where artwork often
+   sits directly behind the copy. */
+body[data-ui-style="reframe"] .title-sub{
+  position:relative!important;z-index:3!important;
+  max-width:min(560px,100%)!important;
+  padding:9px 14px 10px!important;
+  color:#f7f9fc!important;
+  background:linear-gradient(90deg,rgba(2,8,15,.82),rgba(3,10,18,.62) 76%,rgba(3,10,18,.18) 100%)!important;
+  border-left:2px solid color-mix(in srgb,var(--rf-accent) 72%,#fff)!important;
+  border-radius:4px 12px 12px 4px!important;
+  box-shadow:0 9px 24px rgba(0,0,0,.22)!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.92),0 0 14px rgba(0,0,0,.68)!important;
+  backdrop-filter:blur(6px) saturate(108%);-webkit-backdrop-filter:blur(6px) saturate(108%);
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .title-sub{
+    padding:5px 9px 6px!important;margin:4px 0 6px!important;
+    border-radius:3px 9px 9px 3px!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  }
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .title-sub{
+    width:min(94%,440px)!important;max-width:min(94%,440px)!important;
+    margin:8px auto 11px!important;padding:9px 12px 10px!important;
+    font-size:clamp(.72rem,3vw,.88rem)!important;line-height:1.58!important;
+    text-align:left!important;
+    background:linear-gradient(180deg,rgba(2,8,15,.84),rgba(3,10,18,.72))!important;
+    border-left:0!important;border-top:1px solid color-mix(in srgb,var(--rf-accent) 45%,rgba(255,255,255,.30))!important;
+    border-radius:11px!important;
+  }
+}
