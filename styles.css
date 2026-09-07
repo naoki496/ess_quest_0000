@@ -3504,3 +3504,532 @@ body[data-ui-style="reframe"] .data-delete-zone .pause-danger{
 /* GLASS compatibility for the only Phase 4-8 DOM extension (SHOP detail pane). */
 body[data-ui-style="glass"] .shop-layout{display:contents!important}
 body[data-ui-style="glass"] #shopDetail{display:none!important}
+
+/* ========================================================================== */
+/* UI INTEGRATION ROUND 1 — NEW baseline + selected legacy strengths           */
+/* 2026-09-07: readability / Japanese font roles / cinematic restoration      */
+/* ========================================================================== */
+body[data-ui-style="reframe"]{
+  --font-ui-gothic:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --font-display-mincho:"Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","BIZ UDPMincho",serif;
+}
+
+/* Japanese typography role split.
+   Operations and problem solving stay Gothic; world building and presentation use Mincho. */
+body[data-ui-style="reframe"] button,
+body[data-ui-style="reframe"] input,
+body[data-ui-style="reframe"] .filters,
+body[data-ui-style="reframe"] .math-problem,
+body[data-ui-style="reframe"] .feedback,
+body[data-ui-style="reframe"] .question-cap,
+body[data-ui-style="reframe"] .choice-caption,
+body[data-ui-style="reframe"] .choices button,
+body[data-ui-style="reframe"] .hud,
+body[data-ui-style="reframe"] .compact-progress-hud,
+body[data-ui-style="reframe"] .question-timer-hud,
+body[data-ui-style="reframe"] .special-hud,
+body[data-ui-style="reframe"] .boss-hp-hud,
+body[data-ui-style="reframe"] .buy-btn,
+body[data-ui-style="reframe"] .back-btn,
+body[data-ui-style="reframe"] .music-controls,
+body[data-ui-style="reframe"] .music-world-tabs,
+body[data-ui-style="reframe"] .debug-card button{
+  font-family:var(--font-ui-gothic)!important;
+}
+body[data-ui-style="reframe"] .title-mode-plate b,
+body[data-ui-style="reframe"] .title-logo-wrap h1,
+body[data-ui-style="reframe"] .title-sub,
+body[data-ui-style="reframe"] .title-caption p,
+body[data-ui-style="reframe"] .sub-header h2,
+body[data-ui-style="reframe"] .world-ring-node em,
+body[data-ui-style="reframe"] .world-gate-detail h3,
+body[data-ui-style="reframe"] .world-gate-detail p,
+body[data-ui-style="reframe"] .map-head h2,
+body[data-ui-style="reframe"] .map-message,
+body[data-ui-style="reframe"] .map-tip-card p,
+body[data-ui-style="reframe"] #stageOverlayName,
+body[data-ui-style="reframe"] #stageClearName,
+body[data-ui-style="reframe"] #stageName,
+body[data-ui-style="reframe"] .actor-name,
+body[data-ui-style="reframe"] .shop-detail h3,
+body[data-ui-style="reframe"] .shop-detail p,
+body[data-ui-style="reframe"] .collection-detail h3,
+body[data-ui-style="reframe"] .collection-detail p,
+body[data-ui-style="reframe"] .monster-card h3,
+body[data-ui-style="reframe"] .monster-card p,
+body[data-ui-style="reframe"] .music-world-summary strong,
+body[data-ui-style="reframe"] .music-note,
+body[data-ui-style="reframe"] .music-now strong,
+body[data-ui-style="reframe"] .music-now span,
+body[data-ui-style="reframe"] .data-info-card strong,
+body[data-ui-style="reframe"] .data-info-card p,
+body[data-ui-style="reframe"] .data-delete-zone strong,
+body[data-ui-style="reframe"] .data-delete-zone p,
+body[data-ui-style="reframe"] .pause-card h2,
+body[data-ui-style="reframe"] .pause-card p,
+body[data-ui-style="reframe"] .game-over-card h2,
+body[data-ui-style="reframe"] .game-over-card p,
+body[data-ui-style="reframe"] .result-head h2,
+body[data-ui-style="reframe"] .result-log h3,
+body[data-ui-style="reframe"] .reward-card h2,
+body[data-ui-style="reframe"] .reward-card p{
+  font-family:var(--font-display-mincho)!important;
+}
+body[data-ui-style="reframe"] .title-logo-wrap h1{
+  font-weight:800!important;letter-spacing:.005em!important;
+}
+body[data-ui-style="reframe"] .title-logo-wrap h1 span{letter-spacing:.01em!important}
+body[data-ui-style="reframe"] .title-sub,
+body[data-ui-style="reframe"] .world-gate-detail p,
+body[data-ui-style="reframe"] .shop-detail p,
+body[data-ui-style="reframe"] .collection-detail p,
+body[data-ui-style="reframe"] .monster-card p,
+body[data-ui-style="reframe"] .data-info-card p,
+body[data-ui-style="reframe"] .pause-card p,
+body[data-ui-style="reframe"] .game-over-card p{font-weight:500}
+
+/* Problem palette: keep NEW geometry, restore the established world-themed battle colors. */
+body[data-ui-style="reframe"] .question-panel{
+  background:var(--battle-panel-bg)!important;
+  border-color:var(--battle-panel-border)!important;
+  box-shadow:var(--battle-panel-shadow)!important;
+}
+body[data-ui-style="reframe"] .question-panel::before{
+  background:linear-gradient(90deg,transparent,var(--battle-accent),transparent)!important;
+}
+body[data-ui-style="reframe"] .question-cap,
+body[data-ui-style="reframe"] .choice-caption{color:var(--battle-accent)!important}
+body[data-ui-style="reframe"] .equation-box{
+  background:var(--battle-equation-bg)!important;
+  border-color:var(--battle-equation-border)!important;
+  box-shadow:var(--battle-equation-shadow)!important;
+}
+body[data-ui-style="reframe"] .math-problem{
+  color:var(--battle-equation-text)!important;
+  text-shadow:var(--battle-equation-text-shadow)!important;
+  font-family:var(--font-ui-gothic)!important;
+  font-weight:900!important;
+}
+body[data-ui-style="reframe"] .choices button{
+  background:var(--battle-choice-bg)!important;
+  border-color:var(--battle-choice-border)!important;
+  box-shadow:var(--battle-choice-shadow)!important;
+  font-family:var(--font-ui-gothic)!important;
+  font-weight:900!important;
+}
+body[data-ui-style="reframe"] .choices button.correct{
+  border-color:rgba(104,255,156,.88)!important;
+  background:linear-gradient(180deg,rgba(30,118,79,.96),rgba(10,66,48,.98))!important;
+  box-shadow:0 0 0 2px rgba(104,255,156,.16),0 0 28px rgba(61,242,137,.28)!important;
+}
+body[data-ui-style="reframe"] .choices button.wrong{
+  border-color:rgba(255,96,112,.92)!important;
+  background:linear-gradient(180deg,rgba(137,34,52,.96),rgba(77,14,30,.98))!important;
+  box-shadow:0 0 0 2px rgba(255,96,112,.15),0 0 25px rgba(255,55,80,.24)!important;
+}
+
+/* Long-question safety: widen the question region before shrinking typography. */
+body[data-ui-style="reframe"] .question-panel.long-question{left:23%!important;right:23%!important}
+body[data-ui-style="reframe"] .question-panel.very-long-question{left:19%!important;right:19%!important}
+body[data-ui-style="reframe"] .question-panel.long-question .equation-box{height:clamp(104px,19vh,164px)!important}
+body[data-ui-style="reframe"] .question-panel.very-long-question .equation-box{height:clamp(118px,21vh,178px)!important}
+body[data-ui-style="reframe"] .choices button.text-choice{
+  white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;line-height:1.14!important;
+  padding:5px 7px!important;
+}
+body[data-ui-style="reframe"] .choices button.fraction-choice{line-height:1!important;padding-top:4px!important;padding-bottom:4px!important}
+
+/* Restore the proven fraction-space allocation from the legacy UI, while retaining NEW placement. */
+body[data-ui-style="reframe"] .fraction-stack{font-family:var(--font-ui-gothic)!important}
+@media (orientation:landscape){
+  body[data-ui-style="reframe"] .question-panel.fraction-question{left:24%!important;right:24%!important;padding-top:12px!important;padding-bottom:16px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .equation-box{height:138px!important;margin:9px 0!important;padding:12px 8px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .math-problem{line-height:1.02!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .choices button,
+  body[data-ui-style="reframe"] .question-panel.fraction-choice-question .choices button{height:96px!important;min-height:96px!important;padding:8px 6px!important}
+}
+@media (orientation:landscape) and (max-height:700px){
+  body[data-ui-style="reframe"] .question-panel.long-question{left:22%!important;right:22%!important}
+  body[data-ui-style="reframe"] .question-panel.very-long-question{left:18%!important;right:18%!important}
+  body[data-ui-style="reframe"] .question-panel.long-question .equation-box{height:108px!important}
+  body[data-ui-style="reframe"] .question-panel.very-long-question .equation-box{height:122px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question{padding-top:9px!important;padding-bottom:12px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .equation-box{height:98px!important;margin:7px 0!important;padding:9px 7px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .choices button,
+  body[data-ui-style="reframe"] .question-panel.fraction-choice-question .choices button{height:78px!important;min-height:78px!important;padding:6px!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .question-panel.long-question{left:20%!important;right:20%!important}
+  body[data-ui-style="reframe"] .question-panel.very-long-question{left:15%!important;right:15%!important}
+  body[data-ui-style="reframe"] .question-panel.long-question .equation-box{height:78px!important}
+  body[data-ui-style="reframe"] .question-panel.very-long-question .equation-box{height:88px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question{left:23%!important;right:23%!important;padding-top:6px!important;padding-bottom:9px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .equation-box{height:72px!important;margin:5px 0!important;padding:6px 5px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .choices button,
+  body[data-ui-style="reframe"] .question-panel.fraction-choice-question .choices button{height:56px!important;min-height:56px!important;padding:5px 4px!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .question-panel.long-question,
+  body[data-ui-style="reframe"] .question-panel.very-long-question,
+  body[data-ui-style="reframe"] .question-panel.fraction-question{left:4%!important;right:4%!important}
+  body[data-ui-style="reframe"] .question-panel.long-question .equation-box{height:104px!important}
+  body[data-ui-style="reframe"] .question-panel.very-long-question .equation-box{height:122px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .equation-box{height:104px!important;padding:8px 6px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .choices button,
+  body[data-ui-style="reframe"] .question-panel.fraction-choice-question .choices button{height:50px!important;min-height:50px!important}
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"] .question-panel.long-question .equation-box{height:84px!important}
+  body[data-ui-style="reframe"] .question-panel.very-long-question .equation-box{height:94px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .equation-box{height:86px!important;padding:5px!important}
+  body[data-ui-style="reframe"] .question-panel.fraction-question .choices button,
+  body[data-ui-style="reframe"] .question-panel.fraction-choice-question .choices button{height:44px!important;min-height:44px!important}
+}
+
+/* Structured long-form boss questions: restore their dedicated legacy sizing above NEW generic sizing. */
+body[data-ui-style="reframe"] .question-panel.mimesis-circle-question .math-problem,
+body[data-ui-style="reframe"] .question-panel.mimesis-table-question .math-problem,
+body[data-ui-style="reframe"] .question-panel.mimesis-final-question .math-problem{
+  width:100%!important;max-width:100%!important;height:100%!important;display:block!important;white-space:normal!important;
+  font-family:var(--font-ui-gothic)!important;color:var(--battle-equation-text)!important;text-align:center!important;line-height:1.2!important;
+}
+body[data-ui-style="reframe"] .question-panel.mimesis-table-question .equation-box{height:112px!important}
+body[data-ui-style="reframe"] .question-panel.mimesis-final-question .equation-box{height:156px!important}
+body[data-ui-style="reframe"] .question-panel.mimesis-table-question .choices button{height:50px!important;min-height:50px!important;white-space:normal!important}
+body[data-ui-style="reframe"] .question-panel.mimesis-final-question .choices button{height:50px!important;min-height:50px!important}
+body[data-ui-style="reframe"] .question-panel.midori-tide-question .equation-box{height:122px!important}
+body[data-ui-style="reframe"] .question-panel.midori-tide-question .math-problem{
+  display:block!important;width:100%!important;max-width:100%!important;height:100%!important;white-space:normal!important;
+  font-family:var(--font-ui-gothic)!important;font-size:1rem!important;line-height:1.15!important;
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .question-panel.mimesis-table-question .equation-box{height:90px!important}
+  body[data-ui-style="reframe"] .question-panel.mimesis-final-question .equation-box{height:112px!important}
+  body[data-ui-style="reframe"] .question-panel.mimesis-table-question .choices button,
+  body[data-ui-style="reframe"] .question-panel.mimesis-final-question .choices button{height:46px!important;min-height:46px!important}
+  body[data-ui-style="reframe"] .question-panel.midori-tide-question .equation-box{height:88px!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .question-panel.mimesis-table-question .equation-box{height:114px!important}
+  body[data-ui-style="reframe"] .question-panel.mimesis-final-question .equation-box{height:150px!important}
+  body[data-ui-style="reframe"] .question-panel.midori-tide-question .equation-box{height:132px!important}
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"] .question-panel.mimesis-table-question .equation-box{height:86px!important}
+  body[data-ui-style="reframe"] .question-panel.mimesis-final-question .equation-box{height:106px!important}
+  body[data-ui-style="reframe"] .question-panel.midori-tide-question .equation-box{height:96px!important}
+}
+
+/* Cinematics: return to the legacy visual grammar, but keep NEW JS presentation time. */
+body[data-ui-style="reframe"] .boss-warning-fx{
+  background:radial-gradient(circle at 50% 50%,rgba(86,0,10,.18),rgba(0,0,0,.70))!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body[data-ui-style="reframe"] .boss-warning-fx::before,
+body[data-ui-style="reframe"] .boss-warning-fx::after{
+  left:-15%!important;width:130%!important;height:22%!important;
+  background:linear-gradient(90deg,transparent 0 5%,#d00018 5% 6%,rgba(5,5,8,.96) 6% 92%,#d00018 92% 93%,transparent 93%)!important;
+  border-top:2px solid #ff3148!important;border-bottom:2px solid #ff3148!important;
+  box-shadow:0 0 28px rgba(255,27,52,.55)!important;
+}
+body[data-ui-style="reframe"] .boss-warning-fx::before{top:31%!important;transform:skewY(-3deg)!important}
+body[data-ui-style="reframe"] .boss-warning-fx::after{top:51%!important;transform:skewY(3deg)!important}
+body[data-ui-style="reframe"] .boss-warning-fx .warning-band{height:7%!important;opacity:1!important}
+body[data-ui-style="reframe"] .boss-warning-fx strong{
+  margin-top:-1.6vh!important;font:900 clamp(3.6rem,12vw,9.2rem)/.8 Arial Black,Impact,sans-serif!important;
+  letter-spacing:.06em!important;color:#fff!important;text-shadow:5px 0 #d90024,-3px 0 #00d8ff,0 0 22px #ff1e3d!important;
+  animation:warningBlink .5s steps(1,end) infinite!important;
+}
+body[data-ui-style="reframe"] .boss-warning-fx span{
+  top:67%!important;font:800 clamp(.55rem,1.5vw,.9rem)/1 monospace!important;letter-spacing:.32em!important;
+  color:#ff6173!important;text-shadow:0 0 10px #ff203b!important;
+}
+
+body[data-ui-style="reframe"] .boss-name-fx{background:linear-gradient(180deg,rgba(0,0,0,.58),rgba(4,8,16,.76))!important}
+body[data-ui-style="reframe"] .boss-name-fx .boss-name-rail{
+  left:-35%!important;right:auto!important;width:170%!important;height:17%!important;
+  background:linear-gradient(90deg,transparent,#8b0018 14%,rgba(5,8,14,.94) 20% 80%,#006b83 86%,transparent)!important;
+  border-top:1px solid #ff3a55!important;border-bottom:1px solid #52e8ff!important;box-shadow:none!important;
+}
+body[data-ui-style="reframe"] .boss-name-fx .rail-a{top:38%!important;transform:skewY(-3deg)!important;animation:nameRailA 1.72s ease-out both!important}
+body[data-ui-style="reframe"] .boss-name-fx .rail-b{top:50%!important;transform:skewY(3deg)!important;animation:nameRailB 1.72s ease-out both!important}
+body[data-ui-style="reframe"] .boss-name-fx small{
+  top:31%!important;font:800 clamp(.55rem,1.5vw,.95rem)/1 monospace!important;letter-spacing:.45em!important;
+  color:#ff586e!important;text-shadow:0 0 12px #ff2344!important;
+}
+body[data-ui-style="reframe"] .boss-name-fx strong{
+  max-width:90%!important;font:900 clamp(2.2rem,7vw,6rem)/1 var(--font-display-mincho)!important;
+  letter-spacing:.06em!important;text-align:center!important;color:#fff!important;
+  text-shadow:4px 3px 0 #6e0018,-3px -1px 0 #007c9a,0 0 24px #ff3150!important;
+  animation:bossNameHit 1.72s cubic-bezier(.16,.8,.22,1) both!important;
+}
+body[data-ui-style="reframe"] .boss-name-fx em{top:61%!important}
+
+/* END retains its dedicated legacy terminal presentation, compressed to NEW timing. */
+body[data-ui-style="reframe"][data-mode="end"] .boss-warning-fx.end-warning .warning-band{height:9%!important;opacity:.86!important}
+body[data-ui-style="reframe"][data-mode="end"] .boss-warning-fx.end-warning strong{animation:endWarningPower 2.0s cubic-bezier(.18,.75,.2,1) both!important}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name{
+  background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--end-boss-a) 25%,transparent),transparent 31%),radial-gradient(circle at 50% 50%,rgba(0,0,0,.04),rgba(0,0,0,.82) 72%),linear-gradient(180deg,rgba(2,1,7,.97),rgba(12,4,23,.96) 50%,rgba(1,1,5,.98))!important;
+}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name .boss-name-rail{
+  height:21%!important;background:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--end-boss-b) 85%,#000) 12%,rgba(4,3,10,.97) 22% 78%,color-mix(in srgb,var(--end-boss-a) 72%,#05020b) 88%,transparent 100%)!important;
+  border-color:var(--end-boss-accent)!important;box-shadow:0 0 20px color-mix(in srgb,var(--end-boss-a) 48%,transparent),inset 0 0 22px rgba(0,0,0,.7)!important;
+}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name small{
+  top:23%!important;font-size:clamp(.62rem,1.7vw,1.08rem)!important;letter-spacing:.52em!important;color:var(--end-boss-accent)!important;
+  text-shadow:0 0 9px var(--end-boss-a),0 0 22px color-mix(in srgb,var(--end-boss-fringe) 50%,transparent)!important;
+}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name strong{
+  max-width:94%!important;font-family:var(--font-display-mincho)!important;font-size:clamp(2.55rem,8vw,7.2rem)!important;letter-spacing:.07em!important;
+  text-shadow:5px 3px 0 color-mix(in srgb,var(--end-boss-b) 90%,#000),-3px -1px 0 color-mix(in srgb,var(--end-boss-fringe) 74%,#000),0 0 14px #fff,0 0 35px var(--end-boss-a),0 0 64px color-mix(in srgb,var(--end-boss-accent) 58%,transparent)!important;
+  animation:endBossNamePower 1.65s cubic-bezier(.14,.82,.18,1) both!important;
+}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name em{top:65%!important;font-size:clamp(.52rem,1.35vw,.92rem)!important}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name.end-name-corrupting strong{animation:endNameCorruptText 1.05s steps(6,end) both!important}
+body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name.end-name-resolved em{animation:endBossEnglishResolve 1.35s ease-out both!important}
+
+/* Legacy cut-in composition, with NEW presentation duration supplied by JS. */
+body[data-ui-style="reframe"] .boss-cutin{background:transparent!important;overflow:hidden!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-dim{background:rgba(0,0,0,.42)!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-band{
+  left:-6%!important;right:-6%!important;top:22%!important;height:54%!important;
+  background:linear-gradient(90deg,#05070b 0 7%,#33101a 24%,#071323 72%,#05070b 93%)!important;
+  border-top:3px solid #fff!important;border-bottom:3px solid #fff!important;box-shadow:0 0 30px rgba(255,255,255,.26)!important;
+  transform:skewY(-2.5deg)!important;clip-path:polygon(2% 8%,98% 0,100% 88%,0 100%)!important;
+}
+body[data-ui-style="reframe"] .boss-cutin.hero-cutin .cutin-band{background:linear-gradient(90deg,#071323,#144f8b 33%,#8d6318 74%,#05070b)!important}
+body[data-ui-style="reframe"] .boss-cutin.enemy-cutin .cutin-band{background:linear-gradient(90deg,#05070b,#650d24 28%,#0d2336 78%,#05070b)!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-art{
+  transform-origin:50% 36%!important;filter:drop-shadow(0 12px 20px rgba(0,0,0,.72)) drop-shadow(0 0 10px rgba(255,255,255,.36))!important;
+}
+body[data-ui-style="reframe"] .boss-cutin.enemy-cutin:not(.cutin-original-facing) .cutin-art{transform:scaleX(-1)!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-speedlines{opacity:1!important;mix-blend-mode:screen!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-slash{height:5px!important;background:#fff!important;opacity:0!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-slash.slash-a{box-shadow:0 0 14px #fff,0 0 30px #54e8ff!important}
+body[data-ui-style="reframe"] .boss-cutin .cutin-slash.slash-b{box-shadow:0 0 14px #fff,0 0 30px #ff2f52!important}
+body[data-ui-style="reframe"] .battlefield.cutin-scene>.battle-bg,
+body[data-ui-style="reframe"] .battlefield.cutin-scene>.battle-shade,
+body[data-ui-style="reframe"] .battlefield.cutin-scene>.actor,
+body[data-ui-style="reframe"] .battlefield.cutin-scene>.question-panel{
+  filter:blur(5px) brightness(.46)!important;
+}
+/* Keep the old flash cue but reduce the peak luminance for the current low-flash contract. */
+@keyframes reframeLegacyCutinWhite{0%,76%{opacity:0}82%{opacity:.30}88%{opacity:.08}100%{opacity:0}}
+body[data-ui-style="reframe"] .boss-cutin .cutin-white{animation-name:reframeLegacyCutinWhite!important}
+
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .boss-warning-fx strong{font-size:clamp(3.0rem,12vw,5.8rem)!important}
+  body[data-ui-style="reframe"] .boss-warning-fx span{font-size:clamp(.46rem,1.35vw,.72rem)!important}
+  body[data-ui-style="reframe"] .boss-name-fx strong{font-size:clamp(1.9rem,7vw,4.6rem)!important}
+  body[data-ui-style="reframe"] .boss-name-fx small{font-size:clamp(.46rem,1.25vw,.72rem)!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .boss-name-fx strong{max-width:80vw!important;letter-spacing:.025em!important}
+  body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name strong{max-width:80vw!important;letter-spacing:.025em!important}
+}
+/* Readability floor for text answers on compact screens; JS may still shrink if truly necessary. */
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .choices button.text-choice{font-size:10.5px!important;line-height:1.12!important}
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"] .choices button.text-choice{font-size:clamp(.68rem,3vw,.9rem)!important;line-height:1.14!important}
+}
+
+/* Integration correction: the legacy structured boss layouts need their portrait height.
+   The earlier NEW compact portrait override was too aggressive at 320x568. */
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"] .question-panel.mimesis-table-question .equation-box{height:114px!important}
+  body[data-ui-style="reframe"] .question-panel.mimesis-final-question .equation-box{height:146px!important}
+  body[data-ui-style="reframe"] .question-panel.midori-tide-question .equation-box{height:126px!important}
+}
+
+/* ========================================================================== */
+/* 2026-09-07 integration round 2: HUD symmetry / boss-special restoration     */
+/* monster-book safety / attack rhythm / stable pause icon                    */
+/* ========================================================================== */
+
+/* Pause is an icon, not a font glyph, so it renders identically on every OS. */
+body[data-ui-style="reframe"] .pause-btn .pause-icon{
+  display:block;width:14px;height:14px;margin:auto;fill:currentColor;pointer-events:none
+}
+body[data-ui-style="reframe"] .pause-btn{letter-spacing:0!important;font-size:0!important}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"] .pause-btn .pause-icon{width:11px;height:11px}
+}
+
+/* Boss resources mirror the hero side but leave the actor-name lane untouched.
+   Wide screens get a compact edge meter; portrait uses an upper enemy resource row. */
+body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+  left:auto!important;right:2.2%!important;bottom:4.2%!important;
+  width:min(15vw,176px)!important;min-width:118px!important;max-width:176px!important;
+  transform:none!important;align-items:flex-end!important
+}
+body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+  bottom:2.2%!important;right:20%!important;max-width:70%!important
+}
+@media (orientation:landscape) and (max-height:700px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){right:1.7%!important;bottom:3%!important;width:min(16vw,150px)!important;min-width:104px!important}
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{right:22%!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){right:1.5%!important;bottom:2%!important;width:min(17vw,120px)!important;min-width:88px!important}
+  /* Names are intentionally hidden by the compact-layout contract here. */
+}
+@media (orientation:portrait){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){
+    left:auto!important;right:4%!important;top:29.5%!important;bottom:auto!important;
+    width:34%!important;min-width:104px!important;max-width:180px!important;transform:none!important
+  }
+  body[data-ui-style="reframe"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    right:auto!important;bottom:0!important;max-width:76%!important
+  }
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){top:26.5%!important}
+}
+
+/* Attack rhythm: the first NEW skin accidentally suppressed the legacy hero image
+   animation. Restore movement without adding any extra wait to the answer cycle. */
+@keyframes reframeSwordStep{
+  0%{transform:translate3d(0,0,0) rotate(0) scale(1)}
+  16%{transform:translate3d(-1.5%,1%,0) rotate(1deg) scale(.995)}
+  43%{transform:translate3d(18%,-1.5%,0) rotate(-3deg) scale(1.035)}
+  62%{transform:translate3d(21%,0,0) rotate(2deg) scale(1.04)}
+  100%{transform:translate3d(0,0,0) rotate(0) scale(1)}
+}
+@keyframes reframeMagicPulse{
+  0%{transform:translate3d(0,0,0) scale(1);filter:brightness(1)}
+  24%{transform:translate3d(-1%,2%,0) scale(.99);filter:brightness(1)}
+  52%{transform:translate3d(3%,-4%,0) scale(1.045);filter:brightness(1.22) drop-shadow(0 0 12px rgba(255,255,255,.72))}
+  76%{transform:translate3d(4%,-2%,0) scale(1.035);filter:brightness(1.12)}
+  100%{transform:translate3d(0,0,0) scale(1);filter:brightness(1)}
+}
+body[data-ui-style="reframe"] .actor.hero.attack-front>img{animation:reframeSwordStep .62s cubic-bezier(.18,.82,.22,1) both!important}
+body[data-ui-style="reframe"] .actor.hero.attack-back>img{animation:reframeMagicPulse .76s cubic-bezier(.18,.82,.22,1) both!important}
+body[data-ui-style="reframe"] .actor.hero.finisher-front>img{animation:heroFinisherRush 1.02s cubic-bezier(.12,.78,.18,1) both!important}
+body[data-ui-style="reframe"] .actor.hero.finisher-back>img{animation:heroFinisherCast 1.08s cubic-bezier(.12,.78,.18,1) both!important}
+/* Keep world-specific stronger motions authoritative. */
+body[data-ui-style="reframe"][data-mode="midori"] .actor.hero.attack-front>img{animation:midoriGunRecoil .62s cubic-bezier(.18,.82,.22,1) both!important}
+body[data-ui-style="reframe"][data-mode="midori"] .actor.hero.finisher-front>img{animation:midoriGunFinisher 1.18s cubic-bezier(.12,.78,.18,1) both!important}
+body[data-ui-style="reframe"][data-mode="end"][data-hero-world="midori"] .actor.hero.attack-front>img{animation:endTridentSlashMotion .68s cubic-bezier(.18,.82,.22,1) both!important}
+body[data-ui-style="reframe"][data-mode="end"][data-hero-world="midori"] .actor.hero.finisher-front>img{animation:heroFinisherRush 1.02s cubic-bezier(.12,.78,.18,1) both!important}
+
+/* Monster encyclopedia list: a list thumbnail may be dramatic, but never escape its
+   own button and cover labels / neighboring buttons. Details remain large. */
+body[data-ui-style="reframe"] .monster-book-cell{overflow:hidden!important;grid-template-rows:minmax(0,1fr) auto auto!important}
+body[data-ui-style="reframe"] .monster-book-thumb{
+  overflow:hidden!important;min-width:0!important;isolation:isolate;
+  border:1px solid rgba(255,255,255,.055)
+}
+body[data-ui-style="reframe"] .monster-book-thumb img{
+  position:absolute!important;left:50%!important;top:50%!important;
+  width:92%!important;height:92%!important;max-width:92%!important;max-height:92%!important;
+  object-fit:contain!important;object-position:center center!important;
+  transform:translate(-50%,-50%) scale(1)!important;transform-origin:50% 50%!important
+}
+body[data-ui-style="reframe"] .monster-book-cell.boss-entry .monster-book-thumb img{
+  width:88%!important;height:88%!important;max-width:88%!important;max-height:88%!important
+}
+body[data-ui-style="reframe"] .monster-book-cell b,
+body[data-ui-style="reframe"] .monster-book-cell small{position:relative;z-index:3;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* Desktop encyclopedia detail: use the right column as a designed information surface
+   rather than vertically centering a short paragraph in a large empty field. */
+@media (orientation:landscape) and (min-height:501px) and (min-width:1000px){
+  body[data-ui-style="reframe"] .monster-card{
+    width:min(1040px,94vw)!important;height:min(650px,88dvh)!important;
+    grid-template-columns:minmax(330px,.92fr) minmax(420px,1.08fr)!important;
+    grid-template-rows:auto minmax(0,1fr)!important;gap:10px 22px!important;padding:22px!important
+  }
+  body[data-ui-style="reframe"] .monster-card-rarity{grid-column:1;grid-row:1;align-self:end!important}
+  body[data-ui-style="reframe"] .monster-card h3{grid-column:2;grid-row:1;align-self:end!important;font-size:clamp(1.35rem,2.1vw,2rem)!important}
+  body[data-ui-style="reframe"] .monster-card-art{grid-column:1;grid-row:2!important;height:100%!important;min-height:0!important}
+  body[data-ui-style="reframe"] .monster-card-info{
+    grid-column:2;grid-row:2!important;justify-content:flex-start!important;align-self:stretch!important;
+    min-height:0!important;padding:16px 18px!important;border-radius:16px!important;
+    border:1px solid rgba(255,255,255,.075)!important;background:rgba(255,255,255,.025)!important;overflow:auto!important
+  }
+  body[data-ui-style="reframe"] .monster-card-meta{
+    flex:0 0 auto!important;padding:0 0 13px!important;margin:0 0 13px!important;
+    border-bottom:1px solid rgba(255,255,255,.09)!important;gap:7px!important
+  }
+  body[data-ui-style="reframe"] .monster-card p{
+    position:relative!important;flex:0 0 auto!important;margin:0!important;padding:36px 2px 4px!important;
+    font-size:.88rem!important;line-height:1.82!important;color:#d1dbe5!important
+  }
+  body[data-ui-style="reframe"] .monster-card p::before{
+    content:"記録";position:absolute;left:2px;top:0;
+    font:800 .66rem/1 var(--font-ui-gothic);letter-spacing:.18em;color:var(--ui-accent)
+  }
+}
+/* Five target families: desktop, tablet landscape, tablet portrait, phone landscape, phone portrait. */
+@media (orientation:landscape) and (min-width:1100px){body[data-ui-style="reframe"] .monster-book-grid{grid-template-columns:repeat(8,minmax(0,1fr))!important}}
+@media (orientation:landscape) and (min-width:700px) and (max-width:1099px){body[data-ui-style="reframe"] .monster-book-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+@media (orientation:landscape) and (max-width:699px){body[data-ui-style="reframe"] .monster-book-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
+@media (orientation:portrait) and (min-width:600px){body[data-ui-style="reframe"] .monster-book-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media (orientation:portrait) and (max-width:599px){body[data-ui-style="reframe"] .monster-book-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media (orientation:portrait) and (max-width:350px){body[data-ui-style="reframe"] .monster-book-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* Boss-special intent restoration.
+   NEW's generic themed answer surface must not erase a boss mechanic whose visual form
+   is itself the gameplay cue. Logic/timers are unchanged; only the legacy cue is restored. */
+body[data-ui-style="reframe"].silver-snowball-active .choices button{
+  border-radius:50%!important;aspect-ratio:1.35/1!important;
+  background:radial-gradient(circle at 35% 28%,#fff 0 16%,#dfeaf0 38%,#aec4cf 72%,#6f8998 100%)!important;
+  color:#102331!important;border-color:#eaf7ff!important;
+  box-shadow:inset -8px -10px 16px rgba(70,95,110,.24),inset 7px 6px 12px rgba(255,255,255,.62),0 8px 18px rgba(0,0,0,.30)!important;
+  text-shadow:none!important
+}
+body[data-ui-style="reframe"].silver-mirror-active .choices .silver-mirror-fake{
+  color:#d4c8ff!important;border-color:rgba(170,120,255,.86)!important;
+  background:linear-gradient(145deg,rgba(74,46,120,.66),rgba(30,42,78,.74))!important;
+  box-shadow:inset 0 0 0 2px rgba(226,209,255,.13),inset 0 0 25px rgba(122,79,208,.28),0 0 13px rgba(136,90,224,.28)!important;
+  opacity:.68!important;filter:saturate(.7)!important
+}
+body[data-ui-style="reframe"].silver-beast-ring-moving .choices button{
+  box-shadow:0 0 0 2px rgba(208,159,255,.18),0 0 20px rgba(120,62,178,.24),0 6px 14px rgba(0,0,0,.32)!important
+}
+body[data-ui-style="reframe"].silver-spotlight-active .question-panel{
+  background:rgba(4,7,12,.92)!important;
+  box-shadow:inset 0 0 120px rgba(0,0,0,.94),0 12px 28px rgba(0,0,0,.56)!important
+}
+body[data-ui-style="reframe"].silver-spotlight-active .choices button{
+  opacity:.12!important;filter:brightness(.25)!important;pointer-events:none!important
+}
+body[data-ui-style="reframe"].silver-spotlight-active .choices button.silver-spotlit{
+  opacity:1!important;filter:brightness(1.15)!important;pointer-events:auto!important;
+  box-shadow:0 0 0 2px rgba(255,248,206,.85),0 0 38px rgba(255,239,153,.72),inset 0 0 22px rgba(255,250,218,.16)!important
+}
+body[data-ui-style="reframe"].blue-sumo-active .choices button.blue-sumo-holding{
+  transform:translateY(2px) scale(.985)!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.38),inset 0 3px 13px rgba(0,0,0,.18)!important
+}
+body[data-ui-style="reframe"].crimson-moon-shift-active .equation-box{
+  background:linear-gradient(180deg,#e7c77a,#b98735)!important;border-color:#79511e!important;
+  box-shadow:inset 0 0 24px rgba(88,52,10,.25),0 0 18px rgba(221,171,75,.30),0 5px 12px rgba(0,0,0,.30)!important
+}
+body[data-ui-style="reframe"].crimson-moon-shift-active .math-problem{color:#21150a!important;text-shadow:0 1px rgba(255,239,190,.35)!important}
+/* 無明の一閃: its defining mechanic is near-invisible text that gradually returns over
+   the 15-second limit. World palette restoration must never make the text fully visible. */
+body[data-ui-style="reframe"].crimson-genma-ready .math-problem{opacity:.055!important;filter:blur(.32px)!important}
+body[data-ui-style="reframe"].crimson-genma-reveal .math-problem{animation:crimsonGenmaReveal 15s linear forwards!important}
+body[data-ui-style="reframe"].crimson-genma-ready .equation-box,
+body[data-ui-style="reframe"].crimson-genma-reveal .equation-box{box-shadow:inset 0 0 30px rgba(35,39,52,.26),0 5px 12px rgba(0,0,0,.26)!important}
+/* Compact screen-specific mechanics keep their semantic form rather than NEW generic sizing. */
+@media (orientation:landscape) and (max-height:500px){
+  body[data-ui-style="reframe"].silver-snowball-active .choices button{height:48px!important;min-height:48px!important}
+}
+
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){top:22.5%!important}
+}
+@media (orientation:portrait) and (max-width:599px) and (max-height:650px){
+  body[data-ui-style="reframe"].hud-modern .boss-hp-hud:not([hidden]){top:21.5%!important}
+}
+@media (orientation:landscape) and (min-height:501px) and (min-width:1000px){
+  body[data-ui-style="reframe"] .monster-card{width:min(1000px,94vw)!important;height:min(570px,84dvh)!important}
+  body[data-ui-style="reframe"] .monster-card-info{
+    background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.018))!important;
+  }
+  body[data-ui-style="reframe"] .monster-card p{max-width:58ch!important}
+}

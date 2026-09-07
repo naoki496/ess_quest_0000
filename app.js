@@ -26,7 +26,7 @@
     el.style.whiteSpace='nowrap';
     const base=parseFloat(getComputedStyle(el).fontSize)||32;
     let size=base;
-    while(el.scrollWidth>maxWidth&&size>minPx){size=Math.max(minPx,size-1);el.style.fontSize=`${size}px`;}
+    while(el.scrollWidth>maxWidth&&size>minPx){size=Math.max(minPx,size-1);el.style.setProperty('font-size',`${size}px`,'important');}
   }
   function fitBossNameText(el){
     const portrait=window.matchMedia?.('(orientation: portrait)')?.matches;
@@ -2714,7 +2714,7 @@ function markWorldVisited(world){
     applyHudMode('modern',{persist:false});
     if(persist)writeUiStyle(uiStyle);
     syncUiStyleControls();
-    requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);});
+    requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);scheduleChoiceFit();});
   }
   function toggleUiStyle(){applyUiStyle(uiStyle==='reframe'?'glass':'reframe');}
   let modernHudLastLives=3;
@@ -3194,6 +3194,17 @@ function setStageOverlayVisible(visible){
     panel.classList.toggle('fraction-question',!!problemFraction);
     panel.classList.toggle('fraction-choice-question',!!choiceFraction&&!problemFraction);
   }
+  function setQuestionDensityLayout(q=null){
+    const panel=els.mathProblem?.closest('.question-panel');
+    if(!panel)return;
+    panel.classList.remove('long-question','very-long-question');
+    if(!q||q.visualType||q.fraction||q.htmlExpression)return;
+    const shown=questionDisplayText(q);
+    const textual=/[ぁ-んァ-ヶ一-龯々]/.test(shown);
+    const length=Array.from(String(shown||'')).length;
+    if(textual||length>=18)panel.classList.add('long-question');
+    if(length>=32||(textual&&length>=24))panel.classList.add('very-long-question');
+  }
   function setMimesisQuestionLayout(type='',activeBoss=false){
     const panel=els.mathProblem?.closest('.question-panel');
     if(!panel)return;
@@ -3266,20 +3277,33 @@ function setStageOverlayVisible(visible){
     const el=els.mathProblem,box=el?.closest('.equation-box');
     if(!el||!box)return;
     resetMathProblemFit();
-    if(q?.fraction||q?.visualType)return;
+    if(q?.visualType)return;
     const maxWidth=Math.max(100,box.clientWidth-18);
     const maxHeight=Math.max(42,box.clientHeight-10);
     const portrait=window.matchMedia?.('(orientation:portrait)').matches;
     const lowLandscape=!portrait&&window.innerHeight<=500;
+    const fractionish=!!(q?.fraction||q?.htmlExpression);
     const shown=String(q?.displayExpression??q?.expression??'');
     const textual=/[ぁ-んァ-ヶ一-龯々]/.test(shown)||shown.length>=22;
     const base=parseFloat(getComputedStyle(el).fontSize)||32;
+    el.style.maxWidth=`${maxWidth}px`;
+    if(fractionish){
+      let size=Math.min(base,portrait?44:(lowLandscape?34:52));
+      const minFraction=portrait?18:(lowLandscape?15:18);
+      el.style.width=`${maxWidth}px`;
+      el.style.setProperty('font-size',`${size}px`,'important');
+      el.style.whiteSpace='nowrap';
+      el.style.display='flex';
+      el.style.textAlign='center';
+      el.style.lineHeight='1.02';
+      while((el.scrollWidth>maxWidth||el.scrollHeight>maxHeight)&&size>minFraction){size-=1;el.style.setProperty('font-size',`${size}px`,'important');}
+      return;
+    }
     const minSingle=portrait?20:(lowLandscape?17:22);
     let size=textual?Math.min(base,portrait?27:(lowLandscape?20:30)):base;
-    el.style.maxWidth=`${maxWidth}px`;
-    el.style.fontSize=`${size}px`;
+    el.style.setProperty('font-size',`${size}px`,'important');
     el.style.whiteSpace='nowrap';
-    while(el.scrollWidth>maxWidth&&size>minSingle){size=Math.max(minSingle,size-1);el.style.fontSize=`${size}px`;}
+    while(el.scrollWidth>maxWidth&&size>minSingle){size=Math.max(minSingle,size-1);el.style.setProperty('font-size',`${size}px`,'important');}
     if(textual||el.scrollWidth>maxWidth){
       el.style.width=`${maxWidth}px`;
       el.style.maxWidth=`${maxWidth}px`;
@@ -3289,10 +3313,46 @@ function setStageOverlayVisible(visible){
       el.style.lineHeight=textual?'1.22':'1.15';
       el.style.overflowWrap='anywhere';
       el.style.wordBreak='normal';
-      size=Math.min(size,minSingle);el.style.fontSize=`${size}px`;
-      const minWrap=lowLandscape?13:15;
-      while(el.scrollHeight>maxHeight&&size>minWrap){size--;el.style.fontSize=`${size}px`;}
+      size=Math.min(size,minSingle);el.style.setProperty('font-size',`${size}px`,'important');
+      const minWrap=lowLandscape?12:14;
+      while(el.scrollHeight>maxHeight&&size>minWrap){size--;el.style.setProperty('font-size',`${size}px`,'important');}
     }
+  }
+  function resetChoiceButtonFit(button){
+    if(!button)return;
+    for(const prop of ['font-size','line-height','white-space','overflow-wrap','word-break'])button.style.removeProperty(prop);
+  }
+  function fitChoiceButtonToBox(button){
+    if(uiStyle!=='reframe'||!button||button.hidden)return;
+    resetChoiceButtonFit(button);
+    const textual=button.classList.contains('text-choice');
+    const fraction=button.classList.contains('fraction-choice');
+    if(textual){button.style.whiteSpace='normal';button.style.overflowWrap='anywhere';button.style.wordBreak='normal';button.style.lineHeight='1.14';}
+    else button.style.whiteSpace='nowrap';
+    const cs=getComputedStyle(button);
+    let size=parseFloat(cs.fontSize)||20;
+    const portrait=window.matchMedia?.('(orientation:portrait)').matches;
+    const lowLandscape=!portrait&&window.innerHeight<=500;
+    const min=textual?(lowLandscape?9:10):(fraction?(lowLandscape?14:16):(lowLandscape?15:17));
+    const maxW=Math.max(24,button.clientWidth),maxH=Math.max(22,button.clientHeight);
+    if(fraction){
+      while(button.scrollWidth>maxW&&size>min){size-=1;button.style.setProperty('font-size',`${size}px`,'important');}
+      return;
+    }
+    while((button.scrollWidth>maxW||button.scrollHeight>maxH)&&size>min){size-=1;button.style.setProperty('font-size',`${size}px`,'important');}
+  }
+  let choiceFitRaf=0;
+  function fitChoicesToBoxes(){
+    if(uiStyle!=='reframe'||!els.choices)return;
+    [...els.choices.children].forEach(fitChoiceButtonToBox);
+  }
+  function scheduleChoiceFit(){
+    if(choiceFitRaf)cancelAnimationFrame(choiceFitRaf);
+    choiceFitRaf=requestAnimationFrame(()=>{choiceFitRaf=0;fitChoicesToBoxes();});
+  }
+  if(typeof MutationObserver!=='undefined'&&els.choices){
+    const choiceFitObserver=new MutationObserver(()=>scheduleChoiceFit());
+    choiceFitObserver.observe(els.choices,{childList:true,subtree:true,characterData:true});
   }
   function renderBlueFadeParts(q){
     if(!q?.blueFadeParts)return false;
@@ -3302,15 +3362,15 @@ function setStageOverlayVisible(visible){
     els.mathProblem.appendChild(wrap);return true;
   }
   function renderQuestionContent(q){
-    const problemFraction=!!q?.fraction||!!q?.htmlExpression;setFractionQuestionLayout(problemFraction,questionHasFractionChoices(q));setMimesisQuestionLayout(q?.visualType||'',(mode==='silver'&&bossPhase&&stageIndex===4)||(mode==='end'&&bossPhase&&!endFinalPhase&&currentEndSource()==='silver'));resetMathProblemFit();
+    const problemFraction=!!q?.fraction||!!q?.htmlExpression;setFractionQuestionLayout(problemFraction,questionHasFractionChoices(q));setQuestionDensityLayout(q);setMimesisQuestionLayout(q?.visualType||'',(mode==='silver'&&bossPhase&&stageIndex===4)||(mode==='end'&&bossPhase&&!endFinalPhase&&currentEndSource()==='silver'));resetMathProblemFit();
     if(renderMimesisVisual(q))return;if(renderBlueFadeParts(q)){fitMathProblemToBox(q);return;}
     if(q?.htmlExpression)els.mathProblem.innerHTML=q.htmlExpression;else if(q?.fraction)els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);else els.mathProblem.textContent=questionDisplayText(q);fitMathProblemToBox(q);
   }
   function renderChoiceButton(b,v,answer){
     b.dataset.answerValue=answerKey(v);
-    const f=parseFractionKey(v);if(f)b.innerHTML=fractionHtml(f);else b.textContent=v;
+    const f=parseFractionKey(v);if(f){b.innerHTML=fractionHtml(f);b.classList.add('fraction-choice');}else b.textContent=v;
     if(typeof v==='string'&&!f&&!/^[-+]?\d+(?:\.\d+)?$/.test(v)&&!/^\d+:\d+$/.test(v))b.classList.add('text-choice');
-    applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);
+    applyDebugAnswerHint(b,v,answer);b.onclick=()=>resolveAnswer(v,false);scheduleChoiceFit();
   }
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
   function battleQuestionTime(){if(mode==='white')return whiteBeyondActive?60:whiteQuestionTime();if(mode==='end'&&endFinalPhase){if(bossQuestion<END_FINAL_PRELUDE_COUNT)return 45;return [45,20,40,40,30][endFinalSpecialPhase()];}return 60;}
@@ -3320,7 +3380,7 @@ function setStageOverlayVisible(visible){
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase&&bossQuestion>=END_FINAL_PRELUDE_COUNT)applyEndFinalQuestionModifier(isBossFinalActionQuestion()&&bossSpecialSequence?.type==='end-final-convergence'?bossSpecialSequence.step:null);syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){clearEndSpecialEffects();setFractionQuestionLayout(false,false);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
+  function clearQuestionUi(){clearEndSpecialEffects();setFractionQuestionLayout(false,false);setQuestionDensityLayout(null);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -3752,7 +3812,7 @@ function setStageOverlayVisible(visible){
     midoriSpecialState={type:'rune',blockSpecial:false};
     document.body.classList.add('midori-rune-active');document.querySelector('.question-panel')?.classList.add('midori-special-panel');
     [...els.choices.children].forEach((b,i)=>{if(b.dataset.eliminated==='true')return;const value=b.dataset.answerValue;b.textContent=midoriRuneExpression(value,i);b.classList.add('midori-rune-choice');b.setAttribute('aria-label',`碑文 ${b.textContent}`);});
-    els.feedbackText.textContent='碑文の式が表す数を読み、答えを選ぼう。';
+    scheduleChoiceFit();els.feedbackText.textContent='碑文の式が表す数を読み、答えを選ぼう。';
   }
   function updateMidoriRouteState(){
     if(midoriSpecialState?.type!=='route')return;
@@ -5248,8 +5308,8 @@ function setStageOverlayVisible(visible){
   };
 
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame('visibility');});
-  window.addEventListener('resize',()=>requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);}),{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);},80),{passive:true});
+  window.addEventListener('resize',()=>requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);fitChoicesToBoxes();}),{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);fitChoicesToBoxes();},80),{passive:true});
   if(document.fonts?.ready)document.fonts.ready.then(()=>fitVisibleNames()).catch(()=>{});
 
   initializeSecretRelics();
