@@ -52,6 +52,7 @@
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
   const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,endClears:0,whiteBestQuestions:0,whiteBestDepth:0,whiteAttempts:0,whiteTotalCorrect:0,whiteBeyondSeen:0,whiteBeyondCorrect:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
   let save=loadSave();
+  repairInvalidTimeKeyStorage();
 
   const FRONT_STAGES=[
     {name:'はじまりの もり',key:'forest',count:15,normalCount:10,bossCount:5,bgm:'Cybern.mp3',bossBgm:'boss.mp3',bg:'bg_forest.png',boss:['森王トレントロード','boss_front_1.png']},
@@ -368,7 +369,13 @@
 
   function normalizeSave(raw={}){
     const merged={...DEFAULT_SAVE,...raw};
-    merged.owned=Array.isArray(raw.owned)?raw.owned:[100];
+    // No.100 (時空の鍵) is a Light World first-clear reward, never a fresh-save default.
+    // Older buggy builds could persist [100] on first launch because a missing owned array
+    // fell back to [100]. Preserve genuine progression, but repair only the impossible state
+    // where the key exists before any Light clear and before the Back World is unlocked.
+    const hasLegitimateTimeKeyProgress=(Number(raw.frontClears)||0)>0||raw.backUnlocked===true;
+    merged.owned=Array.isArray(raw.owned)?[...raw.owned]:(hasLegitimateTimeKeyProgress?[100]:[]);
+    if(!hasLegitimateTimeKeyProgress&&merged.owned.includes(100))merged.owned=merged.owned.filter(id=>id!==100);
     merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[],midori:Array.isArray(raw.monsterBook?.midori)?raw.monsterBook.midori:[],end:Array.isArray(raw.monsterBook?.end)?raw.monsterBook.end:[]};
     merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})},midori:{...(raw.monsterEncounters?.midori||{})},end:{...(raw.monsterEncounters?.end||{})}};
     merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[],midori:Array.isArray(raw.musicUnlocked?.midori)?raw.musicUnlocked.midori:[],end:Array.isArray(raw.musicUnlocked?.end)?raw.musicUnlocked.end:[]};
@@ -412,6 +419,23 @@
     }catch{}
     return freshSave();
   }
+  function repairInvalidTimeKeyStorage(){
+    if(debugFullUnlock)return false;
+    let changed=false;
+    try{
+      for(const key of [STORAGE_KEY,SAVE_BACKUP_KEY]){
+        const rawText=localStorage.getItem(key),raw=parseStoredSave(rawText);
+        if(!raw||!Array.isArray(raw.owned)||!raw.owned.includes(100))continue;
+        const progressed=(Number(raw.frontClears)||0)>0||raw.backUnlocked===true;
+        if(progressed)continue;
+        raw.owned=raw.owned.filter(id=>id!==100);
+        localStorage.setItem(key,JSON.stringify(raw));
+        changed=true;
+      }
+    }catch{}
+    return changed;
+  }
+
   function writeSaveSnapshot(){
     if(debugFullUnlock)return;
     try{
