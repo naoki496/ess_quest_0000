@@ -5545,9 +5545,16 @@ function setStageOverlayVisible(visible){
     async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
   };
 
+  function syncCompactPhoneLandscape(){
+    const coarse=typeof matchMedia==='function'&&(matchMedia('(pointer:coarse)').matches||matchMedia('(hover:none)').matches);
+    const sw=Math.max(1,Number(screen?.width)||innerWidth||1),sh=Math.max(1,Number(screen?.height)||innerHeight||1);
+    const shortSide=Math.min(sw,sh),landscape=innerWidth>innerHeight;
+    document.body.dataset.compactPhoneLandscape=(coarse&&shortSide<=520&&landscape)?'true':'false';
+  }
+
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame('visibility');});
-  window.addEventListener('resize',()=>requestAnimationFrame(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);fitChoicesToBoxes();}),{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(()=>{fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);fitChoicesToBoxes();},80),{passive:true});
+  window.addEventListener('resize',()=>requestAnimationFrame(()=>{syncCompactPhoneLandscape();fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);fitChoicesToBoxes();}),{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(()=>{syncCompactPhoneLandscape();fitVisibleNames();if(currentQuestion&&!els.gameScreen.hidden)fitMathProblemToBox(currentQuestion);fitChoicesToBoxes();},80),{passive:true});
   if(document.fonts?.ready)document.fonts.ready.then(()=>fitVisibleNames()).catch(()=>{});
 
   initializeSecretRelics();
@@ -5555,5 +5562,6 @@ function setStageOverlayVisible(visible){
   installDebugSecretGesture();
   applyHudMode(readHudMode(),{persist:false});
   applyUiStyle(readUiStyle(),{persist:false});
+  syncCompactPhoneLandscape();
   renderTitle();showOnly(els.titleScreen);enqueuePendingSecretRelicNotices({showNow:true});
 })();
