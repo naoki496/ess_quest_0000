@@ -50,7 +50,7 @@
   const DEBUG_SESSION_KEY='sansuQuestDebugFullUnlock_v1';
   let debugFullUnlock=false;
   try{debugFullUnlock=sessionStorage.getItem(DEBUG_SESSION_KEY)==='1';}catch{}
-  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,endClears:0,whiteBestQuestions:0,whiteBestDepth:0,whiteAttempts:0,whiteTotalCorrect:0,whiteBeyondSeen:0,whiteBeyondCorrect:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
+  const DEFAULT_SAVE={gold:0,owned:[],frontClears:0,backClears:0,crimsonClears:0,blueClears:0,silverClears:0,midoriClears:0,endClears:0,whiteBestQuestions:0,whiteBestDepth:0,whiteAttempts:0,whiteTotalCorrect:0,whiteBeyondSeen:0,whiteBeyondCorrect:0,backUnlocked:false,monsterBook:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},monsterEncounters:{front:{},back:{},crimson:{},blue:{},silver:{},midori:{},end:{}},musicUnlocked:{front:[],back:[],crimson:[],blue:[],silver:[],midori:[],end:[]},mistakeBook:[],secretRelics:[],secretRelicNotified:[],secretRelicVersion:0,mapTipIntroIndex:0,mapSecretTipTierSeen:0,worldUnlockNotified:[],worldUnlockNew:[],worldUnlockVersion:0};
   let save=loadSave();
   repairInvalidTimeKeyStorage();
 
@@ -256,16 +256,16 @@
 
 
   const els={
-    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),worldWarpScreen:$('worldWarpScreen'),creditsScreen:$('creditsScreen'),gameScreen:$('gameScreen'),
+    titleScreen:$('titleScreen'),shopScreen:$('shopScreen'),collectionScreen:$('collectionScreen'),monsterBookScreen:$('monsterBookScreen'),mistakeBookScreen:$('mistakeBookScreen'),worldWarpScreen:$('worldWarpScreen'),creditsScreen:$('creditsScreen'),gameScreen:$('gameScreen'),
     titleHero:$('titleHero'),titleSubtitle:$('titleSubtitle'),titleEyebrow:$('titleEyebrow'),titleGold:$('titleGold'),titleModeName:$('titleModeName'),titleTrackName:$('titleTrackName'),titleGradeGuide:$('titleGradeGuide'),
-    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),creditsBtn:$('creditsBtn'),creditsBackBtn:$('creditsBackBtn'),titleUiStyleBtn:$('titleUiStyleBtn'),uiStyleConfirmOverlay:$('uiStyleConfirmOverlay'),uiStyleConfirmMessage:$('uiStyleConfirmMessage'),uiStyleConfirmNote:$('uiStyleConfirmNote'),uiStyleConfirmCancelBtn:$('uiStyleConfirmCancelBtn'),uiStyleConfirmAcceptBtn:$('uiStyleConfirmAcceptBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
+    playBtn:$('playBtn'),shopBtn:$('shopBtn'),collectionBtn:$('collectionBtn'),monsterBookBtn:$('monsterBookBtn'),mistakeBookBtn:$('mistakeBookBtn'),worldWarpBtn:$('worldWarpBtn'),backWorldBtn:$('backWorldBtn'),frontWorldBtn:$('frontWorldBtn'),musicBtn:$('musicBtn'),creditsBtn:$('creditsBtn'),creditsBackBtn:$('creditsBackBtn'),titleUiStyleBtn:$('titleUiStyleBtn'),uiStyleConfirmOverlay:$('uiStyleConfirmOverlay'),uiStyleConfirmMessage:$('uiStyleConfirmMessage'),uiStyleConfirmNote:$('uiStyleConfirmNote'),uiStyleConfirmCancelBtn:$('uiStyleConfirmCancelBtn'),uiStyleConfirmAcceptBtn:$('uiStyleConfirmAcceptBtn'),debugBadge:$('debugBadge'),titleQuestionCount:$('titleQuestionCount'),
     musicOverlay:$('musicOverlay'),musicCloseBtn:$('musicCloseBtn'),musicWorldTabs:$('musicWorldTabs'),musicWorldStatus:$('musicWorldStatus'),musicWorldTitle:$('musicWorldTitle'),musicUnlockCount:$('musicUnlockCount'),musicUnlockFill:$('musicUnlockFill'),musicTrackList:$('musicTrackList'),musicNowTitle:$('musicNowTitle'),musicNowWhere:$('musicNowWhere'),musicElapsed:$('musicElapsed'),musicDuration:$('musicDuration'),musicSeek:$('musicSeek'),musicPrevBtn:$('musicPrevBtn'),musicPlayBtn:$('musicPlayBtn'),musicNextBtn:$('musicNextBtn'),musicStopBtn:$('musicStopBtn'),
     debugOverlay:$('debugOverlay'),debugStatus:$('debugStatus'),debugToggleBtn:$('debugToggleBtn'),debugStagePanel:$('debugStagePanel'),debugStageGrid:$('debugStageGrid'),debugCloseBtn:$('debugCloseBtn'),
     worldWarpList:$('worldWarpList'),worldWarpBackBtn:$('worldWarpBackBtn'),
     dataManagementScreen:$('dataManagementScreen'),dataManagementBtn:$('dataManagementBtn'),dataManagementBackBtn:$('dataManagementBackBtn'),dataStatusMain:$('dataStatusMain'),dataStatusBackup:$('dataStatusBackup'),dataStatusCorrupt:$('dataStatusCorrupt'),dataManagementNotice:$('dataManagementNotice'),dataDeleteBtn:$('dataDeleteBtn'),dataDeleteConfirm:$('dataDeleteConfirm'),dataDeleteCancelBtn:$('dataDeleteCancelBtn'),dataDeleteConfirmBtn:$('dataDeleteConfirmBtn'),
     shopGold:$('shopGold'),shopFilters:$('shopFilters'),shopList:$('shopList'),shopDetail:$('shopDetail'),shopBackBtn:$('shopBackBtn'),
     collectionCount:$('collectionCount'),collectionSecretCount:$('collectionSecretCount'),collectionGrid:$('collectionGrid'),secretRelicGrid:$('secretRelicGrid'),collectionDetail:$('collectionDetail'),collectionBackBtn:$('collectionBackBtn'),
-    monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
+    monsterBookCount:$('monsterBookCount'),monsterBookFilters:$('monsterBookFilters'),monsterBookGrid:$('monsterBookGrid'),monsterBookBackBtn:$('monsterBookBackBtn'),mistakeBookCount:$('mistakeBookCount'),mistakeBookList:$('mistakeBookList'),mistakeBookClearBtn:$('mistakeBookClearBtn'),mistakeBookBackBtn:$('mistakeBookBackBtn'),mistakeBookClearConfirm:$('mistakeBookClearConfirm'),mistakeBookClearCancelBtn:$('mistakeBookClearCancelBtn'),mistakeBookClearConfirmBtn:$('mistakeBookClearConfirmBtn'),monsterCardOverlay:$('monsterCardOverlay'),monsterCard:$('monsterCard'),monsterCardClose:$('monsterCardClose'),monsterCardRarity:$('monsterCardRarity'),monsterCardName:$('monsterCardName'),monsterCardImage:$('monsterCardImage'),monsterCardWorld:$('monsterCardWorld'),monsterCardStage:$('monsterCardStage'),monsterCardEncounter:$('monsterCardEncounter'),monsterCardText:$('monsterCardText'),
     progressText:$('progressText'),progressFill:$('progressFill'),stageLabel:$('stageLabel'),stageName:$('stageName'),lifeDisplay:$('lifeDisplay'),timerText:$('timerText'),soundBtn:$('soundBtn'),pauseBtn:$('pauseBtn'),hudModeToggleBtn:$('hudModeToggleBtn'),
     battleBg:$('battleBg'),heroActor:$('heroActor'),heroName:$('heroName'),heroImage:$('heroImage'),attackEffect:$('attackEffect'),heroLifeHud:$('heroLifeHud'),compactProgressHud:$('compactProgressHud'),compactProgressFill:$('compactProgressFill'),compactProgressText:$('compactProgressText'),questionTimerHud:$('questionTimerHud'),questionTimerText:$('questionTimerText'),specialHud:$('specialHud'),specialBtn:$('specialBtn'),specialFill:$('specialFill'),bossHpHud:$('bossHpHud'),bossHpFill:$('bossHpFill'),bossShieldStatus:$('bossShieldStatus'),enemyActor:$('enemyActor'),enemySprite:$('enemySprite'),enemyName:$('enemyName'),enemyImage:$('enemyImage'),answerMark:$('answerMark'),mathProblem:$('mathProblem'),feedbackText:$('feedbackText'),choices:$('choices'),
     mapOverlay:$('mapOverlay'),mapModeLabel:$('mapModeLabel'),mapTitle:$('mapTitle'),mapVisual:$('mapVisual'),mapImage:$('mapImage'),mapTipCategory:$('mapTipCategory'),mapTipText:$('mapTipText'),mapMessage:$('mapMessage'),mapNextBtn:$('mapNextBtn'),
@@ -280,7 +280,7 @@
   let midoriSpecialState=null;
   let endSpecialTimers=[],endSpecialState=null,endFinalModifierTimer=null;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
-  let currentQuestion=null,currentBgm=null;
+  let currentQuestion=null,currentBgm=null,recentQuestionKeys=[];
   const stageBgmPlayer=new Audio();
   stageBgmPlayer.loop=true;
   stageBgmPlayer.preload='auto';
@@ -378,8 +378,8 @@
     if(!hasLegitimateTimeKeyProgress&&merged.owned.includes(100))merged.owned=merged.owned.filter(id=>id!==100);
     merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[],midori:Array.isArray(raw.monsterBook?.midori)?raw.monsterBook.midori:[],end:Array.isArray(raw.monsterBook?.end)?raw.monsterBook.end:[]};
     merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})},midori:{...(raw.monsterEncounters?.midori||{})},end:{...(raw.monsterEncounters?.end||{})}};
-    for(const world of Object.keys(merged.monsterBook)){const counts=merged.monsterEncounters[world];for(const id of merged.monsterBook[world])counts[id]=Math.max(1,Number(counts[id])||0);}
     merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[],midori:Array.isArray(raw.musicUnlocked?.midori)?raw.musicUnlocked.midori:[],end:Array.isArray(raw.musicUnlocked?.end)?raw.musicUnlocked.end:[]};
+    merged.mistakeBook=(Array.isArray(raw.mistakeBook)?raw.mistakeBook:[]).map(normalizeMistakeBookEntry).filter(Boolean);
     merged.secretRelics=Array.isArray(raw.secretRelics)?raw.secretRelics:[];
     merged.secretRelicNotified=Array.isArray(raw.secretRelicNotified)?raw.secretRelicNotified:[];
     merged.secretRelicVersion=Number.isFinite(Number(raw.secretRelicVersion))?Number(raw.secretRelicVersion):0;
@@ -788,11 +788,7 @@ function initializeWorldUnlockState(){
 }
 
 let rewardFollowupQueue=[];
-function presentRewardNotice({icon='✦',name='',text='',kind='item',kicker='NEW ITEM',world=null}){
-  if(kind==='world-unlock'&&world&&!debugFullUnlock){
-    save.worldUnlockNotified=Array.isArray(save.worldUnlockNotified)?save.worldUnlockNotified:[];
-    if(!save.worldUnlockNotified.includes(world)){save.worldUnlockNotified.push(world);persistQuietly();}
-  }
+function presentRewardNotice({icon='✦',name='',text='',kind='item',kicker='NEW ITEM'}){
   if(els.rewardCard)els.rewardCard.classList.toggle('world-unlock',kind==='world-unlock');
   if(els.rewardKicker)els.rewardKicker.textContent=kicker;
   els.rewardIcon.textContent=icon;els.rewardName.textContent=name;els.rewardText.textContent=text;els.rewardOverlay.hidden=false;
@@ -802,15 +798,14 @@ function enqueuePendingWorldUnlockNotices({showNow=true}={}){
   save.worldUnlockNotified=Array.isArray(save.worldUnlockNotified)?save.worldUnlockNotified:[];
   save.worldUnlockNew=Array.isArray(save.worldUnlockNew)?save.worldUnlockNew:[];
   const notified=new Set(save.worldUnlockNotified);
-  const queued=new Set(rewardFollowupQueue.filter(n=>n?.kind==='world-unlock'&&n.world).map(n=>n.world));
-  const pending=WORLD_UNLOCKS.filter(w=>isWorldActuallyUnlocked(w.world)&&!notified.has(w.world)&&!queued.has(w.world));
-  let changed=false;
+  const pending=WORLD_UNLOCKS.filter(w=>isWorldActuallyUnlocked(w.world)&&!notified.has(w.world));
+  if(!pending.length)return;
   for(const w of pending){
-    if(!save.worldUnlockNew.includes(w.world)){save.worldUnlockNew.push(w.world);changed=true;}
-    rewardFollowupQueue.push({kind:'world-unlock',world:w.world,kicker:'NEW WORLD UNLOCKED',icon:'∞',name:w.name,text:`${w.sourceName}が、新たな道を開いた。\n${w.desc}\n「世界渡り」から新たな世界へ行けるようになった。`});
+    save.worldUnlockNotified.push(w.world);
+    if(!save.worldUnlockNew.includes(w.world))save.worldUnlockNew.push(w.world);
+    rewardFollowupQueue.push({kind:'world-unlock',kicker:'NEW WORLD UNLOCKED',icon:'∞',name:w.name,text:`${w.sourceName}が、新たな道を開いた。\n${w.desc}\n「世界渡り」から新たな世界へ行けるようになった。`});
   }
-  if(changed)persistQuietly();
-  if(pending.length)renderTitle();
+  persistQuietly();renderTitle();
   if(showNow&&els.rewardOverlay.hidden&&rewardFollowupQueue.length)presentRewardNotice(rewardFollowupQueue.shift());
 }
 function enqueuePendingSecretRelicNotices({showNow=true}={}){
@@ -851,7 +846,7 @@ function markWorldVisited(world){
     }catch{}
   }
 
-  function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.monsterBookScreen,els.worldWarpScreen,els.dataManagementScreen,els.creditsScreen,els.gameScreen].filter(Boolean).forEach(x=>x.hidden=x!==el);syncPauseButton();}
+  function showOnly(el){[els.titleScreen,els.shopScreen,els.collectionScreen,els.monsterBookScreen,els.mistakeBookScreen,els.worldWarpScreen,els.dataManagementScreen,els.creditsScreen,els.gameScreen].filter(Boolean).forEach(x=>x.hidden=x!==el);syncPauseButton();}
   function setMenuButton(btn,glyph,label){btn.innerHTML=`<span class="menu-glyph" aria-hidden="true">${glyph}</span><span class="menu-label">${label}</span>`;}
   function renderTitle(){
     document.body.dataset.mode=mode;
@@ -859,17 +854,17 @@ function markWorldVisited(world){
     els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':mode==='end'?'終の世界':'白の世界';
     els.titleTrackName.textContent=titleTrackLabel();
     if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':mode==='midori'?'小学4年生以降・思考問題':mode==='end'?'既習算数を統合した発展問題':'小学校算数・ENDLESS CHALLENGE';
-    const runTotal=mode==='white'?'∞':mode==='end'?'85':mode==='crimson'?'80':'75';
-    if(els.titleQuestionCount)els.titleQuestionCount.textContent=runTotal;
+    const longRun=mode==='crimson'||mode==='end';
+    if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='white'?'∞':longRun?'80':'75';
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':mode==='end'?'5領域＋FINAL':mode==='white'?'10問ごとにDEPTH':'全5ステージ';
-    document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=runTotal);
+    const restartTotal=mode==='white'?'∞':longRun?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
     const ruleCells=[...document.querySelectorAll('.rule-grid>div')];
     if(ruleCells.length>=4){
       const t=ruleCells[0].querySelector('strong'),ts=ruleCells[0].querySelector('small'),life=ruleCells[2].querySelector('small');
       if(t)t.textContent=mode==='white'?'60→45':'60';if(ts)ts.textContent=mode==='white'?'DEPTHで変化':'1もんの制限時間';if(life)life.textContent=mode==='white'?'回復なし':'3ミスでステージ再挑戦';
     }
     if(els.debugBadge)els.debugBadge.hidden=!debugFullUnlock;if(els.musicBtn)els.musicBtn.hidden=false;
-    els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;els.shopBtn.hidden=false;els.collectionBtn.hidden=false;els.monsterBookBtn.hidden=false;if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
+    els.backWorldBtn.hidden=true;els.frontWorldBtn.hidden=true;els.shopBtn.hidden=false;els.collectionBtn.hidden=false;els.monsterBookBtn.hidden=false;if(els.mistakeBookBtn){els.mistakeBookBtn.hidden=false;setMenuButton(els.mistakeBookBtn,'✎','まちがいノート');}if(els.worldWarpBtn)els.worldWarpBtn.hidden=!canWorldWarp();
     if(mode==='front'){els.titleHero.src='./assets/hero.png';els.titleEyebrow.textContent='MATH FANTASY ADVENTURE';els.titleSubtitle.innerHTML='計算で道をひらき、5つのエリアを進む。<br>最後に待つ魔王を倒せ。';setMenuButton(els.playBtn,'⚔','ぼうけんを はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
     else if(mode==='back'){els.titleHero.src='./assets/back_hero.png';els.titleEyebrow.textContent='BACK WORLD / ANOTHER QUEST';els.titleSubtitle.innerHTML='裏の世界を巡り、時空の裂け目の先へ。<br>魔法少女のもう一つの冒険。';setMenuButton(els.playBtn,'✦','ウラ面を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✧','コレクション');setMenuButton(els.monsterBookBtn,'◇','モンスター図鑑');}
     else if(mode==='crimson'){els.titleHero.src='./assets/crimson_hero.png';els.titleEyebrow.textContent='AUTUMN SWORD / THIRD QUEST';els.titleSubtitle.innerHTML='晩秋の山里から月影の山城へ。<br>五つの地を越え、剣聖・玄真との最終決戦へ。';setMenuButton(els.playBtn,'⚔','紅の世界を はじめる');setMenuButton(els.shopBtn,'◆','ショップ');setMenuButton(els.collectionBtn,'✦','コレクション');setMenuButton(els.monsterBookBtn,'◆','モンスター図鑑');}
@@ -1217,7 +1212,6 @@ function markWorldVisited(world){
       if(mode==='silver'&&!isSilverWorldUnlocked())mode='front';
       if(mode==='midori'&&!isMidoriWorldUnlocked())mode='front';
       if(mode==='end'&&!isEndWorldUnlocked())mode='front';
-      if(mode==='white'&&!isWorldActuallyUnlocked('white'))mode='front';
     }
     renderTitle();renderDebugPanel();
     if(els.collectionScreen&&!els.collectionScreen.hidden)renderCollection();
@@ -1487,7 +1481,7 @@ function markWorldVisited(world){
   }
   function resetRun(){
     clearCrimsonSpecialEffects();clearMidoriSpecialEffects();clearEndSpecialEffects();
-    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
+    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;recentQuestionKeys=[];paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
     if(mode==='white'){whiteDepth=1;whiteQuestionInDepth=0;whiteTotalCorrect=0;whiteBoss=null;whiteRecentBossIds=[];whiteRecentMonsterIds=[];whiteLastCategory='';whiteRecentTemplates=[];whiteBeyondActive=false;whiteBeyondSeenRun=0;whiteBeyondCorrectRun=0;whiteBeyondUnlockShown=false;chooseWhiteEnvironment();}
     document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent','white-challenge-active','white-beyond-active','map-overlay-active','stage-overlay-active','battle-hud-cutin-hidden','end-final-prelude-active','end-final-prelude-complete');
@@ -3615,9 +3609,22 @@ function setStageOverlayVisible(visible){
   }
   function choicesForQuestion(q){return Array.isArray(q?.choices)&&q.choices.length?shuffle(q.choices):makeChoices(q.answer);}
   function battleQuestionTime(){if(mode==='white')return whiteBeyondActive?60:whiteQuestionTime();if(mode==='end'&&endFinalPhase){if(bossQuestion<END_FINAL_PRELUDE_COUNT)return 45;return [45,20,40,40,30][endFinalSpecialPhase()];}return 60;}
+  const RECENT_QUESTION_WINDOW=3,QUESTION_REPEAT_RETRIES=14;
+  function generateQuestionForCurrentState(){
+    return mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
+  }
+  function questionRepeatKey(q){
+    if(!q)return '';const text=questionDisplayText(q).replace(/\s+/g,' ').trim(),answer=answerKey(q.answer);return `${text}\u241f${answer}`;
+  }
+  function generateQuestionAvoidingRecentRepeats(){
+    let q=null,key='';
+    for(let attempt=0;attempt<QUESTION_REPEAT_RETRIES;attempt++){q=generateQuestionForCurrentState();key=questionRepeatKey(q);if(!key||!recentQuestionKeys.includes(key))break;}
+    if(key){recentQuestionKeys.push(key);if(recentQuestionKeys.length>RECENT_QUESTION_WINDOW)recentQuestionKeys.splice(0,recentQuestionKeys.length-RECENT_QUESTION_WINDOW);}
+    return q;
+  }
   function prepareQuestion(){
     clearMonsterAnnouncement();locked=true;clearBattleFx();renderGame();
-    currentQuestion=mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
+    currentQuestion=generateQuestionAvoidingRecentRepeats();
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase&&bossQuestion>=END_FINAL_PRELUDE_COUNT)applyEndFinalQuestionModifier(isBossFinalActionQuestion()&&bossSpecialSequence?.type==='end-final-convergence'?bossSpecialSequence.step:null);syncPauseButton();updateSpecialHud();
   }
 
@@ -4948,6 +4955,62 @@ function setStageOverlayVisible(visible){
     }
     return special?`${special} ${math}`:math;
   }
+  function mistakeWorldLabel(world){return world==='front'?'光の世界':world==='back'?'裏の世界':world==='crimson'?'紅の世界':world==='blue'?'蒼の世界':world==='silver'?'銀の世界':world==='midori'?'翠の世界':world==='end'?'終の世界':'白の世界';}
+  function mistakeStageLabelForCurrentState(){
+    if(mode==='white')return `DEPTH ${whiteDepth}`;
+    if(mode==='end'&&endFinalPhase)return 'FINAL';
+    if(mode==='crimson'&&crimsonLastPhase)return 'LAST BOSS';
+    return `STAGE ${stageIndex+1}${bossPhase?' BOSS':''}`;
+  }
+  function mistakeRecordKey(record){return JSON.stringify([String(record?.world||''),String(record?.stageLabel??record?.stage??''),String(record?.q||''),String(record?.answer??'')]);}
+  function normalizeMistakeBookEntry(entry){
+    if(!entry||typeof entry!=='object')return null;
+    const q=String(entry.q??'').trim();if(!q)return null;
+    const normalized={q,selected:entry.selected??'',answer:entry.answer??'',advice:String(entry.advice||''),boss:!!entry.boss,world:String(entry.world||'front'),stage:Number.isFinite(Number(entry.stage))?Number(entry.stage):0,stageLabel:String(entry.stageLabel||''),sourceWorld:entry.sourceWorld?String(entry.sourceWorld):'',misses:Math.max(1,Number(entry.misses)||1),firstMissedAt:Math.max(0,Number(entry.firstMissedAt)||0),lastMissedAt:Math.max(0,Number(entry.lastMissedAt)||0)};
+    normalized.key=typeof entry.key==='string'&&entry.key?entry.key:mistakeRecordKey(normalized);
+    return normalized;
+  }
+  function saveMistakeToNotebook(record){
+    if(debugFullUnlock||!record)return;
+    if(!Array.isArray(save.mistakeBook))save.mistakeBook=[];
+    const now=Date.now(),key=mistakeRecordKey(record),existing=save.mistakeBook.find(e=>e?.key===key);
+    if(existing){existing.selected=record.selected;existing.advice=record.advice;existing.boss=record.boss;existing.sourceWorld=record.sourceWorld||existing.sourceWorld||'';existing.misses=Math.max(1,Number(existing.misses)||1)+1;existing.lastMissedAt=now;}
+    else save.mistakeBook.push({...record,key,misses:1,firstMissedAt:now,lastMissedAt:now});
+    persistQuietly();
+  }
+  function recordMistake(value,timeout=false){const record=makeMistakeRecord(value,timeout);stats.errors.push(record);saveMistakeToNotebook(record);return record;}
+  function mistakeWhenLabel(entry){
+    const n=Number(entry?.lastMissedAt)||0;if(!n)return '';
+    try{return new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric'}).format(new Date(n));}catch{return '';}
+  }
+  function renderMistakeBook(){
+    if(!els.mistakeBookList)return;
+    const book=(Array.isArray(save.mistakeBook)?save.mistakeBook:[]).slice().sort((a,b)=>(Number(b?.lastMissedAt)||0)-(Number(a?.lastMissedAt)||0));
+    if(els.mistakeBookCount)els.mistakeBookCount.textContent=`${book.length} 問`;
+    if(els.mistakeBookClearBtn)els.mistakeBookClearBtn.hidden=!book.length;
+    els.mistakeBookList.replaceChildren();
+    if(!book.length){
+      const empty=document.createElement('section');empty.className='mistake-book-empty';empty.innerHTML='<strong>いま復習する問題はありません</strong><p>問題を間違えると、ここに自動で保存されます。</p>';els.mistakeBookList.appendChild(empty);return;
+    }
+    book.forEach(entry=>{
+      const card=document.createElement('article');card.className='mistake-book-item';
+      const head=document.createElement('div');head.className='mistake-book-item-head';
+      const where=document.createElement('span');const source=entry.world==='end'&&entry.sourceWorld?` / ${mistakeWorldLabel(entry.sourceWorld).replace('の世界','')}領域`:'';where.textContent=`${mistakeWorldLabel(entry.world)} / ${entry.stageLabel||`STAGE ${(Number(entry.stage)||0)+1}`}${source}`;
+      const count=document.createElement('span');const when=mistakeWhenLabel(entry);count.textContent=`まちがい ${Math.max(1,Number(entry.misses)||1)}回${when?` ・ 最終 ${when}`:''}`;head.append(where,count);
+      const q=document.createElement('h3');q.textContent=String(entry.q||'問題');
+      const answers=document.createElement('div');answers.className='mistake-book-answers';
+      const yours=document.createElement('span');yours.innerHTML='<small>最後の答え</small>';const yb=document.createElement('b');yb.textContent=String(entry.selected??'');yours.appendChild(yb);
+      const correct=document.createElement('span');correct.innerHTML='<small>正解</small>';const cb=document.createElement('b');cb.textContent=String(entry.answer??'');correct.appendChild(cb);answers.append(yours,correct);
+      const foot=document.createElement('div');foot.className='mistake-book-item-foot';
+      const advice=document.createElement('p');advice.textContent=entry.advice||'問題の条件を一つずつ確認しよう。';
+      const done=document.createElement('button');done.type='button';done.className='mistake-book-done-btn';done.textContent='もう大丈夫';done.onclick=()=>{if(debugFullUnlock)return;save.mistakeBook=(save.mistakeBook||[]).filter(e=>e?.key!==entry.key);persistQuietly();renderMistakeBook();};
+      foot.append(advice,done);card.append(head,q,answers,foot);els.mistakeBookList.appendChild(card);
+    });
+  }
+  function openMistakeBookClearConfirm(){if(!els.mistakeBookClearConfirm||!(save.mistakeBook||[]).length)return;els.mistakeBookClearConfirm.hidden=false;}
+  function closeMistakeBookClearConfirm(){if(els.mistakeBookClearConfirm)els.mistakeBookClearConfirm.hidden=true;}
+  function clearMistakeBook(){if(debugFullUnlock){closeMistakeBookClearConfirm();return;}save.mistakeBook=[];persistQuietly();closeMistakeBookClearConfirm();renderMistakeBook();}
+
   function makeMistakeRecord(value,timeout=false){
     const q=currentQuestion||{};
     return{
@@ -4957,7 +5020,9 @@ function setStageOverlayVisible(visible){
       advice:mistakeAdviceFor(q,{timeout}),
       boss:!!bossPhase,
       world:mode,
-      stage:stageIndex
+      stage:stageIndex,
+      stageLabel:mistakeStageLabelForCurrentState(),
+      sourceWorld:mode==='end'&&!endFinalPhase?currentEndSource():''
     };
   }
   function renderGameOverReview(){
@@ -4992,7 +5057,7 @@ function setStageOverlayVisible(visible){
     const fromBoss=!!bossPhase;
     const titleEl=$('gameOverTitle'),kicker=els.gameOverOverlay?.querySelector('.game-over-card>small'),note=els.gameOverOverlay?.querySelector('.game-over-note');
     if(mode==='white'){if(kicker)kicker.textContent='WHITE WORLD / CHALLENGE COMPLETE';if(titleEl)titleEl.textContent='CHALLENGE COMPLETE';els.gameOverRetryBtn.textContent='もう一度挑戦';els.gameOverMessage.textContent=`今回 ${whiteTotalCorrect}問正解｜到達 DEPTH ${whiteDepth}｜BEST ${Math.max(save.whiteBestQuestions||0,whiteTotalCorrect)}問｜BEYOND ${whiteBeyondCorrectRun}/${whiteBeyondSeenRun}`;if(note)note.textContent='白の世界はライフ回復なし。記録は保存されています。もう一度、最初のDEPTHから挑戦できます。';}
-    else{if(kicker)kicker.textContent='GAME OVER / REVIEW';if(titleEl)titleEl.textContent='今回の振り返り';els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';if(note)note.innerHTML=`タイトルに戻ると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>${mode==='end'?'85':mode==='crimson'?'80':'75'}</span> からになります。`;}
+    else{if(kicker)kicker.textContent='GAME OVER / REVIEW';if(titleEl)titleEl.textContent='今回の振り返り';els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';if(note)note.innerHTML=`タイトルに戻ると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>${mode==='crimson'||mode==='end'?'80':'75'}</span> からになります。`;}
     renderGameOverReview();
     els.gameOverOverlay.hidden=false;
     const card=els.gameOverOverlay.querySelector('.game-over-card');
@@ -5111,7 +5176,7 @@ function setStageOverlayVisible(visible){
     if(locked)return;locked=true;stopTimer();updateSpecialHud();const q=currentQuestion;[...els.choices.children].forEach(b=>{b.disabled=true;const bv=b.dataset.answerValue??b.textContent;if(answersEqual(bv,q.answer))b.classList.add('correct');if(value!==null&&answersEqual(bv,value)&&!answersEqual(value,q.answer))b.classList.add('wrong');});
     const ok=!timeout&&answersEqual(value,q.answer);
     if(whiteBeyondActive){
-      if(ok){els.feedbackText.textContent='BEYOND CLEAR！';showAnswerMark(true);playSE(correctSE);}else{els.feedbackText.textContent=timeout?`時間切れ。答えは ${q.answer}（ライフは減りません）`:`答えは ${q.answer}（ライフは減りません）`;showAnswerMark(false);playSE(wrongSE);stats.errors.push(makeMistakeRecord(value,timeout));}
+      if(ok){els.feedbackText.textContent='BEYOND CLEAR！';showAnswerMark(true);playSE(correctSE);}else{els.feedbackText.textContent=timeout?`時間切れ。答えは ${q.answer}（ライフは減りません）`:`答えは ${q.answer}（ライフは減りません）`;showAnswerMark(false);playSE(wrongSE);recordMistake(value,timeout);}
       await finishWhiteBeyond(ok);return;
     }
     if(ok){
@@ -5119,7 +5184,7 @@ function setStageOverlayVisible(visible){
       if(bossPhase){bossQuestion=1;whiteQuestionInDepth=10;whiteTotalCorrect++;renderGame();await sleep(450);await completeWhiteDepth();return;}
       pulseWhiteMemoryFx();runAttackMotion();await sleep(700);whiteQuestionInDepth++;whiteTotalCorrect++;renderGame();await continueWhiteAfterQuestion();return;
     }
-    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`時間切れ！ 正解は ${q.answer}`:`残念！ 正解は ${q.answer}`;renderGame();await sleep(950);
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;recordMistake(value,timeout);lives--;els.feedbackText.textContent=timeout?`時間切れ！ 正解は ${q.answer}`:`残念！ 正解は ${q.answer}`;renderGame();await sleep(950);
     if(lives<=0){persistWhiteResult();await showGameOver();return;}
     // 白のボスは1問突破型。失敗しても同じボスに別問題で再挑戦する。
     prepareQuestion();startTimer(whiteQuestionTime());
@@ -5277,7 +5342,7 @@ function setStageOverlayVisible(visible){
       if(stageQuestion>=10){await enterBossPhase();return;}
       await beginNormalEncounter();return;
     }
-    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;stats.errors.push(makeMistakeRecord(value,timeout));lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(bossPhase?1200:1050);
+    comboStreak=0;adjustSpecialGauge(-20);playSE(wrongSE);showAnswerMark(false);stats.mistakes++;if(timeout)stats.timeouts++;recordMistake(value,timeout);lives--;els.feedbackText.textContent=timeout?`じかんぎれ！ 正解は ${currentQuestion.answer}`:`ざんねん！ 正解は ${currentQuestion.answer}`;renderGame();await sleep(bossPhase?1200:1050);
     if(lives<=0){
       stats.restarts++;
       await showGameOver();
@@ -5458,7 +5523,13 @@ function setStageOverlayVisible(visible){
     }else renderTitle();renderResult();els.resultOverlay.hidden=false;if(reward){await sleep(600);presentRewardNotice({icon:reward.icon,name:reward.name,text:reward.id===100?'特別なアイテムを手に入れた！':'ゲームクリア報酬として、新しいコレクションアイテムを手に入れた！'});enqueuePendingSecretRelicNotices({showNow:false});}else enqueuePendingSecretRelicNotices({showNow:true});
   }
   function randomReward(){const unowned=ITEMS.filter(i=>!save.owned.includes(i.id)&&i.id!==100);if(!unowned.length)return null;const roll=Math.random(),rar=roll<.6?'common':roll<.9?'uncommon':'rare';let pool=unowned.filter(i=>i.rarity===rar);if(!pool.length)pool=unowned;const r=pick(pool);save.owned.push(r.id);persist();return r;}
-  function renderResult(){els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;if(!stats.errors.length){els.resultErrors.innerHTML='<div class="error-row">ミスはありませんでした！</div>';return;}const recent=stats.errors.slice(-10),head=stats.errors.length>10?`<div class="error-row error-summary">全${stats.errors.length}件中、直近10件</div>`:'';els.resultErrors.innerHTML=head+recent.map(e=>`<div class="error-row"><b>${questionDisplayText({expression:e.q})}</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join('');}
+  function applyResultTheme(){
+    if(!els.resultOverlay)return;
+    const stageKey=mode==='crimson'&&crimsonLastPhase?'last':mode==='end'&&endFinalPhase?'final':mode==='white'?'white':String(stageIndex);
+    els.resultOverlay.dataset.resultMode=mode;els.resultOverlay.dataset.resultStage=stageKey;
+    if(mode==='end'&&!endFinalPhase)els.resultOverlay.dataset.resultSource=currentEndSource();else els.resultOverlay.removeAttribute('data-result-source');
+  }
+  function renderResult(){applyResultTheme();els.resultMistakes.textContent=stats.mistakes;els.resultTimeouts.textContent=stats.timeouts;els.resultRestarts.textContent=stats.restarts;els.resultGold.textContent=`${stats.gold} G`;if(!stats.errors.length){els.resultErrors.innerHTML='<div class="error-row">ミスはありませんでした！</div>';return;}const recent=stats.errors.slice(-10),head=stats.errors.length>10?`<div class="error-row error-summary">全${stats.errors.length}件中、直近10件</div>`:'';els.resultErrors.innerHTML=head+recent.map(e=>`<div class="error-row"><b>${questionDisplayText({expression:e.q})}</b>　あなた: ${e.selected}　正解: ${e.answer}</div>`).join('');}
 
   if(els.mapVisual)els.mapVisual.onclick=advanceMapFromInput;
   if(els.mapNextBtn)els.mapNextBtn.onclick=advanceMapFromInput;
@@ -5501,9 +5572,15 @@ function setStageOverlayVisible(visible){
   els.shopBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.shopScreen);renderShop();},mode,1450);};
   els.collectionBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.collectionScreen);renderCollection();},mode,1450);};
   els.monsterBookBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.monsterBookScreen);renderMonsterBook();},mode,1450);};
+  if(els.mistakeBookBtn)els.mistakeBookBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.mistakeBookScreen);renderMistakeBook();},mode,1200);};
   els.shopBackBtn.onclick=async()=>{await transitionTo(()=>{showOnly(els.titleScreen);renderTitle();},mode,1450);};
   els.collectionBackBtn.onclick=els.shopBackBtn.onclick;
   els.monsterBookBackBtn.onclick=els.shopBackBtn.onclick;
+  if(els.mistakeBookBackBtn)els.mistakeBookBackBtn.onclick=els.shopBackBtn.onclick;
+  if(els.mistakeBookClearBtn)els.mistakeBookClearBtn.onclick=openMistakeBookClearConfirm;
+  if(els.mistakeBookClearCancelBtn)els.mistakeBookClearCancelBtn.onclick=closeMistakeBookClearConfirm;
+  if(els.mistakeBookClearConfirmBtn)els.mistakeBookClearConfirmBtn.onclick=clearMistakeBook;
+  if(els.mistakeBookClearConfirm)els.mistakeBookClearConfirm.onclick=e=>{if(e.target===els.mistakeBookClearConfirm)closeMistakeBookClearConfirm();};
   els.monsterCardClose.onclick=closeMonsterCard;
   els.monsterCardOverlay.onclick=e=>{if(e.target===els.monsterCardOverlay){playSE(cancelSE);closeMonsterCard();}};
   if(els.worldWarpBtn)els.worldWarpBtn.onclick=async()=>{if(!canWorldWarp())return;await transitionTo(()=>{renderWorldWarp();showOnly(els.worldWarpScreen);},mode,1300);};
@@ -5529,7 +5606,7 @@ function setStageOverlayVisible(visible){
   els.rewardOkBtn.onclick=()=>{els.rewardOverlay.hidden=true;const next=rewardFollowupQueue.shift();if(next)setTimeout(()=>presentRewardNotice(next),180);};
 
   const CANCEL_BUTTON_IDS=new Set([
-    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','creditsBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn','worldWarpBackBtn','uiStyleConfirmCancelBtn',
+    'shopBackBtn','collectionBackBtn','monsterBookBackBtn','mistakeBookBackBtn','mistakeBookClearCancelBtn','creditsBackBtn','monsterCardClose','musicCloseBtn','debugCloseBtn','frontWorldBtn','worldWarpBackBtn','uiStyleConfirmCancelBtn',
     'pauseTitleBtn','pauseCancelTitleBtn','pauseConfirmTitleBtn','gameOverTitleBtn','toTitleBtn'
   ]);
   document.addEventListener('pointerdown',e=>{

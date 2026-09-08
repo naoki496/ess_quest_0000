@@ -45,6 +45,7 @@
           <button id="shopBtn" class="menu-btn"><span class="menu-glyph">◆</span><span>ショップ</span></button>
           <button id="collectionBtn" class="menu-btn"><span class="menu-glyph">✦</span><span>コレクション</span></button>
           <button id="monsterBookBtn" class="menu-btn monster-book-btn"><span class="menu-glyph">◆</span><span>モンスター図鑑</span></button>
+          <button id="mistakeBookBtn" class="menu-btn mistake-book-btn"><span class="menu-glyph">✎</span><span>まちがいノート</span></button>
           <button id="worldWarpBtn" class="menu-btn secret" hidden><span class="menu-glyph">∞</span><span>世界を渡る</span></button>
           <button id="backWorldBtn" class="menu-btn secret" hidden><span class="menu-glyph">∞</span><span>ウラステージへ</span></button>
           <button id="frontWorldBtn" class="menu-btn secret-back" hidden><span class="menu-glyph">↩</span><span>光の世界へ</span></button>
@@ -86,7 +87,7 @@
     <div class="data-management-body">
       <section class="data-info-card">
         <strong>このゲームのセーブについて</strong>
-        <p>コレクション、モンスター図鑑、世界の解放状況、BGM、各種記録などは、この端末のこのブラウザ内に自動保存されます。正常なセーブは復旧用として1世代だけ自動バックアップします。</p>
+        <p>コレクション、モンスター図鑑、まちがいノート、世界の解放状況、BGM、各種記録などは、この端末のこのブラウザ内に自動保存されます。正常なセーブは復旧用として1世代だけ自動バックアップします。</p>
       </section>
       <section class="data-status-card" aria-label="セーブ状態">
         <div><span>現在のセーブ</span><strong id="dataStatusMain">確認中</strong></div>
@@ -107,10 +108,40 @@
   <section class="pause-card pause-confirm panel-gold">
     <small>DELETE SAVE DATA</small>
     <h2 id="dataDeleteConfirmTitle">セーブデータを削除しますか？</h2>
-    <p><strong>この操作は元に戻せません。</strong><br>コレクション、モンスター図鑑、世界の解放状況、BGM、記録などに加え、自動バックアップと破損時の退避データもすべて削除します。</p>
+    <p><strong>この操作は元に戻せません。</strong><br>コレクション、モンスター図鑑、まちがいノート、世界の解放状況、BGM、記録などに加え、自動バックアップと破損時の退避データもすべて削除します。</p>
     <div class="pause-actions">
       <button id="dataDeleteCancelBtn" class="menu-btn primary" type="button">キャンセル</button>
       <button id="dataDeleteConfirmBtn" class="menu-btn pause-danger" type="button">削除する</button>
+    </div>
+  </section>
+</div>
+
+<section id="mistakeBookScreen" class="screen sub-screen mistake-book-screen" hidden>
+  <div class="sub-bg"></div>
+  <div class="sub-shell panel-gold mistake-book-shell">
+    <header class="sub-header mistake-book-header">
+      <div><small>MISTAKE NOTEBOOK</small><h2>まちがいノート</h2></div>
+      <div class="wallet mistake-book-count"><span>復習中</span><strong id="mistakeBookCount">0 問</strong></div>
+    </header>
+    <div class="mistake-book-body">
+      <div class="mistake-book-toolbar">
+        <p>間違えた問題はこの端末に保存されます。「もう大丈夫」を押すと復習対象から外れます。同じ問題をもう一度間違えた場合は、再び登録されます。</p>
+        <button id="mistakeBookClearBtn" class="menu-btn pause-danger mistake-book-clear-btn" type="button">すべてもう大丈夫</button>
+      </div>
+      <div id="mistakeBookList" class="mistake-book-list" aria-live="polite"></div>
+    </div>
+    <footer class="sub-footer"><button id="mistakeBookBackBtn" class="back-btn">タイトルにもどる</button></footer>
+  </div>
+</section>
+
+<div id="mistakeBookClearConfirm" class="data-delete-confirm mistake-book-clear-confirm" hidden role="dialog" aria-modal="true" aria-labelledby="mistakeBookClearConfirmTitle">
+  <section class="pause-card pause-confirm panel-gold">
+    <small>MISTAKE NOTEBOOK</small>
+    <h2 id="mistakeBookClearConfirmTitle">すべて「もう大丈夫」にしますか？</h2>
+    <p><strong>現在のまちがいノートを空にします。</strong><br>この操作は元に戻せません。ただし、同じ問題を今後もう一度間違えた場合は、まちがいノートへ再登録されます。</p>
+    <div class="pause-actions">
+      <button id="mistakeBookClearCancelBtn" class="menu-btn primary" type="button">キャンセル</button>
+      <button id="mistakeBookClearConfirmBtn" class="menu-btn pause-danger" type="button">すべてもう大丈夫</button>
     </div>
   </section>
 </div>
@@ -364,7 +395,7 @@
 
 <div id="resultOverlay" class="overlay" hidden><section class="result-card panel-gold"><header class="result-head"><small>ADVENTURE RESULT</small><h2>リザルト</h2></header><div class="result-stats"><div><span>ミス</span><b id="resultMistakes">0</b></div><div><span>時間切れ</span><b id="resultTimeouts">0</b></div><div><span>やりなおし</span><b id="resultRestarts">0</b></div><div><span>獲得ゴルド</span><b id="resultGold">25 G</b></div></div><div class="result-log"><h3>まちがえた問題</h3><div id="resultErrors" class="result-errors"></div></div><div class="result-actions"><button id="replayBtn" class="menu-btn primary">最初から遊ぶ</button><button id="toTitleBtn" class="menu-btn">タイトルにもどる</button></div></section></div>
 
-<div id="rewardOverlay" class="overlay" hidden><section id="rewardCard" class="reward-card panel-gold"><small id="rewardKicker">NEW ITEM</small><div id="rewardIcon" class="reward-icon">✦</div><h2 id="rewardName">時空の鍵</h2><p id="rewardText">新しいアイテムを手に入れた！</p><button id="rewardOkBtn" class="menu-btn primary">OK</button></section></div>
+<div id="rewardOverlay" class="overlay" hidden><section class="reward-card panel-gold"><small>NEW ITEM</small><div id="rewardIcon" class="reward-icon">✦</div><h2 id="rewardName">時空の鍵</h2><p id="rewardText">新しいアイテムを手に入れた！</p><button id="rewardOkBtn" class="menu-btn primary">OK</button></section></div>
 <script src="./app.js"></script>
 </body>
 </html>
