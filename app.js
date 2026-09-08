@@ -1996,7 +1996,13 @@ function markWorldVisited(world){
   }
   function shouldUseFrontWordProblem(){
     if(mode!=='front'||!frontWordBankReady)return false;
-    if(bossPhase){if(bossQuestion<0||bossQuestion>=4)return false;return frontWordPlanForCurrent().includes(bossQuestion);}
+    // ボス特殊行動が独自の出題形式（□穴埋め・逆算・結界問題など）を要求する場合は、
+    // 文章題ルーターを絶対に通さない。現行では第5問が特殊行動だが、将来の多段特殊にも備えて明示的に遮断する。
+    if(bossPhase){
+      if(isBossFinalActionQuestion()||bossActionActive||bossSpecialSequence)return false;
+      if(bossQuestion<0||bossQuestion>=4)return false;
+      return frontWordPlanForCurrent().includes(bossQuestion);
+    }
     if(stageQuestion<0||stageQuestion>=10)return false;return frontWordPlanForCurrent().includes(stageQuestion);
   }
   function makeFrontWordFallback(stageLabel=frontWordStageLabelForCurrent()){
@@ -3633,7 +3639,7 @@ function setStageOverlayVisible(visible){
   }
   function resetMathProblemFit(){
     if(!els.mathProblem)return;
-    for(const prop of ['font-size','max-width','width','white-space','line-height','overflow-wrap','word-break','display','text-align'])els.mathProblem.style.removeProperty(prop);
+    for(const prop of ['font-size','max-width','width','white-space','line-height','overflow-wrap','word-break','display','text-align','margin-left','margin-right'])els.mathProblem.style.removeProperty(prop);
   }
   function expressionNeedsEqualsPrompt(expression=''){
     const text=String(expression??'').trim();
@@ -3681,11 +3687,14 @@ function setStageOverlayVisible(visible){
     el.style.whiteSpace='nowrap';
     while(el.scrollWidth>maxWidth&&size>minSingle){size=Math.max(minSingle,size-1);el.style.setProperty('font-size',`${size}px`,'important');}
     if(textual||el.scrollWidth>maxWidth){
-      el.style.width=`${maxWidth}px`;
-      el.style.maxWidth=`${maxWidth}px`;
+      const wrapWidth=q?.wordProblem?Math.max(80,Math.floor(maxWidth*.94)):maxWidth;
+      el.style.width=`${wrapWidth}px`;
+      el.style.maxWidth=`${wrapWidth}px`;
       el.style.whiteSpace='normal';
       el.style.display='block';
-      el.style.textAlign='center';
+      // 文章題は段落内部を左揃えにしつつ、段落ブロックそのものは問題欄の中央に置く。
+      el.style.textAlign=q?.wordProblem?'left':'center';
+      if(q?.wordProblem){el.style.marginLeft='auto';el.style.marginRight='auto';}
       el.style.lineHeight=textual?'1.22':'1.15';
       el.style.overflowWrap='anywhere';
       el.style.wordBreak='normal';

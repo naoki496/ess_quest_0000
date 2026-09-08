@@ -5167,3 +5167,13 @@ body[data-ui-style="reframe"] .mistake-book-done-btn{border-color:color-mix(in s
   .mistake-book-toolbar{padding:5px 7px;gap:7px}.mistake-book-toolbar p{font-size:.50rem;line-height:1.28}.mistake-book-clear-btn{min-width:132px;min-height:26px!important;padding:3px 7px!important;font-size:.52rem!important}
   .mistake-book-list{gap:4px;padding:1px 3px 3px 1px}.mistake-book-item{gap:4px;padding:6px 7px;border-radius:8px}.mistake-book-item-head{font-size:.45rem}.mistake-book-item h3{font-size:.70rem;line-height:1.22}.mistake-book-answers{gap:4px}.mistake-book-answers>span{padding:4px 6px}.mistake-book-answers small{font-size:.42rem}.mistake-book-answers b{font-size:.62rem}.mistake-book-item-foot{gap:6px}.mistake-book-item-foot p{font-size:.47rem;line-height:1.25}.mistake-book-done-btn{min-width:90px;min-height:26px;padding:3px 6px;font-size:.50rem}
 }
+
+
+/* 2026-09-08 WORD PROBLEM READABILITY
+   文章題は段落内部を左揃え。ブロック自体の中央配置はfitMathProblemToBox()側で維持する。
+   通常の計算式・分数・ボス特殊問題の配置には影響させない。 */
+body[data-ui-style="reframe"] .math-problem.word-problem{
+  text-align:left!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
