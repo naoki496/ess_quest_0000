@@ -1885,13 +1885,23 @@ function markWorldVisited(world){
     {id:'pencil',item:'えんぴつ',counter:'本',quantityType:'count'},
     {id:'book',item:'本',counter:'さつ',quantityType:'count'}
   ];
-  function loadFrontWordBank(){
+  const WORD_QUESTION_BANK_FILE='./word_questions.json';
+  function loadWordBank(){
+    const fail=err=>{
+      const message=String(err?.message||err||'load failed');
+      frontWordBankReady=false;allWordBankReady=false;
+      frontWordBankLoadError=message;allWordBankLoadError=message;
+    };
     try{
-      fetch('./word_questions_front.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}).then(data=>{
-        if(!data||!Array.isArray(data.templates))throw new Error('invalid word bank');
-        frontWordBank=data;frontWordBankReady=true;frontWordBankLoadError='';
-      }).catch(err=>{frontWordBankReady=false;frontWordBankLoadError=String(err?.message||err||'load failed');});
-    }catch(err){frontWordBankReady=false;frontWordBankLoadError=String(err?.message||err||'load failed');}
+      fetch(WORD_QUESTION_BANK_FILE,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}).then(data=>{
+        if(!data||!Array.isArray(data.templates))throw new Error('invalid unified word bank');
+        const ids=data.templates.map(t=>t?.id);if(ids.some(id=>!id)||new Set(ids).size!==ids.length)throw new Error('invalid or duplicate word template id');
+        const frontTemplates=data.templates.filter(t=>t?.world==='front'),expandedTemplates=data.templates.filter(t=>t?.world!=='front');
+        if(!frontTemplates.length||!expandedTemplates.length)throw new Error('unified word bank is missing required templates');
+        frontWordBank={...data,templates:frontTemplates};allWordBank={...data,templates:expandedTemplates};
+        frontWordBankReady=true;allWordBankReady=true;frontWordBankLoadError='';allWordBankLoadError='';
+      }).catch(fail);
+    }catch(err){fail(err);}
   }
   function frontWordObjectForTemplate(tpl){
     if(tpl?.objectPool==='people')return{id:'person',item:'人',counter:'人',quantityType:'count-person'};
@@ -2018,18 +2028,10 @@ function markWorldVisited(world){
     return{...base,displayExpression:base.expression,choices:frontWordNumericChoices(base.answer),wordProblem:true,templateId:`${stageLabel}-FALLBACK`,skill:'safe-fallback',params:{fallback:true},advice:'問題文で増えたのか、減ったのかを順に確認しよう。',grade:1};
   }
   function generateFrontWordQuestionSafe(){return makeFrontWordQuestion()||makeFrontWordFallback();}
-  loadFrontWordBank();
+  loadWordBank();
 
   // ---------- 文章題：裏～白 共通拡張 ----------
   // 数値は無条件置換せず、generatorが成立条件を満たす値を逆算してからvalidatorを通す。
-  function loadAllWordBank(){
-    try{
-      fetch('./word_questions_all.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}).then(data=>{
-        if(!data||!Array.isArray(data.templates))throw new Error('invalid all-world word bank');
-        allWordBank=data;allWordBankReady=true;allWordBankLoadError='';
-      }).catch(err=>{allWordBankReady=false;allWordBankLoadError=String(err?.message||err||'load failed');});
-    }catch(err){allWordBankReady=false;allWordBankLoadError=String(err?.message||err||'load failed');}
-  }
   function allWordObjectForTemplate(tpl){
     if(tpl?.objectPool==='people')return{id:'person',item:'人',counter:'人',quantityType:'count-person'};
     if(tpl?.objectPool==='money')return{id:'money',item:'',counter:'円',quantityType:'money'};
@@ -2255,7 +2257,6 @@ function markWorldVisited(world){
     const stage=allWordStageLabelForCurrent(),q=makeAllWordQuestion(mode,stage);if(q)return q;
     return bossPhase?makeBossQuestion(stageIndex):(mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):makeMidoriQuestion(stageIndex));
   }
-  loadAllWordBank();
 
 
   function makeFrontQuestion(idx){
