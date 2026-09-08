@@ -280,7 +280,8 @@
   let midoriSpecialState=null;
   let endSpecialTimers=[],endSpecialState=null,endFinalModifierTimer=null;
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
-  let currentQuestion=null,currentBgm=null,recentQuestionKeys=[];
+  let currentQuestion=null,currentBgm=null,recentQuestionKeys=[],recentWordTemplateIds=[];
+  let frontWordBank={schemaVersion:1,templates:[],policy:{}},frontWordBankReady=false,frontWordBankLoadError='',frontWordPlanKey='',frontWordSlots=[];
   const stageBgmPlayer=new Audio();
   stageBgmPlayer.loop=true;
   stageBgmPlayer.preload='auto';
@@ -1481,7 +1482,7 @@ function markWorldVisited(world){
   }
   function resetRun(){
     clearCrimsonSpecialEffects();clearMidoriSpecialEffects();clearEndSpecialEffects();
-    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;recentQuestionKeys=[];paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
+    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;recentQuestionKeys=[];recentWordTemplateIds=[];frontWordPlanKey='';frontWordSlots=[];paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
     if(mode==='white'){whiteDepth=1;whiteQuestionInDepth=0;whiteTotalCorrect=0;whiteBoss=null;whiteRecentBossIds=[];whiteRecentMonsterIds=[];whiteLastCategory='';whiteRecentTemplates=[];whiteBeyondActive=false;whiteBeyondSeenRun=0;whiteBeyondCorrectRun=0;whiteBeyondUnlockShown=false;chooseWhiteEnvironment();}
     document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent','white-challenge-active','white-beyond-active','map-overlay-active','stage-overlay-active','battle-hud-cutin-hidden','end-final-prelude-active','end-final-prelude-complete');
@@ -1872,6 +1873,146 @@ function markWorldVisited(world){
     if(Math.random()<.5){const a=rand(10,99),b=rand(2,9),c=rand(100,999);return{expression:`${a}×${b}+${c}`,answer:a*b+c};}
     const a=rand(100,999),b=rand(2,9),c=rand(10,99);return{expression:`${a}+${b}×${c}`,answer:a+b*c};
   }
+  // ---------- 光の世界：文章題パイロット ----------
+  // JSONは文章テンプレートと出題方針だけを持ち、数値生成・検証はJS側で行う。
+  // 数値の無条件差し替えは禁止。生成→検証を通過した問題だけを画面へ出す。
+  const FRONT_WORD_OBJECTS=[
+    {id:'apple',item:'りんご',counter:'こ',quantityType:'count'},
+    {id:'candy',item:'あめ',counter:'こ',quantityType:'count'},
+    {id:'sticker',item:'シール',counter:'まい',quantityType:'count'},
+    {id:'paper',item:'紙',counter:'まい',quantityType:'count'},
+    {id:'pencil',item:'えんぴつ',counter:'本',quantityType:'count'},
+    {id:'book',item:'本',counter:'さつ',quantityType:'count'}
+  ];
+  function loadFrontWordBank(){
+    try{
+      fetch('./word_questions_front.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}).then(data=>{
+        if(!data||!Array.isArray(data.templates))throw new Error('invalid word bank');
+        frontWordBank=data;frontWordBankReady=true;frontWordBankLoadError='';
+      }).catch(err=>{frontWordBankReady=false;frontWordBankLoadError=String(err?.message||err||'load failed');});
+    }catch(err){frontWordBankReady=false;frontWordBankLoadError=String(err?.message||err||'load failed');}
+  }
+  function frontWordObjectForTemplate(tpl){
+    if(tpl?.objectPool==='people')return{id:'person',item:'人',counter:'人',quantityType:'count-person'};
+    if(tpl?.objectPool==='money')return{id:'money',item:'円',counter:'円',quantityType:'money'};
+    if(tpl?.objectPool==='fixed')return{id:'fixed',item:'',counter:'',quantityType:'count'};
+    return pick(FRONT_WORD_OBJECTS);
+  }
+  function renderWordTemplate(text,params){return String(text||'').replace(/\{([a-zA-Z0-9_]+)\}/g,(m,k)=>params[k]!==undefined?String(params[k]):m);}
+  function frontWordNumericChoices(answer,extra=[]){
+    const result=[answer],tryAdd=v=>{if(!Number.isFinite(v)||v<0||result.some(x=>answerKey(x)===answerKey(v)))return;result.push(v);};
+    extra.forEach(tryAdd);
+    for(const v of [answer-1,answer+1,answer-2,answer+2,answer-10,answer+10]){if(result.length>=3)break;tryAdd(v);}
+    while(result.length<3)tryAdd(answer+result.length+1);
+    return shuffle(result.slice(0,3));
+  }
+  function frontWordParams(generator){
+    let a,b,c,total,left,target,answer,intermediates=[];
+    const retry=(fn,max=200)=>{for(let i=0;i<max;i++){const value=fn();if(value)return value;}return null;};
+    switch(generator){
+      case'add_u10':a=rand(1,8);b=rand(1,10-a);return{a,b,answer:a+b,intermediates:[a,a+b]};
+      case'sub_u10':a=rand(2,10);b=rand(1,a-1);return{a,b,answer:a-b,intermediates:[a,a-b]};
+      case'diff_u10':b=rand(1,8);answer=rand(1,10-b);a=b+answer;return{a,b,answer,intermediates:[a,a-b]};
+      case'complement_10':a=rand(1,9);return{a,target:10,answer:10-a,intermediates:[a,10-a]};
+      case'missing_add_u10':a=rand(1,8);answer=rand(1,10-a);total=a+answer;return{a,total,answer,intermediates:[a,total]};
+      case'missing_sub_u10':a=rand(2,10);answer=rand(1,a-1);left=a-answer;return{a,left,answer,intermediates:[a,left]};
+      case'add_10_29_no_carry':return retry(()=>{a=rand(10,29);const max=9-(a%10);if(max<1)return null;b=rand(1,max);return{a,b,answer:a+b,intermediates:[a,a+b]};});
+      case'sub_10_29_no_borrow':return retry(()=>{a=rand(10,29);const max=a%10;if(max<1)return null;b=rand(1,max);return{a,b,answer:a-b,intermediates:[a,a-b]};});
+      case'diff_10_29_small':return retry(()=>{const tens=pick([1,2]),u=rand(0,8);b=tens*10+u;answer=rand(1,9-u);a=b+answer;if(a>29)return null;return{a,b,answer,intermediates:[a,a-b]};});
+      case'missing_add_10_29_no_carry':return retry(()=>{a=rand(10,29);const max=9-(a%10);if(max<1)return null;answer=rand(1,max);total=a+answer;return{a,total,answer,intermediates:[a,total]};});
+      case'missing_sub_10_29_no_borrow':return retry(()=>{a=rand(10,29);const max=a%10;if(max<1)return null;answer=rand(1,max);left=a-answer;return{a,left,answer,intermediates:[a,left]};});
+      case'target_20_30':target=pick([20,30]);answer=rand(1,9);a=target-answer;return{a,target,answer,intermediates:[a,target]};
+      case'tens_add':return retry(()=>{a=10*rand(1,7);b=10*rand(1,7);if(a+b>90)return null;return{a,b,answer:a+b,intermediates:[a,a+b]};});
+      case'tens_sub':a=10*rand(2,9);b=10*rand(1,a/10-1);return{a,b,answer:a-b,intermediates:[a,a-b]};
+      case'tens_diff':b=10*rand(1,7);answer=10*rand(1,9-b/10);a=b+answer;return{a,b,answer,intermediates:[a,a-b]};
+      case'two_digit_plus_one':return retry(()=>{a=rand(10,79);const max=9-(a%10);if(max<1)return null;b=rand(1,max);return{a,b,answer:a+b,intermediates:[a,a+b]};});
+      case'two_digit_minus_one':return retry(()=>{a=rand(11,79);const max=a%10;if(max<1)return null;b=rand(1,max);return{a,b,answer:a-b,intermediates:[a,a-b]};});
+      case'two_digit_missing_add':return retry(()=>{a=rand(10,79);const max=9-(a%10);if(max<1)return null;answer=rand(1,max);total=a+answer;return{a,total,answer,intermediates:[a,total]};});
+      case'two_digit_missing_sub':return retry(()=>{a=rand(11,79);const max=a%10;if(max<1)return null;answer=rand(1,max);left=a-answer;return{a,left,answer,intermediates:[a,left]};});
+      case'three_add_add_u20':return retry(()=>{a=rand(1,10);b=rand(1,8);c=rand(1,8);answer=a+b+c;if(answer>20)return null;return{a,b,c,answer,intermediates:[a,a+b,answer]};});
+      case'three_add_sub_u20':return retry(()=>{a=rand(4,15);b=rand(1,6);const mid=a+b;c=rand(1,mid-1);answer=mid-c;if(answer<1||answer>20)return null;return{a,b,c,answer,intermediates:[a,mid,answer]};});
+      case'three_sub_add_u20':return retry(()=>{a=rand(6,20);b=rand(1,a-1);const mid=a-b;const max=20-mid;if(max<1)return null;c=rand(1,Math.min(8,max));answer=mid+c;return{a,b,c,answer,intermediates:[a,mid,answer]};});
+      case'three_sub_sub_u20':return retry(()=>{a=rand(8,20);b=rand(1,a-2);const mid=a-b;if(mid<2)return null;c=rand(1,mid-1);answer=mid-c;return{a,b,c,answer,intermediates:[a,mid,answer]};});
+      case'review_add_u30':return retry(()=>{a=rand(10,29);const max=Math.min(9-(a%10),30-a);if(max<1)return null;b=rand(1,max);return{a,b,answer:a+b,intermediates:[a,a+b]};});
+      case'review_sub_u30':return retry(()=>{a=rand(11,30);const max=a%10||Math.min(9,a-1);b=rand(1,Math.min(9,max));if(a-b<1)return null;return{a,b,answer:a-b,intermediates:[a,a-b]};});
+      case'review_diff_u30':return retry(()=>{b=rand(10,27);answer=rand(1,Math.min(9,30-b));a=b+answer;return{a,b,answer,intermediates:[a,a-b]};});
+      case'review_missing_add':return retry(()=>{a=rand(10,28);answer=rand(1,Math.min(9,30-a));total=a+answer;return{a,total,answer,intermediates:[a,total]};});
+      case'review_missing_sub':a=rand(11,30);answer=rand(1,Math.min(9,a-1));left=a-answer;return{a,left,answer,intermediates:[a,left]};
+      case'three_add_sub_u30':return retry(()=>{a=rand(8,22);b=rand(1,8);const mid=a+b;if(mid>30)return null;c=rand(1,Math.min(9,mid-1));answer=mid-c;if(answer<1)return null;return{a,b,c,answer,intermediates:[a,mid,answer]};});
+      case'three_sub_add_u30':return retry(()=>{a=rand(10,30);b=rand(1,Math.min(9,a-1));const mid=a-b;c=rand(1,Math.min(9,30-mid));answer=mid+c;return{a,b,c,answer,intermediates:[a,mid,answer]};});
+      default:return null;
+    }
+  }
+  function validateFrontWordQuestion(q){
+    const errors=[];
+    if(!q||!q.wordProblem)errors.push('not-word-problem');
+    if(!q?.templateId)errors.push('missing-template-id');
+    if(typeof q?.expression!=='string'||!q.expression.trim())errors.push('empty-question');
+    if(q?.expression?.length>50)errors.push('text-too-long');
+    if(!Number.isInteger(q?.answer)||q.answer<0)errors.push('invalid-answer');
+    if(Array.isArray(q?.params?.intermediates)&&q.params.intermediates.some(v=>!Number.isFinite(v)||v<0))errors.push('negative-intermediate');
+    if(!Array.isArray(q?.choices)||q.choices.length!==3)errors.push('choice-count');
+    if(Array.isArray(q?.choices)){
+      const keys=q.choices.map(answerKey);if(new Set(keys).size!==3)errors.push('duplicate-choices');if(!keys.includes(answerKey(q.answer)))errors.push('missing-answer-choice');
+      if(q.choices.some(v=>typeof v==='number'&&v<0))errors.push('negative-choice');
+    }
+    if(/\{[a-zA-Z0-9_]+\}/.test(q?.expression||''))errors.push('unresolved-placeholder');
+    return errors;
+  }
+  function frontWordStageLabelForCurrent(){return bossPhase&&stageIndex===4?'FINAL':`S${stageIndex+1}`;}
+  function makeFrontWordQuestion(stageLabel=frontWordStageLabelForCurrent(),{ignoreRecent=false}={}){
+    if(!frontWordBankReady)return null;
+    const templates=frontWordBank.templates.filter(t=>t?.stage===stageLabel&&(!bossPhase||t.bossEligible!==false));if(!templates.length)return null;
+    const max=Math.max(1,Number(frontWordBank.policy?.maxGenerateAttempts)||50);
+    for(let attempt=0;attempt<max;attempt++){
+      let pool=ignoreRecent?templates:templates.filter(t=>!recentWordTemplateIds.includes(t.id));if(!pool.length)pool=templates;
+      const tpl=pick(pool),obj=frontWordObjectForTemplate(tpl),raw=frontWordParams(tpl.generator);if(!raw)continue;
+      const params={...raw,item:obj.item,counter:obj.counter,entityId:obj.id,quantityType:obj.quantityType};
+      const answer=params.answer;delete params.answer;
+      const expression=renderWordTemplate(tpl.text,params),choices=frontWordNumericChoices(answer,[answer+3,Math.max(0,answer-3)]);
+      const q={expression,displayExpression:expression,answer,choices,wordProblem:true,templateId:tpl.id,skill:tpl.skill,params,advice:tpl.advice||'',grade:1};
+      const errors=validateFrontWordQuestion(q);if(errors.length)continue;
+      recentWordTemplateIds.push(tpl.id);const windowSize=Math.max(1,Number(frontWordBank.policy?.recentTemplateWindow)||5);if(recentWordTemplateIds.length>windowSize)recentWordTemplateIds.splice(0,recentWordTemplateIds.length-windowSize);
+      return q;
+    }
+    return null;
+  }
+  function chooseWordSlots(total,count){
+    const indexes=[...Array(total).keys()];
+    for(let attempt=0;attempt<80;attempt++){const result=shuffle(indexes).slice(0,count).sort((a,b)=>a-b);if(result.every((v,i)=>i===0||v-result[i-1]>1))return result;}
+    return shuffle(indexes).slice(0,count).sort((a,b)=>a-b);
+  }
+  function frontWordPlanForCurrent(){
+    const kind=bossPhase?'boss':'normal',key=`${stageIndex}:${kind}`;
+    if(frontWordPlanKey!==key){
+      frontWordPlanKey=key;
+      if(kind==='boss'){
+        const min=Math.max(1,Number(frontWordBank.policy?.bossWordSlotsMin)||1),max=Math.max(min,Number(frontWordBank.policy?.bossWordSlotsMax)||2),prob=Number(frontWordBank.policy?.bossSecondSlotProbability);let count=min;
+        if(max>min&&Math.random()<(Number.isFinite(prob)?prob:.5))count=max;
+        frontWordSlots=chooseWordSlots(4,count);
+      }else frontWordSlots=chooseWordSlots(10,Math.max(1,Number(frontWordBank.policy?.normalWordSlots)||3));
+    }
+    return frontWordSlots;
+  }
+  function shouldUseFrontWordProblem(){
+    if(mode!=='front'||!frontWordBankReady)return false;
+    if(bossPhase){if(bossQuestion<0||bossQuestion>=4)return false;return frontWordPlanForCurrent().includes(bossQuestion);}
+    if(stageQuestion<0||stageQuestion>=10)return false;return frontWordPlanForCurrent().includes(stageQuestion);
+  }
+  function makeFrontWordFallback(stageLabel=frontWordStageLabelForCurrent()){
+    const map={
+      S1:{expression:'あめが4こあります。3こもらいました。ぜんぶで何こですか。',answer:7},
+      S2:{expression:'シールが14まいあります。3まいふえました。ぜんぶで何まいですか。',answer:17},
+      S3:{expression:'本が40さつあります。20さつふえました。ぜんぶで何さつですか。',answer:60},
+      S4:{expression:'あめが8こあります。4こもらい、3こつかいました。いま何こですか。',answer:9},
+      S5:{expression:'カードが18まいあります。4まいつかいました。のこりは何まいですか。',answer:14},
+      FINAL:{expression:'あめが16こあります。3こつかい、5こもらいました。いま何こですか。',answer:18}
+    },base=map[stageLabel]||map.S1;
+    return{...base,displayExpression:base.expression,choices:frontWordNumericChoices(base.answer),wordProblem:true,templateId:`${stageLabel}-FALLBACK`,skill:'safe-fallback',params:{fallback:true},advice:'問題文で増えたのか、減ったのかを順に確認しよう。',grade:1};
+  }
+  function generateFrontWordQuestionSafe(){return makeFrontWordQuestion()||makeFrontWordFallback();}
+  loadFrontWordBank();
+
   function makeFrontQuestion(idx){
     if(idx===0){if(Math.random()<.5){let a=rand(1,8),b=rand(1,8-a);return q2(a,'+',b);}let a=rand(2,9),b=rand(1,a-1);return q2(a,'-',b);}
     if(idx===1){for(let i=0;i<500;i++){let a=rand(10,29),b=rand(1,9),op=Math.random()<.5?'+':'-';if(op==='+'&&(a%10)+(b%10)<=9)return q2(a,op,b);if(op==='-'&&(a%10)>=b)return q2(a,op,b);}return q2(12,'+',6);}
@@ -3597,6 +3738,7 @@ function setStageOverlayVisible(visible){
     els.mathProblem.appendChild(wrap);return true;
   }
   function renderQuestionContent(q){
+    if(els.mathProblem)els.mathProblem.classList.toggle('word-problem',!!q?.wordProblem);
     const problemFraction=!!q?.fraction||!!q?.htmlExpression;setFractionQuestionLayout(problemFraction,questionHasFractionChoices(q));setQuestionDensityLayout(q);setMimesisQuestionLayout(q?.visualType||'',(mode==='silver'&&bossPhase&&stageIndex===4)||(mode==='end'&&bossPhase&&!endFinalPhase&&currentEndSource()==='silver'));resetMathProblemFit();
     if(renderMimesisVisual(q))return;if(renderBlueFadeParts(q)){fitMathProblemToBox(q);return;}
     if(q?.htmlExpression)els.mathProblem.innerHTML=q.htmlExpression;else if(q?.fraction)els.mathProblem.innerHTML=fractionExpressionHtml(q.a,q.op,q.b);else els.mathProblem.textContent=questionDisplayText(q);fitMathProblemToBox(q);
@@ -3611,6 +3753,7 @@ function setStageOverlayVisible(visible){
   function battleQuestionTime(){if(mode==='white')return whiteBeyondActive?60:whiteQuestionTime();if(mode==='end'&&endFinalPhase){if(bossQuestion<END_FINAL_PRELUDE_COUNT)return 45;return [45,20,40,40,30][endFinalSpecialPhase()];}return 60;}
   const RECENT_QUESTION_WINDOW=3,QUESTION_REPEAT_RETRIES=14;
   function generateQuestionForCurrentState(){
+    if(mode==='front'&&shouldUseFrontWordProblem())return generateFrontWordQuestionSafe();
     return mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
   }
   function questionRepeatKey(q){
@@ -3628,7 +3771,7 @@ function setStageOverlayVisible(visible){
     renderQuestionContent(currentQuestion);els.feedbackText.textContent='';els.choices.innerHTML='';choicesForQuestion(currentQuestion).forEach(v=>{const b=document.createElement('button');renderChoiceButton(b,v,currentQuestion.answer);els.choices.appendChild(b);});updateBlueStage5Dimming();locked=false;if(mode==='end'&&endFinalPhase&&bossQuestion>=END_FINAL_PRELUDE_COUNT)applyEndFinalQuestionModifier(isBossFinalActionQuestion()&&bossSpecialSequence?.type==='end-final-convergence'?bossSpecialSequence.step:null);syncPauseButton();updateSpecialHud();
   }
 
-  function clearQuestionUi(){clearEndSpecialEffects();setFractionQuestionLayout(false,false);setQuestionDensityLayout(null);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
+  function clearQuestionUi(){clearEndSpecialEffects();setFractionQuestionLayout(false,false);setQuestionDensityLayout(null);setMimesisQuestionLayout('',false);resetMathProblemFit();const panel=els.mathProblem?.closest('.question-panel');panel?.classList.remove('midori-tide-question');els.mathProblem?.classList.remove('word-problem');els.mathProblem.textContent='';els.feedbackText.textContent='';els.choices.innerHTML='';updateSpecialHud();}
   function prepareEmptyBattle(){enemyVisualToken++;concealEnemyVisual(true);currentMonster=null;bossPhase=false;renderGame();clearQuestionUi();document.querySelector('.battlefield').classList.add('battle-base-enter');}
   function ensureMonsterFx(){
     let layer=$('monsterFxLayer');if(layer)return layer;
@@ -4966,7 +5109,7 @@ function setStageOverlayVisible(visible){
   function normalizeMistakeBookEntry(entry){
     if(!entry||typeof entry!=='object')return null;
     const q=String(entry.q??'').trim();if(!q)return null;
-    const normalized={q,selected:entry.selected??'',answer:entry.answer??'',advice:String(entry.advice||''),boss:!!entry.boss,world:String(entry.world||'front'),stage:Number.isFinite(Number(entry.stage))?Number(entry.stage):0,stageLabel:String(entry.stageLabel||''),sourceWorld:entry.sourceWorld?String(entry.sourceWorld):'',misses:Math.max(1,Number(entry.misses)||1),firstMissedAt:Math.max(0,Number(entry.firstMissedAt)||0),lastMissedAt:Math.max(0,Number(entry.lastMissedAt)||0)};
+    const normalized={q,selected:entry.selected??'',answer:entry.answer??'',advice:String(entry.advice||''),boss:!!entry.boss,world:String(entry.world||'front'),stage:Number.isFinite(Number(entry.stage))?Number(entry.stage):0,stageLabel:String(entry.stageLabel||''),sourceWorld:entry.sourceWorld?String(entry.sourceWorld):'',templateId:entry.templateId?String(entry.templateId):'',skill:entry.skill?String(entry.skill):'',params:entry.params&&typeof entry.params==='object'&&!Array.isArray(entry.params)?{...entry.params}:null,misses:Math.max(1,Number(entry.misses)||1),firstMissedAt:Math.max(0,Number(entry.firstMissedAt)||0),lastMissedAt:Math.max(0,Number(entry.lastMissedAt)||0)};
     normalized.key=typeof entry.key==='string'&&entry.key?entry.key:mistakeRecordKey(normalized);
     return normalized;
   }
@@ -4974,7 +5117,7 @@ function setStageOverlayVisible(visible){
     if(debugFullUnlock||!record)return;
     if(!Array.isArray(save.mistakeBook))save.mistakeBook=[];
     const now=Date.now(),key=mistakeRecordKey(record),existing=save.mistakeBook.find(e=>e?.key===key);
-    if(existing){existing.selected=record.selected;existing.advice=record.advice;existing.boss=record.boss;existing.sourceWorld=record.sourceWorld||existing.sourceWorld||'';existing.misses=Math.max(1,Number(existing.misses)||1)+1;existing.lastMissedAt=now;}
+    if(existing){existing.selected=record.selected;existing.advice=record.advice;existing.boss=record.boss;existing.sourceWorld=record.sourceWorld||existing.sourceWorld||'';existing.templateId=record.templateId||existing.templateId||'';existing.skill=record.skill||existing.skill||'';existing.params=record.params&&typeof record.params==='object'?{...record.params}:existing.params||null;existing.misses=Math.max(1,Number(existing.misses)||1)+1;existing.lastMissedAt=now;}
     else save.mistakeBook.push({...record,key,misses:1,firstMissedAt:now,lastMissedAt:now});
     persistQuietly();
   }
@@ -5022,7 +5165,10 @@ function setStageOverlayVisible(visible){
       world:mode,
       stage:stageIndex,
       stageLabel:mistakeStageLabelForCurrentState(),
-      sourceWorld:mode==='end'&&!endFinalPhase?currentEndSource():''
+      sourceWorld:mode==='end'&&!endFinalPhase?currentEndSource():'',
+      templateId:q.templateId||'',
+      skill:q.skill||'',
+      params:q.params&&typeof q.params==='object'?{...q.params}:null
     };
   }
   function renderGameOverReview(){
@@ -5619,14 +5765,14 @@ function setStageOverlayVisible(visible){
 
   window.__SANSU_TEST__={
     get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,timerLimit,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,bossSpecialSequence:bossSpecialSequence&&{...bossSpecialSequence},currentQuestion:currentQuestion&&{...currentQuestion},paused,gameOverActive,specialGauge,comboStreak,specialActive,hudMode,uiStyle};},
-    rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,
+    rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,makeFrontWordQuestion,validateFrontWordQuestion,generateFrontWordQuestionSafe,frontWordPlanForCurrent,shouldUseFrontWordProblem,get frontWordBank(){return frontWordBank;},get frontWordBankReady(){return frontWordBankReady;},get frontWordBankLoadError(){return frontWordBankLoadError;},
     showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,startTimer,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_FLIP_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
     setLives(v){lives=v;renderGame();},
     setSpecialGauge(v){specialGauge=Math.max(0,Math.min(100,Number(v)||0));updateSpecialHud();},setHudMode(v){applyHudMode(v);},setUiStyle(v){applyUiStyle(v);},setTimerState(left,limit=timerLimit){timerLimit=Math.max(1,Number(limit)||1);timeLeft=Math.max(0,Number(left)||0);els.timerText.textContent=timeLeft;updateTimerUrgency();},updateModernBattleHud,syncModernTimerHud,
     registerMonster,hasSecretRelic,syncSecretRelics,enqueuePendingSecretRelicNotices,enqueuePendingWorldUnlockNotices,isWorldActuallyUnlocked,isWorldMarkedNew,markWorldVisited,get save(){return save;},get debugFullUnlock(){return debugFullUnlock;},setDebugFullUnlock,openDebugPanel,debugJumpToStage,debugJumpToBossFifth,debugJumpToCrimsonLast,debugJumpToEndFinal,FRONT_MONSTERS,BACK_MONSTERS,CRIMSON_MONSTERS,BLUE_MONSTERS,SILVER_MONSTERS,FRONT_STAGES,BACK_STAGES,CRIMSON_STAGES,BLUE_STAGES,SILVER_STAGES,CRIMSON_LAST,makeCrimsonQuestion,makeBlueQuestion,makeBlueBossQuestion,makeBlueFinalBossQuestion,makeBlueEndlessEchoQuestion,makeBlueEndlessFinalQuestion,makeSilverQuestion,makeSilverFinalBossQuestion,makeCrimsonFinalQuestion,makeMidoriQuestion,makeMidoriFinalBossQuestion,midoriUnitQuestion,midoriAreaQuestion,midoriPatternQuestion,midoriCountingQuestion,midoriLogicQuestion,MIDORI_MONSTERS,MIDORI_STAGES,END_MONSTERS,END_REGION_CONFIG,END_FINAL,END_FINAL_HERO_ORDER,currentEndHeroWorld,makeEndQuestion,makeEndFinalPreludeQuestion,makeEndFinalQuestion,newEndRoute,WHITE_BOSS_POOL,WHITE_BACKGROUND_POOL,WHITE_NORMAL_BGM_POOL,WHITE_BOSS_BGM_POOL,makeWhiteQuestion,makeWhiteBeyondQuestion,whiteQuestionTime,whiteBeyondRate,startWhiteChallenge,musicTracks,renderMusicPlayer,MAP_TIPS,chooseMapTip,BOSS_SPECIALS,CRIMSON_LAST_SPECIAL,currentBossSpecial,clearBossAction,clearCrimsonSpecialEffects,clearMidoriSpecialEffects,rotateCrimsonChoices,shuffleSilverChoices,rotateSilverBeastRingChoices,fitMathProblemToBox,restoreChoiceInteractivity,questionDisplayText,expressionNeedsEqualsPrompt,renderQuestionContent,prepareQuestion,startMidoriAim,startMidoriSonar,startMidoriRune,startMidoriRoute,startMidoriTide,syncMidoriSpecialControls,syncMidoriAfterElimination,
-    async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();}
+    async beginNormal(){await beginNormalEncounter();},async enterBoss(){await enterBossPhase();},async bossAction(){await runBossFifthAction();},async restartBoss(){await restartBossCheckpoint();},async resolve(v,t=false){await resolveAnswer(v,t);},stop(){stopTimer();},setProgress(sq,tp,bq=0,bp=false){stageQuestion=sq;totalProgress=tp;bossQuestion=bq;bossPhase=bp;renderGame();},setCurrentQuestionForTest(q){currentQuestion=q;},makeMistakeRecord,recordMistake,renderMistakeBook
   };
 
   function syncCompactPhoneLandscape(){
