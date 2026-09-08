@@ -282,6 +282,7 @@
   let runStageRewards=new Set(),stats={mistakes:0,timeouts:0,restarts:0,errors:[],gold:0};
   let currentQuestion=null,currentBgm=null,recentQuestionKeys=[],recentWordTemplateIds=[];
   let frontWordBank={schemaVersion:1,templates:[],policy:{}},frontWordBankReady=false,frontWordBankLoadError='',frontWordPlanKey='',frontWordSlots=[];
+  let allWordBank={schemaVersion:1,templates:[],policy:{}},allWordBankReady=false,allWordBankLoadError='',allWordPlanKey='',allWordSlots=[];
   const stageBgmPlayer=new Audio();
   stageBgmPlayer.loop=true;
   stageBgmPlayer.preload='auto';
@@ -1482,7 +1483,7 @@ function markWorldVisited(world){
   }
   function resetRun(){
     clearCrimsonSpecialEffects();clearMidoriSpecialEffects();clearEndSpecialEffects();
-    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;recentQuestionKeys=[];recentWordTemplateIds=[];frontWordPlanKey='';frontWordSlots=[];paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
+    stageIndex=0;stageQuestion=0;totalProgress=0;lives=3;bossPhase=false;bossQuestion=0;crimsonLastPhase=false;endFinalPhase=false;endStageWarningIndex=-1;currentMonster=null;bossActionActive=false;bossSpecialSequence=null;currentQuestion=null;recentQuestionKeys=[];recentWordTemplateIds=[];frontWordPlanKey='';frontWordSlots=[];allWordPlanKey='';allWordSlots=[];paused=false;gameOverActive=false;specialGauge=0;comboStreak=0;specialActive=false;blueSpecialBusy=false;blueMemoryDim=0;blueAdultState=false;
     if(mode==='end'){endRunRoute=newEndRoute();endHeroWorld='midori';}
     if(mode==='white'){whiteDepth=1;whiteQuestionInDepth=0;whiteTotalCorrect=0;whiteBoss=null;whiteRecentBossIds=[];whiteRecentMonsterIds=[];whiteLastCategory='';whiteRecentTemplates=[];whiteBeyondActive=false;whiteBeyondSeenRun=0;whiteBeyondCorrectRun=0;whiteBeyondUnlockShown=false;chooseWhiteEnvironment();}
     document.body.removeAttribute('data-hero-world');document.body.removeAttribute('data-end-boss-world');document.body.removeAttribute('data-final-boss-world');document.body.removeAttribute('data-boss-aura-world');document.body.removeAttribute('data-boss-aura-tier');document.body.classList.remove('world-boss-aura-active','world-final-aura-active','end-final-postclear-active','game-paused','game-over-active','battle-countdown-active','special-assist-active','vargas-double-strike','boss-technique-active','boss-shield-active','blue-q10-slow','blue-boss-intro-enemy-front','blue-adult-hero-hidden','blue-adult-hero-silhouette','blue-adult-hero-reveal','end-rescue-active','end-boss-corruption-active','end-tide-judgment-active','end-genma-triple-active','end-mimesis-equivalent-active','end-blue-loop-active','end-back-causal-active','end-final-convergence-active','end-final-blue-rewrite','end-final-silver-equivalent','white-challenge-active','white-beyond-active','map-overlay-active','stage-overlay-active','battle-hud-cutin-hidden','end-final-prelude-active','end-final-prelude-complete');
@@ -2018,6 +2019,244 @@ function markWorldVisited(world){
   }
   function generateFrontWordQuestionSafe(){return makeFrontWordQuestion()||makeFrontWordFallback();}
   loadFrontWordBank();
+
+  // ---------- 文章題：裏～白 共通拡張 ----------
+  // 数値は無条件置換せず、generatorが成立条件を満たす値を逆算してからvalidatorを通す。
+  function loadAllWordBank(){
+    try{
+      fetch('./word_questions_all.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}).then(data=>{
+        if(!data||!Array.isArray(data.templates))throw new Error('invalid all-world word bank');
+        allWordBank=data;allWordBankReady=true;allWordBankLoadError='';
+      }).catch(err=>{allWordBankReady=false;allWordBankLoadError=String(err?.message||err||'load failed');});
+    }catch(err){allWordBankReady=false;allWordBankLoadError=String(err?.message||err||'load failed');}
+  }
+  function allWordObjectForTemplate(tpl){
+    if(tpl?.objectPool==='people')return{id:'person',item:'人',counter:'人',quantityType:'count-person'};
+    if(tpl?.objectPool==='money')return{id:'money',item:'',counter:'円',quantityType:'money'};
+    if(tpl?.objectPool==='count')return pick(FRONT_WORD_OBJECTS);
+    return{id:'fixed',item:'',counter:'',quantityType:'fixed'};
+  }
+  function cleanDecimal(v){return normalizeChoiceNumber(Number(v));}
+  function allWordNumberChoices(answer,extra=[]){
+    const vals=[answer],isInt=Number.isInteger(answer),step=isInt?1:(Math.abs(answer)>=10?1:.1);
+    const add=v=>{if(typeof v!=='number'||!Number.isFinite(v)||v<0)return;v=cleanDecimal(v);if(vals.some(x=>answerKey(x)===answerKey(v)))return;vals.push(v);};
+    extra.forEach(add);
+    [answer-step,answer+step,answer-2*step,answer+2*step,answer*.5,answer*2].forEach(v=>{if(vals.length<3)add(v);});
+    while(vals.length<3)add(answer+step*(vals.length+1));
+    return shuffle(vals.slice(0,3));
+  }
+  function allWordFractionChoices(answer){
+    const f=parseFractionKey(answer);if(!f)return null;
+    const vals=[fractionKey(f)],used=new Set([fractionKey(f)]),candidates=[];
+    candidates.push(normFraction(Math.max(1,f.n-1),f.d),normFraction(f.n+1,f.d),normFraction(f.n,f.d+1));
+    if(f.d>2)candidates.push(normFraction(f.n,Math.max(2,f.d-1)));
+    for(const c of candidates){const k=fractionKey(c);if(k!==answer&&!used.has(k)){used.add(k);vals.push(k);}if(vals.length===3)break;}
+    let bump=2;while(vals.length<3){const k=fractionKey(normFraction(f.n+bump,f.d+1));if(!used.has(k)){used.add(k);vals.push(k);}bump++;}
+    return shuffle(vals);
+  }
+  function allWordRaw(generator,tpl={}){
+    const retry=(fn,max=500)=>{for(let i=0;i<max;i++){const v=fn();if(v)return v;}return null;};
+    let a,b,c,total,answer;
+    switch(generator){
+      // 裏：2桁加減・3項・簡単な3桁・九九
+      case'b_add_carry':return retry(()=>{a=rand(10,79);b=rand(10,79);if(a+b>99||(a%10)+(b%10)<10)return null;answer=a+b;return{params:{a,b},answer};});
+      case'b_sub_borrow':return retry(()=>{a=rand(20,99);b=rand(10,a-1);if((a%10)>=(b%10))return null;answer=a-b;return{params:{a,b},answer};});
+      case'b_diff':b=rand(10,79);answer=rand(10,Math.min(40,99-b));a=b+answer;return{params:{a,b},answer};
+      case'b_missing_add':a=rand(10,79);answer=rand(10,Math.min(40,99-a));total=a+answer;return{params:{a,total},answer};
+      case'b_missing_sub':a=rand(30,99);answer=rand(10,Math.min(40,a-1));return{params:{a,left:a-answer},answer};
+      case'b_three_add_sub':return retry(()=>{a=rand(20,80);b=rand(10,50);const mid=a+b;if(mid>130)return null;c=rand(10,Math.min(60,mid-1));answer=mid-c;if(answer<1||answer>150)return null;return{params:{a,b,c},answer};});
+      case'b_three_sub_add':return retry(()=>{a=rand(30,99);b=rand(10,a-1);const mid=a-b;c=rand(10,60);answer=mid+c;if(answer>150)return null;return{params:{a,b,c},answer};});
+      case'b_three_add':return retry(()=>{a=rand(10,60);b=rand(10,60);c=rand(10,60);answer=a+b+c;if(answer>180)return null;return{params:{a,b,c},answer};});
+      case'b_three_sub':return retry(()=>{a=rand(60,150);b=rand(10,50);c=rand(10,50);answer=a-b-c;if(answer<1)return null;return{params:{a,b,c},answer};});
+      case'b_hundreds_add':a=100*rand(1,6);b=100*rand(1,9-a/100);answer=a+b;return{params:{a,b},answer};
+      case'b_hundreds_sub':a=100*rand(2,9);b=100*rand(1,a/100-1);answer=a-b;return{params:{a,b},answer};
+      case'b_hundreds_tens_add':return retry(()=>{a=100*rand(2,8)+10*rand(0,7);b=10*rand(1,9);answer=a+b;if(answer>990)return null;return{params:{a,b},answer};});
+      case'b_hundreds_tens_sub':return retry(()=>{a=100*rand(2,9)+10*rand(1,9);b=10*rand(1,Math.floor((a%100)/10)||1);answer=a-b;if(answer<100)return null;return{params:{a,b},answer};});
+      case'mul_fact':a=rand(2,9);b=rand(2,9);return{params:{a,b},answer:a*b};
+      case'simple_2x1':a=rand(10,12);b=rand(2,9);return{params:{a,b},answer:a*b};
+
+      // 紅：割り算・小数・同分母分数
+      case'div_equal_facts':case'div_group_facts':b=rand(2,9);answer=rand(2,9);total=b*answer;return{params:{total,divisor:b},answer};
+      case'div_equal_2d1d':case'div_group_2d1d':return retry(()=>{b=rand(2,9);answer=rand(2,12);total=b*answer;if(total<10||total>99)return null;return{params:{total,divisor:b},answer};});
+      case'div_equal_3d1d':case'div_group_3d1d':return retry(()=>{b=rand(2,9);answer=rand(12,110);total=b*answer;if(total<100||total>999)return null;return{params:{total,divisor:b},answer};});
+      case'div_equal_2d2d':case'div_group_2d2d':return retry(()=>{b=rand(10,24);answer=rand(2,8);total=b*answer;if(total<20||total>99)return null;return{params:{total,divisor:b},answer};});
+      case'div_equal_3d2d':case'div_group_3d2d':return retry(()=>{b=rand(10,39);answer=rand(4,25);total=b*answer;if(total<100||total>999)return null;return{params:{total,divisor:b},answer};});
+      case'dec_add_tenths':a=rand(11,95)/10;b=rand(5,70)/10;answer=cleanDecimal(a+b);return{params:{a:cleanDecimal(a),b:cleanDecimal(b)},answer};
+      case'dec_sub_tenths':return retry(()=>{b=rand(5,70)/10;a=rand(12,120)/10;if(a<=b)return null;answer=cleanDecimal(a-b);return{params:{a:cleanDecimal(a),b:cleanDecimal(b)},answer};});
+      case'dec_add_hundredths':a=rand(105,895)/100;b=rand(25,495)/100;answer=cleanDecimal(a+b);return{params:{a:cleanDecimal(a),b:cleanDecimal(b)},answer};
+      case'dec_sub_hundredths':return retry(()=>{a=rand(250,1200)/100;b=rand(25,800)/100;if(a<=b)return null;answer=cleanDecimal(a-b);return{params:{a:cleanDecimal(a),b:cleanDecimal(b)},answer};});
+      case'dec_int_mul':a=pick([.6,.8,1.2,1.5,1.6,2.4,2.5,3.2,4.5]);b=rand(2,8);answer=cleanDecimal(a*b);return{params:{a,b},answer};
+      case'dec_int_div':answer=pick([.6,.8,1.2,1.5,1.6,2.4,2.5,3.2,4.5]);b=rand(2,8);total=cleanDecimal(answer*b);return{params:{total,b},answer};
+      case'frac_same_add':return retry(()=>{const d=pick([4,5,6,7,8,9,10,12]);const n1=rand(1,d-2),n2=rand(1,d-n1-1);const f=normFraction(n1+n2,d);answer=fractionKey(f);return{params:{n1,n2,d},answer,choices:allWordFractionChoices(answer)};});
+      case'frac_same_sub':return retry(()=>{const d=pick([4,5,6,7,8,9,10,12]);const n2=rand(1,d-2),n1=rand(n2+1,d-1);const f=normFraction(n1-n2,d);answer=fractionKey(f);return{params:{n1,n2,d},answer,choices:allWordFractionChoices(answer)};});
+
+      // 蒼：小数×÷小数・異分母分数・平均・速さ・割合
+      case'dec_mul':return retry(()=>{
+        const money=String(tpl.text||'').includes('円');
+        if(money){a=pick([50,80,100,120,150,200,250]);b=pick([.4,.5,.8,1.2,1.5,1.6,2.4,2.5]);answer=cleanDecimal(a*b);if(!Number.isInteger(answer))return null;}
+        else{a=pick([.6,.8,1.2,1.5,1.6,2.4,2.5,3.2,4.5,6.4]);b=pick([.4,.5,.8,1.2,1.5,1.6,2.4,2.5]);answer=cleanDecimal(a*b);}
+        if(answer<=0||answer>999)return null;return{params:{a,b},answer};
+      });
+      case'dec_div':return retry(()=>{
+        const money=String(tpl.text||'').includes('円');
+        if(money){answer=pick([40,60,80,100,120,150,200]);b=pick([.5,.8,1.2,1.5,2,2.5]);total=cleanDecimal(answer*b);if(!Number.isInteger(total))return null;}
+        else{b=pick([.4,.5,.8,1.2,1.5,2.4,2.5,3.2]);const discreteParts=/何(?:本|こ|区画|区間)分/.test(String(tpl.text||''));answer=discreteParts?pick([2,3,4,5,6,8]):pick([.5,.8,1.2,1.5,2,2.4,2.5,3,4,5,6,8]);total=cleanDecimal(b*answer);}
+        if(total<=0||total>999)return null;return{params:{total,b},answer};
+      });
+      case'frac_unlike_add':case'frac_unlike_sub':return retry(()=>{
+        let d1=pick([2,3,4,5,6,8,10]),d2=pick([3,4,5,6,8,10,12]);if(d1===d2)return null;
+        let n1=rand(1,d1-1),n2=rand(1,d2-1),num=n1*d2+(generator==='frac_unlike_add'?1:-1)*n2*d1,den=d1*d2;
+        if(num<=0)return null;const f=normFraction(num,den);if(f.d===1)return null;answer=fractionKey(f);return{params:{f1:`${n1}/${d1}`,f2:`${n2}/${d2}`},answer,choices:allWordFractionChoices(answer)};
+      });
+      case'average':{
+        const count=pick([3,4,5]),avg=rand(8,30),values=[];let remain=avg*count;
+        for(let i=0;i<count-1;i++){const slots=count-i-1,lo=Math.max(1,remain-35*slots),hi=Math.min(35,remain-slots);const v=rand(lo,Math.max(lo,hi));values.push(v);remain-=v;}values.push(remain);
+        return{params:{count,values:shuffle(values).join('、')},answer:avg};
+      }
+      case'average_total':{const count=pick([3,4,5,6,8]),avg=pick([12,15,18,20,24,25,30]);return{params:{count,avg},answer:count*avg};}
+      case'unit_price':{const count=rand(2,9),unit=pick([40,50,60,80,100,120,150,200]),total=count*unit;return{params:{count,total},answer:unit};}
+      case'unit_rate':{const count=rand(2,8),unit=rand(2,18),total=count*unit;return{params:{count,total},answer:unit};}
+      case'speed':{const speed=pick([30,40,45,50,60,70,80,90]),time=pick([2,3,4,5]),distance=speed*time;return{params:{speed,time,distance},answer:speed};}
+      case'distance':{const speed=pick([30,40,45,50,60,70,80,90]),time=pick([2,3,4,5]),distance=speed*time;return{params:{speed,time,distance},answer:distance};}
+      case'time':{const speed=pick([30,40,45,50,60,70,80,90]),time=pick([2,3,4,5]),distance=speed*time;return{params:{speed,time,distance},answer:time};}
+      case'percent_part':{const rate=pick([10,20,25,30,40,50,60,75]),den=100/gcd(rate,100),base=den*rand(4,30),part=base*rate/100;return{params:{base,rate,part},answer:part};}
+      case'percent_rate':{const rate=pick([10,20,25,30,40,50,60,75]),den=100/gcd(rate,100),base=den*rand(4,30),part=base*rate/100,answer=`${rate}%`;return{params:{base,rate,part},answer,choices:shuffle([answer,`${Math.max(5,rate-10)}%`,`${Math.min(90,rate+10)}%`]).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3)};}
+      case'percent_base':{const rate=pick([10,20,25,40,50,75]),den=100/gcd(rate,100),base=den*rand(4,30),part=base*rate/100;return{params:{base,rate,part},answer:base};}
+      case'percent_discount':return retry(()=>{const rate=pick([10,20,25,30,40,50]),base=pick([400,600,800,1000,1200,1600,2000,2400,3000]);answer=base*(100-rate)/100;if(!Number.isInteger(answer))return null;return{params:{base,rate,part:base*rate/100},answer};});
+      case'percent_increase':return retry(()=>{const rate=pick([10,20,25,40,50]),base=pick([40,80,100,120,160,200,240,300,400]);answer=base*(100+rate)/100;if(!Number.isInteger(answer))return null;return{params:{base,rate,part:base*rate/100},answer};});
+
+      // 銀：分数乗除・比・円・比例・反比例
+      case'frac_mul_frac':return retry(()=>{const d1=pick([3,4,5,6,8]),d2=pick([3,4,5,6,8]);const n1=rand(1,d1-1),n2=rand(1,d2-1),f=normFraction(n1*n2,d1*d2);if(f.d===1)return null;answer=fractionKey(f);return{params:{f1:`${n1}/${d1}`,f2:`${n2}/${d2}`},answer,choices:allWordFractionChoices(answer)};});
+      case'frac_mul_int':return retry(()=>{const d1=pick([3,4,5,6,8]),n1=rand(1,d1-1),b=rand(2,6),f=normFraction(n1*b,d1);if(f.d===1)return null;answer=fractionKey(f);return{params:{f1:`${n1}/${d1}`,b},answer,choices:allWordFractionChoices(answer)};});
+      case'frac_div_frac':return retry(()=>{const d1=pick([3,4,5,6,8]),d2=pick([3,4,5,6,8]),n1=rand(1,d1-1),n2=rand(1,d2-1),f=normFraction(n1*d2,d1*n2);if(f.d===1)return null;answer=fractionKey(f);return{params:{f1:`${n1}/${d1}`,f2:`${n2}/${d2}`},answer,choices:allWordFractionChoices(answer)};});
+      case'frac_div_int':return retry(()=>{const d1=pick([3,4,5,6,8]),n1=rand(1,d1-1),b=rand(2,5),f=normFraction(n1,d1*b);if(f.d===1)return null;answer=fractionKey(f);return{params:{f1:`${n1}/${d1}`,b},answer,choices:allWordFractionChoices(answer)};});
+      case'ratio_missing':return retry(()=>{const r1=rand(1,5),r2=rand(r1+1,8);if(gcd(r1,r2)!==1)return null;const k=rand(2,10),left=r1*k;answer=r2*k;return{params:{r1,r2,left},answer};});
+      case'ratio_split':return retry(()=>{const r1=rand(1,5),r2=rand(r1+1,8);if(gcd(r1,r2)!==1)return null;const unit=rand(3,15),total=(r1+r2)*unit;const wantLarge=/長い方|多い方/.test(String(tpl.text||''));answer=(wantLarge?r2:r1)*unit;return{params:{r1,r2,total},answer};});
+      case'ratio_equal':return retry(()=>{const r1=rand(1,6),r2=rand(r1+1,9);if(gcd(r1,r2)!==1)return null;const k1=rand(2,5),k2=rand(2,6);if(k1===k2)return null;const a=r1*k1,b=r2*k1,answer=`${r1*k2}:${r2*k2}`;return{params:{a,b,r1,r2},answer,choices:shuffle([answer,`${r1*k2}:${r2*k2+1}`,`${r1*k2+1}:${r2*k2}`])};});
+      case'circle_circ_d':{const d=pick([4,6,8,10,12,14,16,18,20]),answer=cleanDecimal(d*3.14);return{params:{d,r:d/2},answer};}
+      case'circle_circ_r':{const r=rand(2,10),answer=cleanDecimal(2*r*3.14);return{params:{r,d:r*2},answer};}
+      case'circle_area_r':{const r=rand(2,10),answer=cleanDecimal(r*r*3.14);return{params:{r,d:r*2},answer};}
+      case'circle_area_d':{const r=rand(2,10),d=r*2,answer=cleanDecimal(r*r*3.14);return{params:{r,d},answer};}
+      case'prop_cost':case'prop_amount':case'prop_distance':{const x1=pick([2,3,4,5,6]),unit=pick([20,30,40,50,60,80,100,120]),x2=x1*pick([2,3]),y1=x1*unit,answer=x2*unit;return{params:{x1,y1,x2},answer};}
+      case'inverse_workers':case'inverse_speed':case'inverse_pipes':return retry(()=>{const x1=pick([3,4,5,6,8,10,12]),y1=pick([3,4,5,6,8,10,12]),product=x1*y1;const divs=[2,3,4,5,6,8,9,10,12].filter(x=>x!==x1&&product%x===0);if(!divs.length)return null;const x2=pick(divs);answer=product/x2;return{params:{x1,y1,x2,product},answer};});
+      case'inverse_rectangle':return retry(()=>{const x1=pick([3,4,5,6,8,9,10,12]),y1=pick([3,4,5,6,8,9,10,12]),product=x1*y1;const divs=[2,3,4,5,6,8,9,10,12].filter(x=>product%x===0);if(!divs.length)return null;const x2=pick(divs);answer=product/x2;return{params:{x1,y1,x2,product},answer};});
+
+      // 翠：単位・面積・規則・場合の数
+      case'unit_km_m':{const km=pick([1.2,1.5,1.8,2.4,2.7,3.5]);return{params:{km},answer:Math.round(km*1000)};}
+      case'unit_kg_g':{const kg=pick([1.5,2.4,3.2,4.5,5.6]);return{params:{kg},answer:Math.round(kg*1000)};}
+      case'unit_l_ml':{const l=pick([1.2,1.5,2.5,3.4,4.8]);return{params:{l},answer:Math.round(l*1000)};}
+      case'unit_h_min':{const h=pick([1,2,3]),mins=pick([15,20,30,45]);return{params:{h,mins},answer:h*60+mins};}
+      case'unit_m2_cm2':{const m2=pick([1,2,3,4,5]);return{params:{m2},answer:m2*10000};}
+      case'unit_m_cm':{const m=pick([2,3,4,5,6]),cm=pick([15,25,40,60,75]);return{params:{m,cm},answer:m*100+cm};}
+      case'unit_min_h':{const minsTotal=pick([90,120,150,180,210]);return{params:{minsTotal},answer:cleanDecimal(minsTotal/60)};}
+      case'unit_cm2_m2':{const cm2=pick([10000,20000,30000,40000,50000]);return{params:{cm2},answer:cm2/10000};}
+      case'unit_remaining_m':return retry(()=>{const km=pick([1.5,1.8,2.2,2.4,3.0]),used=pick([350,450,650,750,900]);const total=Math.round(km*1000);if(used>=total)return null;return{params:{km,used},answer:total-used};});
+      case'unit_remaining_ml':return retry(()=>{const l=pick([2.4,3.2,4.5,5.0]),used=pick([450,600,750,900]);const total=Math.round(l*1000);if(used>=total)return null;return{params:{l,used},answer:total-used};});
+      case'area_rect':{a=rand(4,14);b=rand(3,10);return{params:{a,b},answer:a*b};}
+      case'area_square':a=rand(4,12);return{params:{a,b:a},answer:a*a};
+      case'area_triangle':{a=pick([4,6,8,10,12,14]);b=pick([3,4,5,6,8,10]);return{params:{a,b},answer:a*b/2};}
+      case'area_para':{a=rand(5,12);b=rand(3,8);return{params:{a,b},answer:a*b};}
+      case'area_trap':return retry(()=>{a=pick([4,6,8]);b=pick([8,10,12,14]);if(b<=a)return null;const h=pick([3,4,5,6,8]);answer=(a+b)*h/2;if(!Number.isInteger(answer))return null;return{params:{a,b,h},answer};});
+      case'area_composite':return retry(()=>{a=pick([10,12,14,16]);b=pick([8,10,12]);c=pick([2,3,4]);const d=pick([2,3,4]);answer=a*b-c*d;if(answer<=0)return null;return{params:{a,b,c,d},answer};});
+      case'pattern_arith':{const start=rand(1,8),step=pick([2,3,4,5]),arr=[0,1,2,3].map(i=>start+i*step);return{params:{seq:arr.join('、')},answer:start+4*step};}
+      case'pattern_desc':{const start=pick([40,50,60,72]),step=pick([3,4,5,6]),arr=[0,1,2,3].map(i=>start-i*step);return{params:{seq:arr.join('、')},answer:start-4*step};}
+      case'pattern_cycle':{const cycle=pick([3,4,5]),n=pick([8,9,11,13,14,17,19]),answer=((n-1)%cycle)+1;return{params:{cycle,n},answer};}
+      case'pattern_odd':{const n=pick([6,8,10,12]),answer=2*n-1;return{params:{n},answer};}
+      case'pattern_position':{const target=pick([15,19,23,27,31]),answer=(target+1)/2;return{params:{target},answer};}
+      case'pattern_sum':{const n=pick([5,6,7,8,9]),answer=n*(n+1)/2;return{params:{n},answer};}
+      case'count_product':{a=pick([2,3,4,5]);b=pick([2,3,4]);return{params:{a,b},answer:a*b};}
+      case'count_perm':{const n=pick([3,4,5]),fac=[1,1,2,6,24,120][n];return{params:{n},answer:fac};}
+      case'count_comb':case'count_colors':{const n=pick([4,5,6,7,8]),answer=combination(n,2);return{params:{n},answer};}
+      case'count_route':{const r=pick([2,3,4]),u=pick([2,3,4]),answer=combination(r+u,r);return{params:{r,u},answer};}
+      case'count_restrict':{const n=pick([5,6,7,8,9]),answer=combination(n,2)-1;return{params:{n},answer};}
+
+      // 白専用カテゴリの不足分
+      case'divisor_select':{
+        const n=pick([24,30,36,40,42,48,54,60,72]),divs=[];for(let i=2;i<=12;i++)if(n%i===0)divs.push(i);const answer=pick(divs),wrong=shuffle([...Array(11)].map((_,i)=>i+2).filter(x=>n%x!==0)).slice(0,2);return{params:{n},answer,choices:shuffle([answer,...wrong])};
+      }
+      case'multiple_select':{const a=pick([4,6,8,9,10,12]),b=pick([6,8,10,12,14,15,18]),answer=a*b/gcd(a,b);return{params:{a,b},answer};}
+      case'logic_reverse':{const answer=rand(5,30),add=rand(3,15),total=answer+add;return{params:{add,total},answer};}
+      case'logic_compare':{const labels=shuffle(['A','B','C']),[b,a,c]=labels;return{params:{a,b,c},answer:c,choices:shuffle([a,b,c])};}
+      default:return null;
+    }
+  }
+  function validateAllWordQuestion(q,tpl){
+    const errors=[];
+    if(!q?.wordProblem)errors.push('not-word');if(!q?.templateId)errors.push('missing-template');
+    if(typeof q?.expression!=='string'||!q.expression.trim())errors.push('empty');
+    const grade=Math.max(1,Number(tpl?.grade)||6),maxChars=grade<=2?50:grade<=4?55:60;if((q?.expression||'').length>maxChars)errors.push('too-long');
+    if(typeof q?.answer==='number'&&(!Number.isFinite(q.answer)||q.answer<0))errors.push('bad-number-answer');
+    if(typeof q?.answer==='string'&&!q.answer.trim())errors.push('bad-string-answer');
+    if(!Array.isArray(q?.choices)||q.choices.length!==3)errors.push('choice-count');
+    if(Array.isArray(q?.choices)){const keys=q.choices.map(answerKey);if(new Set(keys).size!==3)errors.push('duplicate-choice');if(!keys.includes(answerKey(q.answer)))errors.push('missing-answer');if(q.choices.some(v=>typeof v==='number'&&v<0))errors.push('negative-choice');}
+    if(/\{[a-zA-Z0-9_]+\}/.test(q?.expression||''))errors.push('placeholder');
+    return errors;
+  }
+  function templatesForAllWord(world,stage){return allWordBank.templates.filter(t=>t?.world===world&&t?.stage===stage);}
+  function makeAllWordQuestion(world,stage,{category='',sourceWorld='',level=''}={}){
+    if(!allWordBankReady)return null;
+    let templates=templatesForAllWord(world,stage);if(category)templates=templates.filter(t=>t.whiteCategory===category||t.stage===category);
+    if(world==='white'&&level&&templates.length){const wanted=level==='basic'?1:(level==='mixed'||level==='master'?2:0);if(wanted){const filtered=templates.filter(t=>Number(t.whiteDifficulty||1)===wanted);if(filtered.length)templates=filtered;}}
+    if(!templates.length)return null;
+    const max=Math.max(1,Number(allWordBank.policy?.maxGenerateAttempts)||50);
+    for(let attempt=0;attempt<max;attempt++){
+      let pool=templates.filter(t=>!recentWordTemplateIds.includes(t.id));if(!pool.length)pool=templates;const tpl=pick(pool);
+      if(tpl.fixed){const q={expression:tpl.question,displayExpression:tpl.question,answer:tpl.answer,choices:shuffle([...tpl.choices]),wordProblem:true,templateId:tpl.id,skill:tpl.skill,params:{fixedId:tpl.id},advice:tpl.advice||'',grade:tpl.grade||6,sourceWorld:sourceWorld||''};if(validateAllWordQuestion(q,tpl).length)continue;recentWordTemplateIds.push(tpl.id);if(recentWordTemplateIds.length>5)recentWordTemplateIds.splice(0,recentWordTemplateIds.length-5);return q;}
+      const raw=allWordRaw(tpl.generator,tpl);if(!raw)continue;const obj=allWordObjectForTemplate(tpl),params={...(raw.params||{}),item:obj.item,counter:obj.counter,entityId:obj.id};
+      const expression=renderWordTemplate(tpl.text,params),choices=raw.choices||((typeof raw.answer==='string'&&parseFractionKey(raw.answer))?allWordFractionChoices(raw.answer):typeof raw.answer==='number'?allWordNumberChoices(raw.answer):null);
+      if(!choices||choices.length!==3)continue;
+      const q={expression,displayExpression:expression,answer:raw.answer,choices,wordProblem:true,templateId:tpl.id,skill:tpl.skill,params,advice:tpl.advice||'',grade:tpl.grade||6,sourceWorld:sourceWorld||''};
+      if(validateAllWordQuestion(q,tpl).length)continue;recentWordTemplateIds.push(tpl.id);if(recentWordTemplateIds.length>5)recentWordTemplateIds.splice(0,recentWordTemplateIds.length-5);return q;
+    }
+    return null;
+  }
+  function makeAllWordQuestionById(id){
+    const tpl=allWordBank.templates.find(t=>t?.id===id);if(!tpl)return null;
+    if(tpl.fixed){const q={expression:tpl.question,displayExpression:tpl.question,answer:tpl.answer,choices:[...tpl.choices],wordProblem:true,templateId:tpl.id,skill:tpl.skill,params:{fixedId:tpl.id},advice:tpl.advice||'',grade:tpl.grade||6};return validateAllWordQuestion(q,tpl).length?null:q;}
+    for(let attempt=0;attempt<50;attempt++){const raw=allWordRaw(tpl.generator,tpl);if(!raw)continue;const obj=allWordObjectForTemplate(tpl),params={...(raw.params||{}),item:obj.item,counter:obj.counter,entityId:obj.id},expression=renderWordTemplate(tpl.text,params),choices=raw.choices||((typeof raw.answer==='string'&&parseFractionKey(raw.answer))?allWordFractionChoices(raw.answer):typeof raw.answer==='number'?allWordNumberChoices(raw.answer):null);if(!choices)continue;const q={expression,displayExpression:expression,answer:raw.answer,choices,wordProblem:true,templateId:tpl.id,skill:tpl.skill,params,advice:tpl.advice||'',grade:tpl.grade||6};if(!validateAllWordQuestion(q,tpl).length)return q;}
+    return null;
+  }
+  function allWordStageLabelForCurrent(){if(mode==='crimson'&&crimsonLastPhase)return'LAST';if(bossPhase&&stageIndex===4)return'FINAL';return`S${stageIndex+1}`;}
+  function expandedWordPlanForCurrent(){
+    const source=mode==='end'&&!endFinalPhase?currentEndSource():mode,key=`${mode}:${source}:${stageIndex}:${bossPhase?'boss':'normal'}:${mode==='white'?whiteDepth:''}`;
+    if(allWordPlanKey!==key){allWordPlanKey=key;if(mode==='white'){allWordSlots=chooseWordSlots(9,Math.max(1,Number(allWordBank.policy?.whiteNormalWordSlots)||2));}
+      else if(bossPhase){const count=mode==='end'?Math.max(1,Number(allWordBank.policy?.endBossWordSlots)||1):(Math.random()<(Number(allWordBank.policy?.bossSecondSlotProbability)||.5)?Math.max(1,Number(allWordBank.policy?.bossWordSlotsMax)||2):Math.max(1,Number(allWordBank.policy?.bossWordSlotsMin)||1));allWordSlots=chooseWordSlots(4,count);}
+      else{const count=mode==='end'?Math.max(1,Number(allWordBank.policy?.endNormalWordSlots)||2):Math.max(1,Number(allWordBank.policy?.normalWordSlots)||3);allWordSlots=chooseWordSlots(10,count);}}
+    return allWordSlots;
+  }
+  function bossBlocksWordProblem(){
+    if(!bossPhase)return false;
+    if(isBossFinalActionQuestion()||bossActionActive||bossSpecialSequence)return true;
+    if(mode==='blue'&&stageIndex===3)return true; // 通常4問も数字消失ギミック専用
+    if(mode==='silver'&&stageIndex===4)return true; // 通常4問もミメシス専用視覚問題
+    if(mode==='end'&&endFinalPhase)return true;
+    if(mode==='white')return true;
+    return bossQuestion<0||bossQuestion>=4;
+  }
+  function shouldUseAllWordProblem(){
+    if(!allWordBankReady)return false;
+    if(mode==='front')return false;
+    if(mode==='white'){if(whiteBeyondActive||bossPhase||whiteQuestionInDepth<0||whiteQuestionInDepth>=9)return false;return expandedWordPlanForCurrent().includes(whiteQuestionInDepth);}
+    if(mode==='end'&&endFinalPhase)return false;
+    if(bossBlocksWordProblem())return false;
+    if(bossPhase)return expandedWordPlanForCurrent().includes(bossQuestion);
+    if(stageQuestion<0||stageQuestion>=10)return false;return expandedWordPlanForCurrent().includes(stageQuestion);
+  }
+  function highStagePoolForEnd(source){
+    const map={back:['S4','S5','FINAL'],crimson:['S4','S5','FINAL','LAST'],blue:['S4','S5','FINAL'],silver:['S2','S3','S4','FINAL'],midori:['S2','S3','S4','S5','FINAL']};return map[source]||['FINAL'];
+  }
+  function generateAllWordQuestionSafe(){
+    if(mode==='white'){
+      const category=whiteCategory(whiteDepth),level=whiteLevel(whiteDepth,false),q=makeAllWordQuestion('white',category,{category,level});
+      if(q){q.category=category;q.level=level;q.advice=q.advice||WHITE_CATEGORY_INFO[category]?.advice||'';return q;}
+      return makeWhiteCategoryQuestion(category,level);
+    }
+    if(mode==='end'&&!endFinalPhase){const source=currentEndSource(),stages=shuffle(highStagePoolForEnd(source));for(const st of stages){const q=makeAllWordQuestion(source,st,{sourceWorld:source});if(q){q.endWordProblem=true;return q;}}return makeEndQuestion(source);}
+    const stage=allWordStageLabelForCurrent(),q=makeAllWordQuestion(mode,stage);if(q)return q;
+    return bossPhase?makeBossQuestion(stageIndex):(mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):makeMidoriQuestion(stageIndex));
+  }
+  loadAllWordBank();
+
 
   function makeFrontQuestion(idx){
     if(idx===0){if(Math.random()<.5){let a=rand(1,8),b=rand(1,8-a);return q2(a,'+',b);}let a=rand(2,9),b=rand(1,a-1);return q2(a,'-',b);}
@@ -3763,6 +4002,7 @@ function setStageOverlayVisible(visible){
   const RECENT_QUESTION_WINDOW=3,QUESTION_REPEAT_RETRIES=14;
   function generateQuestionForCurrentState(){
     if(mode==='front'&&shouldUseFrontWordProblem())return generateFrontWordQuestionSafe();
+    if(mode!=='front'&&shouldUseAllWordProblem())return generateAllWordQuestionSafe();
     return mode==='white'?(whiteBeyondActive?makeWhiteBeyondQuestion():makeWhiteQuestion(whiteDepth,{boss:bossPhase})):bossPhase?makeBossQuestion(stageIndex):(mode==='front'?makeFrontQuestion(stageIndex):mode==='back'?makeBackQuestion(stageIndex):mode==='crimson'?makeCrimsonQuestion(stageIndex):mode==='blue'?makeBlueQuestion(stageIndex):mode==='silver'?makeSilverQuestion(stageIndex):mode==='midori'?makeMidoriQuestion(stageIndex):makeEndQuestion(currentEndSource()));
   }
   function questionRepeatKey(q){
@@ -5115,10 +5355,20 @@ function setStageOverlayVisible(visible){
     return `STAGE ${stageIndex+1}${bossPhase?' BOSS':''}`;
   }
   function mistakeRecordKey(record){return JSON.stringify([String(record?.world||''),String(record?.stageLabel??record?.stage??''),String(record?.q||''),String(record?.answer??'')]);}
+  function sanitizeMistakeParams(params){
+    if(!params||typeof params!=='object'||Array.isArray(params))return null;
+    const blocked=new Set(['intermediates','conditions','debug','validation','choices','wrongChoices','raw','trace']);
+    const out={};let count=0;
+    for(const [k,v] of Object.entries(params)){
+      if(blocked.has(k)||count>=18)continue;
+      if(v===null||typeof v==='string'||typeof v==='boolean'||(typeof v==='number'&&Number.isFinite(v))){out[k]=v;count++;}
+    }
+    return Object.keys(out).length?out:null;
+  }
   function normalizeMistakeBookEntry(entry){
     if(!entry||typeof entry!=='object')return null;
     const q=String(entry.q??'').trim();if(!q)return null;
-    const normalized={q,selected:entry.selected??'',answer:entry.answer??'',advice:String(entry.advice||''),boss:!!entry.boss,world:String(entry.world||'front'),stage:Number.isFinite(Number(entry.stage))?Number(entry.stage):0,stageLabel:String(entry.stageLabel||''),sourceWorld:entry.sourceWorld?String(entry.sourceWorld):'',templateId:entry.templateId?String(entry.templateId):'',skill:entry.skill?String(entry.skill):'',params:entry.params&&typeof entry.params==='object'&&!Array.isArray(entry.params)?{...entry.params}:null,misses:Math.max(1,Number(entry.misses)||1),firstMissedAt:Math.max(0,Number(entry.firstMissedAt)||0),lastMissedAt:Math.max(0,Number(entry.lastMissedAt)||0)};
+    const normalized={q,selected:entry.selected??'',answer:entry.answer??'',advice:String(entry.advice||''),boss:!!entry.boss,world:String(entry.world||'front'),stage:Number.isFinite(Number(entry.stage))?Number(entry.stage):0,stageLabel:String(entry.stageLabel||''),sourceWorld:entry.sourceWorld?String(entry.sourceWorld):'',templateId:entry.templateId?String(entry.templateId):'',skill:entry.skill?String(entry.skill):'',params:sanitizeMistakeParams(entry.params),misses:Math.max(1,Number(entry.misses)||1),firstMissedAt:Math.max(0,Number(entry.firstMissedAt)||0),lastMissedAt:Math.max(0,Number(entry.lastMissedAt)||0)};
     normalized.key=typeof entry.key==='string'&&entry.key?entry.key:mistakeRecordKey(normalized);
     return normalized;
   }
@@ -5126,7 +5376,7 @@ function setStageOverlayVisible(visible){
     if(debugFullUnlock||!record)return;
     if(!Array.isArray(save.mistakeBook))save.mistakeBook=[];
     const now=Date.now(),key=mistakeRecordKey(record),existing=save.mistakeBook.find(e=>e?.key===key);
-    if(existing){existing.selected=record.selected;existing.advice=record.advice;existing.boss=record.boss;existing.sourceWorld=record.sourceWorld||existing.sourceWorld||'';existing.templateId=record.templateId||existing.templateId||'';existing.skill=record.skill||existing.skill||'';existing.params=record.params&&typeof record.params==='object'?{...record.params}:existing.params||null;existing.misses=Math.max(1,Number(existing.misses)||1)+1;existing.lastMissedAt=now;}
+    if(existing){existing.selected=record.selected;existing.advice=record.advice;existing.boss=record.boss;existing.sourceWorld=record.sourceWorld||existing.sourceWorld||'';existing.templateId=record.templateId||existing.templateId||'';existing.skill=record.skill||existing.skill||'';existing.params=sanitizeMistakeParams(record.params)||existing.params||null;existing.misses=Math.max(1,Number(existing.misses)||1)+1;existing.lastMissedAt=now;}
     else save.mistakeBook.push({...record,key,misses:1,firstMissedAt:now,lastMissedAt:now});
     persistQuietly();
   }
@@ -5177,7 +5427,7 @@ function setStageOverlayVisible(visible){
       sourceWorld:mode==='end'&&!endFinalPhase?currentEndSource():'',
       templateId:q.templateId||'',
       skill:q.skill||'',
-      params:q.params&&typeof q.params==='object'?{...q.params}:null
+      params:sanitizeMistakeParams(q.params)
     };
   }
   function renderGameOverReview(){
@@ -5774,7 +6024,7 @@ function setStageOverlayVisible(visible){
 
   window.__SANSU_TEST__={
     get state(){return{mode,stageIndex,stageQuestion,totalProgress,lives,timeLeft,timerLimit,bossPhase,bossQuestion,currentMonster:currentMonster&&{...currentMonster},bossActionActive,bossSpecialSequence:bossSpecialSequence&&{...bossSpecialSequence},currentQuestion:currentQuestion&&{...currentQuestion},paused,gameOverActive,specialGauge,comboStreak,specialActive,hudMode,uiStyle};},
-    rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,makeFrontWordQuestion,validateFrontWordQuestion,generateFrontWordQuestionSafe,frontWordPlanForCurrent,shouldUseFrontWordProblem,get frontWordBank(){return frontWordBank;},get frontWordBankReady(){return frontWordBankReady;},get frontWordBankLoadError(){return frontWordBankLoadError;},
+    rarityRoll,selectMonster,makeBossQuestion,makeFrontFinalBossQuestion,makeBackFinalBossQuestion,currentBoss,makeChoices,makeFrontWordQuestion,validateFrontWordQuestion,generateFrontWordQuestionSafe,frontWordPlanForCurrent,shouldUseFrontWordProblem,get frontWordBank(){return frontWordBank;},get frontWordBankReady(){return frontWordBankReady;},get frontWordBankLoadError(){return frontWordBankLoadError;},makeAllWordQuestion,makeAllWordQuestionById,validateAllWordQuestion,generateAllWordQuestionSafe,expandedWordPlanForCurrent,shouldUseAllWordProblem,bossBlocksWordProblem,allWordRaw,get allWordBank(){return allWordBank;},get allWordBankReady(){return allWordBankReady;},get allWordBankLoadError(){return allWordBankLoadError;},
     showActionCutin,showBossTechnique,runBossFifthAction,showBossPhaseTransition,showShieldForm,showShieldBreak,showEquationRewrite,showReconstructTransition,startTimer,makeReverseQuestion,makeTransformQuestion,makeReconstructedQuestion,runAttackMotion,runFinisherMotion,activateSpecialMove,sceneBlackout,pauseGame,resumeGame,runBattleCountdown,showGameOver,retryFromGameOver,BATTLE_FLIP_FACING,
     setMode(v){mode=v;renderTitle();},setStage(i){clearBossAction();stageIndex=i;stageQuestion=0;bossPhase=false;bossQuestion=0;currentMonster=null;},
     forceBoss(q=0){bossPhase=true;bossQuestion=q;currentMonster=null;renderGame();},
