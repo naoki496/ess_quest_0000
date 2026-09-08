@@ -378,6 +378,7 @@
     if(!hasLegitimateTimeKeyProgress&&merged.owned.includes(100))merged.owned=merged.owned.filter(id=>id!==100);
     merged.monsterBook={front:Array.isArray(raw.monsterBook?.front)?raw.monsterBook.front:[],back:Array.isArray(raw.monsterBook?.back)?raw.monsterBook.back:[],crimson:Array.isArray(raw.monsterBook?.crimson)?raw.monsterBook.crimson:[],blue:Array.isArray(raw.monsterBook?.blue)?raw.monsterBook.blue:[],silver:Array.isArray(raw.monsterBook?.silver)?raw.monsterBook.silver:[],midori:Array.isArray(raw.monsterBook?.midori)?raw.monsterBook.midori:[],end:Array.isArray(raw.monsterBook?.end)?raw.monsterBook.end:[]};
     merged.monsterEncounters={front:{...(raw.monsterEncounters?.front||{})},back:{...(raw.monsterEncounters?.back||{})},crimson:{...(raw.monsterEncounters?.crimson||{})},blue:{...(raw.monsterEncounters?.blue||{})},silver:{...(raw.monsterEncounters?.silver||{})},midori:{...(raw.monsterEncounters?.midori||{})},end:{...(raw.monsterEncounters?.end||{})}};
+    for(const world of Object.keys(merged.monsterBook)){const counts=merged.monsterEncounters[world];for(const id of merged.monsterBook[world])counts[id]=Math.max(1,Number(counts[id])||0);}
     merged.musicUnlocked={front:Array.isArray(raw.musicUnlocked?.front)?raw.musicUnlocked.front:[],back:Array.isArray(raw.musicUnlocked?.back)?raw.musicUnlocked.back:[],crimson:Array.isArray(raw.musicUnlocked?.crimson)?raw.musicUnlocked.crimson:[],blue:Array.isArray(raw.musicUnlocked?.blue)?raw.musicUnlocked.blue:[],silver:Array.isArray(raw.musicUnlocked?.silver)?raw.musicUnlocked.silver:[],midori:Array.isArray(raw.musicUnlocked?.midori)?raw.musicUnlocked.midori:[],end:Array.isArray(raw.musicUnlocked?.end)?raw.musicUnlocked.end:[]};
     merged.secretRelics=Array.isArray(raw.secretRelics)?raw.secretRelics:[];
     merged.secretRelicNotified=Array.isArray(raw.secretRelicNotified)?raw.secretRelicNotified:[];
@@ -787,7 +788,11 @@ function initializeWorldUnlockState(){
 }
 
 let rewardFollowupQueue=[];
-function presentRewardNotice({icon='✦',name='',text='',kind='item',kicker='NEW ITEM'}){
+function presentRewardNotice({icon='✦',name='',text='',kind='item',kicker='NEW ITEM',world=null}){
+  if(kind==='world-unlock'&&world&&!debugFullUnlock){
+    save.worldUnlockNotified=Array.isArray(save.worldUnlockNotified)?save.worldUnlockNotified:[];
+    if(!save.worldUnlockNotified.includes(world)){save.worldUnlockNotified.push(world);persistQuietly();}
+  }
   if(els.rewardCard)els.rewardCard.classList.toggle('world-unlock',kind==='world-unlock');
   if(els.rewardKicker)els.rewardKicker.textContent=kicker;
   els.rewardIcon.textContent=icon;els.rewardName.textContent=name;els.rewardText.textContent=text;els.rewardOverlay.hidden=false;
@@ -797,14 +802,15 @@ function enqueuePendingWorldUnlockNotices({showNow=true}={}){
   save.worldUnlockNotified=Array.isArray(save.worldUnlockNotified)?save.worldUnlockNotified:[];
   save.worldUnlockNew=Array.isArray(save.worldUnlockNew)?save.worldUnlockNew:[];
   const notified=new Set(save.worldUnlockNotified);
-  const pending=WORLD_UNLOCKS.filter(w=>isWorldActuallyUnlocked(w.world)&&!notified.has(w.world));
-  if(!pending.length)return;
+  const queued=new Set(rewardFollowupQueue.filter(n=>n?.kind==='world-unlock'&&n.world).map(n=>n.world));
+  const pending=WORLD_UNLOCKS.filter(w=>isWorldActuallyUnlocked(w.world)&&!notified.has(w.world)&&!queued.has(w.world));
+  let changed=false;
   for(const w of pending){
-    save.worldUnlockNotified.push(w.world);
-    if(!save.worldUnlockNew.includes(w.world))save.worldUnlockNew.push(w.world);
-    rewardFollowupQueue.push({kind:'world-unlock',kicker:'NEW WORLD UNLOCKED',icon:'∞',name:w.name,text:`${w.sourceName}が、新たな道を開いた。\n${w.desc}\n「世界渡り」から新たな世界へ行けるようになった。`});
+    if(!save.worldUnlockNew.includes(w.world)){save.worldUnlockNew.push(w.world);changed=true;}
+    rewardFollowupQueue.push({kind:'world-unlock',world:w.world,kicker:'NEW WORLD UNLOCKED',icon:'∞',name:w.name,text:`${w.sourceName}が、新たな道を開いた。\n${w.desc}\n「世界渡り」から新たな世界へ行けるようになった。`});
   }
-  persistQuietly();renderTitle();
+  if(changed)persistQuietly();
+  if(pending.length)renderTitle();
   if(showNow&&els.rewardOverlay.hidden&&rewardFollowupQueue.length)presentRewardNotice(rewardFollowupQueue.shift());
 }
 function enqueuePendingSecretRelicNotices({showNow=true}={}){
@@ -853,10 +859,10 @@ function markWorldVisited(world){
     els.titleModeName.textContent=mode==='front'?'光の世界':mode==='back'?'裏の世界':mode==='crimson'?'紅の世界':mode==='blue'?'蒼の世界':mode==='silver'?'銀の世界':mode==='midori'?'翠の世界':mode==='end'?'終の世界':'白の世界';
     els.titleTrackName.textContent=titleTrackLabel();
     if(els.titleGradeGuide)els.titleGradeGuide.textContent=mode==='front'?'小学1年生対象':mode==='back'?'小学2年生対象':mode==='crimson'?'小学3〜4年生対象':mode==='blue'?'小学5年生対象':mode==='silver'?'小学6年生対象':mode==='midori'?'小学4年生以降・思考問題':mode==='end'?'既習算数を統合した発展問題':'小学校算数・ENDLESS CHALLENGE';
-    const longRun=mode==='crimson'||mode==='end';
-    if(els.titleQuestionCount)els.titleQuestionCount.textContent=mode==='white'?'∞':longRun?'80':'75';
+    const runTotal=mode==='white'?'∞':mode==='end'?'85':mode==='crimson'?'80':'75';
+    if(els.titleQuestionCount)els.titleQuestionCount.textContent=runTotal;
     const titleRuleNote=$('titleQuestionRuleNote');if(titleRuleNote)titleRuleNote.textContent=mode==='crimson'?'5ステージ＋最終決戦':mode==='end'?'5領域＋FINAL':mode==='white'?'10問ごとにDEPTH':'全5ステージ';
-    const restartTotal=mode==='white'?'∞':longRun?'80':'75';document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=restartTotal);
+    document.querySelectorAll('[data-run-total]').forEach(el=>el.textContent=runTotal);
     const ruleCells=[...document.querySelectorAll('.rule-grid>div')];
     if(ruleCells.length>=4){
       const t=ruleCells[0].querySelector('strong'),ts=ruleCells[0].querySelector('small'),life=ruleCells[2].querySelector('small');
@@ -1211,6 +1217,7 @@ function markWorldVisited(world){
       if(mode==='silver'&&!isSilverWorldUnlocked())mode='front';
       if(mode==='midori'&&!isMidoriWorldUnlocked())mode='front';
       if(mode==='end'&&!isEndWorldUnlocked())mode='front';
+      if(mode==='white'&&!isWorldActuallyUnlocked('white'))mode='front';
     }
     renderTitle();renderDebugPanel();
     if(els.collectionScreen&&!els.collectionScreen.hidden)renderCollection();
@@ -4985,7 +4992,7 @@ function setStageOverlayVisible(visible){
     const fromBoss=!!bossPhase;
     const titleEl=$('gameOverTitle'),kicker=els.gameOverOverlay?.querySelector('.game-over-card>small'),note=els.gameOverOverlay?.querySelector('.game-over-note');
     if(mode==='white'){if(kicker)kicker.textContent='WHITE WORLD / CHALLENGE COMPLETE';if(titleEl)titleEl.textContent='CHALLENGE COMPLETE';els.gameOverRetryBtn.textContent='もう一度挑戦';els.gameOverMessage.textContent=`今回 ${whiteTotalCorrect}問正解｜到達 DEPTH ${whiteDepth}｜BEST ${Math.max(save.whiteBestQuestions||0,whiteTotalCorrect)}問｜BEYOND ${whiteBeyondCorrectRun}/${whiteBeyondSeenRun}`;if(note)note.textContent='白の世界はライフ回復なし。記録は保存されています。もう一度、最初のDEPTHから挑戦できます。';}
-    else{if(kicker)kicker.textContent='GAME OVER / REVIEW';if(titleEl)titleEl.textContent='今回の振り返り';els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';if(note)note.innerHTML=`タイトルに戻ると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>${mode==='crimson'||mode==='end'?'80':'75'}</span> からになります。`;}
+    else{if(kicker)kicker.textContent='GAME OVER / REVIEW';if(titleEl)titleEl.textContent='今回の振り返り';els.gameOverRetryBtn.textContent=fromBoss?'ボス戦の最初から':'ステージ最初から';els.gameOverMessage.textContent=fromBoss?'直近の間違いを確認して、ボス戦の最初から再挑戦できます。':'直近の間違いを確認して、このステージの最初から再挑戦できます。';if(note)note.innerHTML=`タイトルに戻ると、現在の冒険の途中経過は終了し、次に始めると STAGE 1・0 / <span data-run-total>${mode==='end'?'85':mode==='crimson'?'80':'75'}</span> からになります。`;}
     renderGameOverReview();
     els.gameOverOverlay.hidden=false;
     const card=els.gameOverOverlay.querySelector('.game-over-card');

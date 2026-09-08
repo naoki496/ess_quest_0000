@@ -559,7 +559,7 @@ body[data-mode="back"] .music-track-row.playing{border-color:rgba(91,232,255,.72
 .music-order{font:900 .64rem/1 "Yu Gothic",sans-serif;letter-spacing:.05em;color:#d9bf7e;white-space:nowrap}.music-track-copy{min-width:0;display:block}.music-track-copy b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 .92rem/1.15 Arial,"Yu Gothic",sans-serif;color:#f4f7fb}.music-track-copy small{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.61rem;color:#9eacbd}.music-track-state{justify-self:end;font:900 .63rem/1 Arial,sans-serif;color:#f2d375}.music-track-row.locked{cursor:default;opacity:.45;filter:saturate(.45)}.music-track-row.locked .music-track-state{color:#8993a0}
 .music-player-bar{grid-area:player;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 11px;border-radius:12px;border:1px solid rgba(230,202,140,.22);background:rgba(3,10,22,.76)}.music-now{min-width:0}.music-now small{display:block;font-size:.49rem;letter-spacing:.15em;color:#c7aa68}.music-now strong{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 .88rem/1.2 Arial,"Yu Gothic",sans-serif}.music-now span{display:block;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.56rem;color:#8f9cad}.music-controls{display:flex;gap:5px}.music-controls button{width:39px;height:34px;border-radius:8px;border:1px solid rgba(231,202,136,.3);background:rgba(12,27,47,.9);color:#f1d27c;font:900 .74rem/1 Arial,sans-serif;cursor:pointer}.music-controls button:disabled{opacity:.28;cursor:default}
 body[data-mode="back"] .music-order,body[data-mode="back"] .music-track-state,body[data-mode="back"] .music-controls button,body[data-mode="back"] .music-header small,body[data-mode="back"] .music-now small{color:#8fefff}
-@media (orientation:landscape) and (max-height:700px){.music-entry-btn{width:31px;height:31px;font-size:.92rem}.music-card{height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 10px);width:min(820px,calc(100vw - 10px));padding:10px;gap:6px;border-radius:16px}.music-header{padding-bottom:5px}.music-header h2{font-size:1.25rem}.music-close-btn{width:34px;height:34px}.music-world-tabs button{height:30px;font-size:.68rem}.music-note{font-size:.58rem}.music-track-list{gap:4px}.music-track-row{min-height:46px;grid-template-columns:72px minmax(0,1fr) 38px;padding:5px 8px}.music-track-copy b{font-size:.79rem}.music-track-copy small{font-size:.53rem;margin-top:2px}.music-player-bar{padding:6px 8px}.music-controls button{width:34px;height:29px}.music-now strong{font-size:.76rem}.music-now span{font-size:.50rem}}
+@media (orientation:landscape) and (max-height:700px){.music-entry-btn{width:31px;height:31px;font-size:.92rem}.music-card{height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 12px);width:min(820px,calc(100vw - 10px));padding:10px;gap:6px;border-radius:16px}.music-header{padding-bottom:5px}.music-header h2{font-size:1.25rem}.music-close-btn{width:34px;height:34px}.music-world-tabs button{height:30px;font-size:.68rem}.music-note{font-size:.58rem}.music-track-list{gap:4px}.music-track-row{min-height:46px;grid-template-columns:72px minmax(0,1fr) 38px;padding:5px 8px}.music-track-copy b{font-size:.79rem}.music-track-copy small{font-size:.53rem;margin-top:2px}.music-player-bar{padding:6px 8px}.music-controls button{width:34px;height:29px}.music-now strong{font-size:.76rem}.music-now span{font-size:.50rem}}
 @media (orientation:landscape) and (max-height:500px){.title-topbar{grid-template-columns:1fr auto auto}.music-entry-btn{width:27px;height:27px;font-size:.8rem}.music-card{padding:7px;gap:4px}.music-header h2{font-size:1.02rem}.music-header small,.music-note{display:none}.music-close-btn{width:29px;height:29px}.music-world-tabs button{height:26px;font-size:.61rem}.music-track-row{min-height:36px;grid-template-columns:62px minmax(0,1fr) 34px;padding:3px 6px;gap:6px;border-radius:7px}.music-order{font-size:.52rem}.music-track-copy b{font-size:.68rem}.music-track-copy small{font-size:.46rem}.music-player-bar{padding:4px 6px;gap:6px}.music-now small,.music-now span{display:none}.music-now strong{font-size:.66rem}.music-controls{gap:3px}.music-controls button{width:30px;height:25px;font-size:.62rem}}
 @media (orientation:portrait){.title-topbar{grid-template-columns:1fr auto auto}.music-entry-btn{width:34px;height:34px}.music-overlay{align-items:center;overflow:hidden}.music-card{width:calc(100vw - 16px);height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);padding:11px;gap:7px;border-radius:17px}.music-header h2{font-size:1.3rem}.music-track-row{grid-template-columns:67px minmax(0,1fr) 38px;min-height:61px;padding:7px 8px;gap:7px}.music-order{font-size:.56rem}.music-track-copy b{font-size:.82rem}.music-track-copy small{font-size:.55rem;white-space:normal;line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.music-player-bar{grid-template-columns:1fr;gap:7px}.music-controls{justify-content:center}.music-controls button{width:44px;height:38px}.music-now{text-align:center}.music-now span{white-space:normal;line-height:1.25}}
 
@@ -2461,7 +2461,8 @@ body.battle-hud-cutin-hidden .boss-hp-hud,
 body.end-final-postclear-active .hud,
 body.end-final-postclear-active .hero-life-hud,
 body.end-final-postclear-active .special-hud,
-body.end-final-postclear-active .boss-hp-hud{
+body.end-final-postclear-active .boss-hp-hud,
+body.end-final-postclear-active .actor-name{
   visibility:hidden!important;
   opacity:0!important;
   pointer-events:none!important;
@@ -3294,7 +3295,6 @@ body[data-ui-style="reframe"][data-mode="end"] .boss-name-fx.end-boss-name stron
 body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .question-panel{
   left:29%!important;right:29%!important;top:20%!important;background:rgba(4,7,12,.58)!important;border-color:rgba(255,255,255,.13)!important;
 }
-body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor{width:30%!important;height:82%!important}
 body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .compact-progress-hud{opacity:.72}
 body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .actor-name{opacity:.76}
 body[data-ui-style="reframe"][data-mode="end"][data-stage="final"] .question-cap,
@@ -4841,6 +4841,29 @@ body[data-ui-style="glass"] .title-topbar{
   body[data-ui-style="reframe"][data-compact-phone-landscape="true"].hud-modern .boss-hp-hud:not([hidden]){
     bottom:5.8%!important;
   }
+}
+
+/* Bridge the 501–520px phone-landscape boundary. The compact-phone flag
+   still identifies these as phones, so keep the established metadata/resource
+   lanes without applying the <=500px title or actor-size compaction. */
+@media (orientation:landscape) and (max-width:1000px) and (min-height:501px) and (max-height:520px){
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor-name{
+    display:flex!important;padding:3px 7px!important;font-size:.48rem!important;transform:none!important;
+  }
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor.hero .actor-name{
+    left:88%!important;right:auto!important;bottom:22%!important;max-width:min(29vw,190px)!important;justify-content:flex-start!important;text-align:left!important;
+  }
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor.enemy .actor-name{
+    left:auto!important;right:88%!important;bottom:22%!important;max-width:min(31vw,210px)!important;justify-content:flex-end!important;text-align:right!important;
+  }
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .actor-name.enemy-name-with-rarity{display:flex!important;gap:3px!important}
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .enemy-rarity-badge{display:inline-flex!important}
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"] .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    left:auto!important;right:88%!important;bottom:25%!important;max-width:min(33vw,225px)!important;
+  }
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"].hud-modern .hero-life-hud{bottom:6.4%!important}
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"].hud-modern .special-hud{bottom:5.8%!important}
+  body[data-ui-style="reframe"][data-compact-phone-landscape="true"].hud-modern .boss-hp-hud:not([hidden]){bottom:5.8%!important}
 }
 
 /* Exception only for extremely shallow phone webviews: keeping controls
