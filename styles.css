@@ -4569,6 +4569,7 @@ body[data-ui-style="reframe"] .title-credit-link:focus-visible{color:var(--rf-te
 .credits-body{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;display:grid;grid-template-columns:minmax(220px,.34fr) minmax(0,.66fr);gap:12px;padding:2px}
 .credits-creator-card,.credits-terms-card{border:1px solid rgba(235,205,137,.16);border-radius:15px;background:rgba(3,12,24,.52)}
 .credits-creator-card{display:grid;align-content:center;justify-items:center;gap:8px;padding:22px;text-align:center}
+.credits-naoki-logo{display:block;width:min(100%,180px);height:auto;object-fit:contain;margin:0 auto 6px}
 .credits-creator-card small,.credits-terms-head small{color:#93a7bd;font-size:.58rem;font-weight:900;letter-spacing:.18em}
 .credits-creator-card strong{font:800 clamp(2rem,4vw,3.4rem)/1 Georgia,serif;letter-spacing:.08em;color:#fff1c2}
 .credits-creator-card p{margin:0;color:#d8e2ed;font-weight:800}
@@ -4603,6 +4604,7 @@ body[data-ui-style="reframe"] .collection-detail{overflow-anchor:none}
   body[data-ui-style="reframe"] .credits-body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .credits-body{grid-template-columns:1fr;align-content:start}
   .credits-creator-card{padding:14px}
+  .credits-naoki-logo{width:min(100%,160px);margin-bottom:4px}
   .credits-terms-card{padding:14px}
 }
 @media (orientation:portrait) and (max-height:650px){
@@ -4613,6 +4615,7 @@ body[data-ui-style="reframe"] .collection-detail{overflow-anchor:none}
   .title-credit-link{margin-top:4px;font-size:.46rem}
   .credits-body{gap:7px}
   .credits-creator-card{padding:10px;gap:4px}.credits-creator-card strong{font-size:1.65rem}
+  .credits-naoki-logo{width:min(100%,132px);margin-bottom:2px}
   .credits-terms-card{padding:9px 12px}.credits-terms-card ol{gap:5px}.credits-terms-card li{font-size:.60rem;line-height:1.42}.credits-copyright{font-size:.58rem;margin:7px 0}
 }
 
