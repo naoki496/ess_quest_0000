@@ -1749,7 +1749,7 @@ function markWorldVisited(world){
     }
     if(k===2){
       const d1=pick([2,3,4,5]),d2=pick([3,4,5,6,8]);let a=normFraction(1,d1),b=normFraction(1,d2),used=endFracAdd(a,b);if(used.n>=used.d)return makeEndBlueQuestion(raw);const ans=endFracSub({n:1,d:1},used);
-      const text=`全体の${endFracText(a)}と${endFracText(b)}を使った。残りは？`,html=`全体の${endFracSpan(a)}と${endFracSpan(b)}を使った。残りは？`;
+      const text=`全体の${endFracText(a)}と${endFracText(b)}を使いました。残りはいくつですか。`,html=`全体の${endFracSpan(a)}と${endFracSpan(b)}を使いました。残りはいくつですか。`;
       return endFractionQuestion({text,html},ans,[used,a,b]);
     }
     if(k===3){
@@ -1789,7 +1789,7 @@ function markWorldVisited(world){
     if(k===3){const x=pick(hard?[60,72,84,96,120]:[36,48,60,72]),a=pick([6,8,12,15]),m=pick([1.2,1.5,2.4]),total=normalizeChoiceNumber((x-a)*m);return endNumericQuestion(`(□ − ${a}) × ${m} = ${total}。□は？`,x,[normalizeChoiceNumber(total/m),normalizeChoiceNumber(total/m-a),normalizeChoiceNumber(x+a)]);}
     if(k===4){
       const d=pick([4,5,8,10]),n=pick([1,2,3]),x=pick(hard?[80,100,120,160,200]:[60,80,100,120]),total=x*n/d;if(!Number.isInteger(total))return makeEndBackQuestion(raw);
-      const text=`□ × ${n}/${d} = ${total}。□は？`,html=`□<span class="fraction-op">×</span>${endFracSpan({n,d})}<span class="fraction-op">=</span>${total}。□は？`;
+      const text=`□ × ${n}/${d} = ${total}。□は何ですか。`,html=`□<span class="fraction-op">×</span>${endFracSpan({n,d})}<span class="fraction-op">=</span>${total}。□は何ですか。`;
       return endNumericQuestion(text,x,[total*d,Math.max(1,x-total),x*d/n+1],{displayExpression:text,htmlExpression:html});
     }
     if(k===5){const d=pick([1.2,1.5,2.4,2.5]),x=pick(hard?[72,90,120,144,180]:[48,60,72,90,120]),c=pick([8,10,12,15]),total=normalizeChoiceNumber(x/d+c);return endNumericQuestion(`□ ÷ ${d} + ${c} = ${total}。□は？`,x,[normalizeChoiceNumber((total-c)/d),normalizeChoiceNumber(total*d),normalizeChoiceNumber(x+c*d)]);}
@@ -3851,7 +3851,7 @@ function setStageOverlayVisible(visible){
     if(q?.visualType==='mimesis-table'){
       el.innerHTML='';
       const wrap=document.createElement('div');wrap.className='mimesis-table-view';
-      const ask=document.createElement('strong');ask.textContent='この関係は？';wrap.appendChild(ask);
+      const ask=document.createElement('strong');ask.textContent='この関係はどれですか。';wrap.appendChild(ask);
       const table=document.createElement('table');table.setAttribute('aria-label','xとyの関係を表す表');
       [['x',q.tableX],['y',q.tableY]].forEach(([label,values])=>{
         const tr=document.createElement('tr');const th=document.createElement('th');th.scope='row';th.textContent=label;tr.appendChild(th);
@@ -3863,7 +3863,7 @@ function setStageOverlayVisible(visible){
       el.innerHTML='';
       const wrap=document.createElement('div');wrap.className='mimesis-final-view';
       const head=document.createElement('div');head.className='mimesis-final-head';
-      const ask=document.createElement('strong');ask.textContent='まちがっているものは？';head.appendChild(ask);
+      const ask=document.createElement('strong');ask.textContent='まちがっているものはどれですか。';head.appendChild(ask);
       if(q.showPi){const pi=document.createElement('small');pi.textContent='円周率は3.14';head.appendChild(pi);}wrap.appendChild(head);
       const list=document.createElement('div');list.className='mimesis-final-list';
       q.mimesisRows.forEach(row=>{
@@ -3890,10 +3890,41 @@ function setStageOverlayVisible(visible){
     // Only compact arithmetic expressions receive the traditional "=?" suffix.
     return /^[0-9０-９\s.,．+＋\-−ー×÷*/()%％]+$/.test(text);
   }
+  function normalizeNaturalQuestionText(value=''){
+    let text=String(value??'');
+    if(!/[ぁ-んァ-ヶ一-龯々]/.test(text))return text;
+    // 教材本文の疑問文は「？」ではなく、文として完結する「～ですか。」へ統一する。
+    // 単位を後置した旧形式（例: 残りは？km）も自然な語順へ直す。
+    text=text.replace(/ですか[?？]/g,'ですか。');
+    text=text.replace(/何([a-zA-Z㎡㎠³²0-9０-９]+)[?？]/g,'何$1ですか。');
+    text=text.replace(/残りは[?？]([a-zA-Z㎡㎠³²]+)/g,'残りは何$1ですか。');
+    text=text.replace(/面積は[?？]([a-zA-Z㎡㎠³²]+)/g,'面積は何$1ですか。');
+    text=text.replace(/(?:並び方|選び方|組合せ|道順)は[?？]通り/g,m=>m.replace(/[?？]通り$/,'何通りですか。'));
+    text=text.replace(/1こあたり安いのは[?？]/g,'1こあたり安いのはどちらですか。');
+    text=text.replace(/正しい順は[?？]/g,'正しい順はどれですか。');
+    text=text.replace(/同じ比は[?？]/g,'同じ比はどれですか。');
+    text=text.replace(/この関係は[?？]/g,'この関係はどれですか。');
+    text=text.replace(/まちがっているものは[?？]/g,'まちがっているものはどれですか。');
+    text=text.replace(/代金は[?？]/g,'代金はいくらですか。');
+    text=text.replace(/時速は[?？]/g,'時速は何kmですか。');
+    text=text.replace(/何%[?？]/g,'何%ですか。');
+    text=text.replace(/何時間[?？]/g,'何時間ですか。');
+    text=text.replace(/何日[?？]/g,'何日ですか。');
+    text=text.replace(/何人[?？]/g,'何人ですか。');
+    text=text.replace(/何個[?？]/g,'何個ですか。');
+    text=text.replace(/何本[?？]/g,'何本ですか。');
+    text=text.replace(/何枚[?？]/g,'何枚ですか。');
+    text=text.replace(/何通り[?？]/g,'何通りですか。');
+    text=text.replace(/いくつ[?？]/g,'いくつですか。');
+    text=text.replace(/□は[?？]/g,'□は何ですか。');
+    text=text.replace(/([^。！？?]+)は[?？]/g,'$1は何ですか。');
+    text=text.replace(/([^。！？?]+)[?？]/g,'$1ですか。');
+    return text;
+  }
   function questionDisplayText(q){
-    if(q?.displayExpression!=null)return String(q.displayExpression);
-    const expression=String(q?.expression??'');
-    return expressionNeedsEqualsPrompt(expression)?`${expression}=?`:expression;
+    const raw=q?.displayExpression!=null?String(q.displayExpression):String(q?.expression??'');
+    const text=expressionNeedsEqualsPrompt(raw)?`${raw}=?`:raw;
+    return normalizeNaturalQuestionText(text);
   }
   function fitMathProblemToBox(q=currentQuestion){
     const el=els.mathProblem,box=el?.closest('.equation-box');
@@ -3928,7 +3959,7 @@ function setStageOverlayVisible(visible){
     while(el.scrollWidth>maxWidth&&size>minSingle){size=Math.max(minSingle,size-1);el.style.setProperty('font-size',`${size}px`,'important');}
     if(textual||el.scrollWidth>maxWidth){
       const wrapWidth=q?.wordProblem?Math.max(80,Math.floor(maxWidth*.94)):maxWidth;
-      el.style.width=`${wrapWidth}px`;
+      el.style.width=q?.wordProblem?'fit-content':`${wrapWidth}px`;
       el.style.maxWidth=`${wrapWidth}px`;
       el.style.whiteSpace='normal';
       el.style.display='block';
@@ -3961,7 +3992,8 @@ function setStageOverlayVisible(visible){
     const min=textual?(lowLandscape?9:10):(fraction?(lowLandscape?14:16):(lowLandscape?15:17));
     const maxW=Math.max(24,button.clientWidth),maxH=Math.max(22,button.clientHeight);
     if(fraction){
-      while(button.scrollWidth>maxW&&size>min){size-=1;button.style.setProperty('font-size',`${size}px`,'important');}
+      // 縦積み分数は横幅だけでなく高さも必ず検査する。Safari系のフォントメトリクス差もここで吸収する。
+      while((button.scrollWidth>maxW||button.scrollHeight>maxH)&&size>min){size-=1;button.style.setProperty('font-size',`${size}px`,'important');}
       return;
     }
     while((button.scrollWidth>maxW||button.scrollHeight>maxH)&&size>min){size-=1;button.style.setProperty('font-size',`${size}px`,'important');}

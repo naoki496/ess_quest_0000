@@ -5177,3 +5177,57 @@ body[data-ui-style="reframe"] .math-problem.word-problem{
   margin-left:auto!important;
   margin-right:auto!important;
 }
+
+/* 2026-09-09 PORTRAIT BATTLE ALIGNMENT / FRACTION SAFETY / WORD BLOCK CENTERING
+   OS sniffing is intentionally avoided: these are viewport/layout issues, so the same fix
+   applies to iPad/iPhone and Android tablets/phones with the matching portrait geometry. */
+@media (orientation:portrait){
+  /* Keep the enemy in the upper-right lane instead of centering a 72vw actor box. */
+  body[data-ui-style="reframe"] .actor.enemy{
+    left:auto!important;right:2%!important;width:48%!important;
+  }
+  /* Normal hit FX uses the exact same portrait lane as the enemy actor. */
+  body[data-ui-style="reframe"] .battlefield>.attack-effect.front-hit,
+  body[data-ui-style="reframe"] .battlefield>.attack-effect.back-hit{
+    left:auto!important;right:2%!important;top:5.5%!important;bottom:auto!important;
+    width:48%!important;height:27%!important;
+  }
+  /* Finishers remain larger than normal hits but stay centered on the same target lane. */
+  body[data-ui-style="reframe"] .battlefield>.attack-effect.finisher-front-fx,
+  body[data-ui-style="reframe"] .battlefield>.attack-effect.finisher-back-fx{
+    left:auto!important;right:-2%!important;top:2%!important;bottom:auto!important;
+    width:56%!important;height:34%!important;
+  }
+
+  /* Fraction choices must fit vertically as well as horizontally. The JS fitter performs
+     the final per-font measurement; this cap prevents oversized initial layout on WebKit. */
+  body[data-ui-style="reframe"] .choices button.fraction-choice .fraction-stack{
+    font-size:.88em!important;line-height:.82!important;margin-top:0!important;margin-bottom:0!important;
+  }
+  body[data-ui-style="reframe"] .choices button.fraction-choice .fraction-num,
+  body[data-ui-style="reframe"] .choices button.fraction-choice .fraction-den{
+    line-height:.92!important;
+  }
+
+  /* A word problem is left-aligned internally, but its own shrink-to-fit block is centered. */
+  body[data-ui-style="reframe"] .math-problem.word-problem{
+    width:fit-content!important;max-width:94%!important;box-sizing:border-box!important;
+    margin-left:auto!important;margin-right:auto!important;text-align:left!important;
+  }
+}
+@media (orientation:portrait) and (max-width:599px){
+  body[data-ui-style="reframe"].hud-modern .battlefield>.attack-effect.front-hit,
+  body[data-ui-style="reframe"].hud-modern .battlefield>.attack-effect.back-hit{
+    right:0!important;width:46%!important;
+  }
+  body[data-ui-style="reframe"].hud-modern .battlefield>.attack-effect.finisher-front-fx,
+  body[data-ui-style="reframe"].hud-modern .battlefield>.attack-effect.finisher-back-fx{
+    right:-3%!important;width:54%!important;
+  }
+}
+@media (orientation:portrait) and (max-height:650px){
+  body[data-ui-style="reframe"] .battlefield>.attack-effect.front-hit,
+  body[data-ui-style="reframe"] .battlefield>.attack-effect.back-hit{
+    top:5%!important;height:24%!important;
+  }
+}
