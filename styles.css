@@ -5231,3 +5231,69 @@ body[data-ui-style="reframe"] .math-problem.word-problem{
     top:5%!important;height:24%!important;
   }
 }
+
+/* ======================================================================
+   2026-09-09 BOSS INFO STACK / LANDSCAPE
+   On tablet/desktop landscape, bind the boss name and HP meter to the
+   enemy actor's horizontal center instead of two independent edge lanes.
+   The name width never participates in the meter's position, so long names
+   may shrink/ellipsis without pushing BOSS HP sideways.
+   Portrait and compact-phone landscape keep their established layouts.
+   ====================================================================== */
+@media (orientation:landscape) and (min-height:701px){
+  body[data-ui-style="reframe"]:not([data-compact-phone-landscape="true"])
+  .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    left:50%!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:5.4%!important;
+    transform:translateX(-50%)!important;
+    width:max-content!important;
+    max-width:31vw!important;
+    justify-content:center!important;
+    text-align:center!important;
+  }
+  body[data-ui-style="reframe"].hud-modern:not([data-compact-phone-landscape="true"])
+  .boss-hp-hud:not([hidden]){
+    left:84.5%!important;
+    right:auto!important;
+    bottom:1.35%!important;
+    width:min(15vw,176px)!important;
+    min-width:118px!important;
+    max-width:176px!important;
+    transform:translateX(-50%)!important;
+    align-items:center!important;
+  }
+}
+
+@media (orientation:landscape) and (min-height:501px) and (max-height:700px){
+  body[data-ui-style="reframe"]:not([data-compact-phone-landscape="true"])
+  .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    left:50%!important;
+    right:auto!important;
+    top:auto!important;
+    bottom:7%!important;
+    transform:translateX(-50%)!important;
+    width:max-content!important;
+    max-width:28vw!important;
+    justify-content:center!important;
+    text-align:center!important;
+  }
+  body[data-ui-style="reframe"].hud-modern:not([data-compact-phone-landscape="true"])
+  .boss-hp-hud:not([hidden]){
+    left:86%!important;
+    right:auto!important;
+    bottom:1.1%!important;
+    width:min(16vw,150px)!important;
+    min-width:104px!important;
+    max-width:150px!important;
+    transform:translateX(-50%)!important;
+    align-items:center!important;
+  }
+}
+@media (orientation:landscape) and (min-height:701px) and (max-height:800px){
+  body[data-ui-style="reframe"]:not([data-compact-phone-landscape="true"])
+  .battlefield:has(.boss-hp-hud:not([hidden])) .actor.enemy .actor-name{
+    bottom:6%!important;
+  }
+}
