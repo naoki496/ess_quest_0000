@@ -13,6 +13,12 @@ button{font:inherit;-webkit-tap-highlight-color:transparent}
 .panel-gold::after{content:"";position:absolute;inset:7px;border:1px solid rgba(255,226,156,.16);border-radius:inherit;pointer-events:none;z-index:8}
 body[data-mode="back"] .panel-gold{border-color:rgba(101,234,255,.45);box-shadow:0 24px 68px rgba(0,0,0,.58),0 0 34px rgba(121,50,205,.14),inset 0 0 0 1px rgba(255,255,255,.06)}
 
+
+/* ---------- startup logo (isolated pre-title overlay) ---------- */
+.startup-logo{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;overflow:hidden;background:#f7f6f3;opacity:1;transition:opacity .20s ease;pointer-events:auto}
+.startup-logo.startup-logo--hide{opacity:0;pointer-events:none}
+.startup-logo-video{display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:#f7f6f3}
+
 /* ---------- title ---------- */
 .title-screen{display:grid;place-items:center;padding:calc(8px + var(--safe-top)) calc(8px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(8px + var(--safe-left));isolation:isolate}
 .title-bg,.sub-bg{position:absolute;inset:0;background:url('./assets/bg_forest.png') center/cover no-repeat;transform:scale(1.025);animation:bgDrift 14s ease-in-out infinite alternate}

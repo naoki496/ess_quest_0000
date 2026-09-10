@@ -8,6 +8,36 @@
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body data-mode="front" data-stage="0" data-ui-style="reframe">
+<div id="startupLogo" class="startup-logo" aria-hidden="true">
+  <video id="startupLogoVideo" class="startup-logo-video" autoplay muted playsinline preload="auto"></video>
+</div>
+<script>
+(() => {
+  const overlay = document.getElementById('startupLogo');
+  const video = document.getElementById('startupLogoVideo');
+  if (!overlay || !video) return;
+
+  let finished = false;
+  let safetyTimer = 0;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    if (safetyTimer) window.clearTimeout(safetyTimer);
+    overlay.classList.add('startup-logo--hide');
+    window.setTimeout(() => overlay.remove(), 220);
+  };
+
+  video.addEventListener('ended', finish, { once: true });
+  video.addEventListener('error', finish, { once: true });
+
+  const portrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+  video.src = portrait ? './assets/ttnaoki.mp4' : './assets/yknaoki.mp4';
+  safetyTimer = window.setTimeout(finish, 4000);
+
+  const playback = video.play();
+  if (playback && typeof playback.catch === 'function') playback.catch(finish);
+})();
+</script>
 <div id="transitionFx" class="transition-fx" hidden><div class="transition-cover"></div><div class="transition-tiles"></div><div class="transition-grid"></div><div class="transition-core"></div><div class="transition-sigil">✦</div></div>
 
 <section id="titleScreen" class="screen title-screen">
