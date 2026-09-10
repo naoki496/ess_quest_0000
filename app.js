@@ -3748,6 +3748,7 @@ function setStageOverlayVisible(visible){
 
     const viable=b=>b.dataset.eliminated!=='true'&&!b.classList.contains('mirror-vanished');
     if(midoriSpecialState?.type==='tide'&&!midoriSpecialState.ready){buttons.forEach(b=>b.disabled=true);syncMidoriSpecialControls();return;}
+    if(endSpecialState?.type==='end-tide-judgment'){syncEndTideJudgmentState();return;}
     if(document.body.classList.contains('silver-spotlight-active')){
       const active=buttons.filter(viable);
       // A choice removed by the hero special can still carry the old spotlight class.
@@ -3777,7 +3778,12 @@ function setStageOverlayVisible(visible){
   function resetSpecialGauge(){specialGauge=0;comboStreak=0;specialActive=false;document.body.classList.remove('special-assist-active');updateSpecialHud();}
   async function activateSpecialMove(){
     if(midoriSpecialBlocksAssist()||specialActive||crimsonMoonShiftBusy||silverSpecialBusy||blueSpecialBusy||paused||gameOverActive||locked||specialGauge<100||!currentQuestion||!timerId)return;
-    const wrongButtons=[...els.choices.children].filter(b=>b.dataset.eliminated!=='true'&&b.dataset.mirrorFake!=='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
+    const wrongButtons=[...els.choices.children].filter(b=>
+      b.dataset.eliminated!=='true'
+      &&b.dataset.mirrorFake!=='true'
+      &&!b.classList.contains('end-tide-discarded')
+      &&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer)
+    );
     if(!wrongButtons.length)return;
     specialActive=true;locked=true;
     const resumeTime=timeLeft;
@@ -3801,7 +3807,7 @@ function setStageOverlayVisible(visible){
     await sleep(260);
     document.body.classList.remove('special-assist-active');
     specialActive=false;locked=false;
-    syncMidoriAfterElimination();restoreChoiceInteractivity();
+    syncMidoriAfterElimination();syncEndAfterElimination();restoreChoiceInteractivity();
     updateSpecialHud();syncPauseButton();
     if(currentQuestion&&timeLeft>0&&!paused&&!gameOverActive)startTimer(resumeTime,{preserveCountCue:true,preserveLimit:true});
   }
@@ -5011,6 +5017,42 @@ function setStageOverlayVisible(visible){
   function trackEndTimeout(id){endSpecialTimers.push(id);return id;}
   function trackEndInterval(id){endSpecialTimers.push(id);return id;}
   function endNumericChoiceValues(){return[...els.choices.children].map(b=>Number(b.dataset.answerValue)).filter(Number.isFinite);}
+  function syncEndTideJudgmentState({fromAssist=false}={}){
+    const st=endSpecialState;
+    if(!st||st.type!=='end-tide-judgment'||!currentQuestion)return;
+    const buttons=[...els.choices.children];
+    if(!(st.discarded instanceof Set))st.discarded=new Set();
+    // The hero assist removes a wrong choice with dataset.eliminated. Treat that removal as
+    // one completed tide-discard step so the boss mechanic can never demand a button that no
+    // longer exists. Manually discarded routes and assist-eliminated routes share one state.
+    buttons.forEach(b=>{
+      if(b.dataset.eliminated==='true'&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer))st.discarded.add(b);
+    });
+    const removedWrong=buttons.filter(b=>
+      !answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer)
+      &&(st.discarded.has(b)||b.dataset.eliminated==='true')
+    );
+    st.step=Math.min(2,removedWrong.length);
+    const guide=$('endTideGuide'),label=guide?.querySelector('strong');
+    if(st.step===0){
+      if(label)label.textContent='潮流Ⅰ：誤った航路を一つ切り捨てろ';
+    }else if(st.step===1){
+      if(label)label.textContent='潮流Ⅱ：もう一つの誤航路を切り捨てろ';
+      if(fromAssist)els.feedbackText.textContent='必殺技で誤航路を一つ排除した。もう一つの誤航路を見抜こう。';
+    }else{
+      if(label)label.textContent='潮流Ⅲ：残った航路を確定せよ';
+      els.feedbackText.textContent=fromAssist?'必殺技で二つ目の誤航路を排除した。残った答えを選ぼう！':'最終潮流。残った答えを選ぼう！';
+    }
+    buttons.forEach(b=>{
+      const removed=st.discarded.has(b)||b.dataset.eliminated==='true';
+      b.classList.toggle('end-tide-discarded',removed&&!answersEqual(b.dataset.answerValue??b.textContent,currentQuestion.answer));
+      b.classList.toggle('end-tide-last',st.step>=2&&!removed);
+      b.disabled=removed;
+    });
+  }
+  function syncEndAfterElimination(){
+    if(endSpecialState?.type==='end-tide-judgment')syncEndTideJudgmentState({fromAssist:true});
+  }
   function startEndTideJudgment(){
     document.body.classList.add('end-tide-judgment-active');document.querySelector('.question-panel')?.classList.add('end-special-panel','end-tide-panel');
     const buttons=[...els.choices.children],wrong=shuffle(buttons.filter(b=>!answersEqual(b.dataset.answerValue,currentQuestion.answer)));
@@ -5018,16 +5060,17 @@ function setStageOverlayVisible(visible){
     const guide=document.createElement('div');guide.id='endTideGuide';guide.className='end-tide-guide';guide.innerHTML='<small>FIVE SEAS JUDGMENT</small><strong>潮流Ⅰ：誤った航路を一つ切り捨てろ</strong>';const panel=document.querySelector('.question-panel');panel?.querySelector('.choice-caption')?.before(guide);
     buttons.forEach(b=>{b.dataset.endBound='1';b.onclick=()=>{
       if(locked||paused||specialActive||!timerId)return;const st=endSpecialState;if(!st)return;
+      syncEndTideJudgmentState();
       if(st.step<2){
         if(answersEqual(b.dataset.answerValue,currentQuestion.answer)){els.feedbackText.textContent='まだ航路は確定できない。誤った候補を見抜こう。';return;}
-        if(st.discarded.has(b)){els.feedbackText.textContent='その航路はすでに捨てている。';return;}
-        st.discarded.add(b);b.classList.add('end-tide-discarded');b.disabled=true;st.step++;
-        if(st.step===1){guide.querySelector('strong').textContent='潮流Ⅱ：もう一つの誤航路を切り捨てろ';els.feedbackText.textContent='一つの誤航路を排除した。';}
-        else{guide.querySelector('strong').textContent='潮流Ⅲ：残った航路を確定せよ';els.feedbackText.textContent='最終潮流。残った答えを選ぼう！';buttons.filter(x=>!st.discarded.has(x)).forEach(x=>{x.disabled=false;x.classList.add('end-tide-last');});}
+        if(st.discarded.has(b)||b.dataset.eliminated==='true'){els.feedbackText.textContent='その航路はすでに捨てている。';return;}
+        st.discarded.add(b);syncEndTideJudgmentState();
+        if(st.step===1)els.feedbackText.textContent='一つの誤航路を排除した。';
         return;
       }
       resolveAnswer(b.dataset.answerValue??b.textContent,false);
     };});
+    syncEndTideJudgmentState();
   }
   function makeEndCrimsonChain(){
     const divisor=pick([.2,.3,.4,.5,.6,.8]),x=rand(6,12),first=normalizeChoiceNumber(divisor*x),m=pick([1.2,1.25,1.5,2]),second=normalizeChoiceNumber(x*m);
