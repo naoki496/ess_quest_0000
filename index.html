@@ -9,13 +9,18 @@
 </head>
 <body data-mode="front" data-stage="0" data-ui-style="reframe">
 <div id="startupLogo" class="startup-logo" aria-hidden="true">
-  <video id="startupLogoVideo" class="startup-logo-video" autoplay muted playsinline preload="auto"></video>
+  <div class="startup-logo__field">
+    <div class="startup-logo__mark">
+      <img src="./assets/naoki.png" alt="" class="startup-logo__image">
+      <div class="startup-logo__name">NAOKI</div>
+    </div>
+  </div>
 </div>
 <script>
 (() => {
   const overlay = document.getElementById('startupLogo');
-  const video = document.getElementById('startupLogoVideo');
-  if (!overlay || !video) return;
+  const image = overlay?.querySelector('.startup-logo__image');
+  if (!overlay) return;
 
   let finished = false;
   let safetyTimer = 0;
@@ -23,19 +28,18 @@
     if (finished) return;
     finished = true;
     if (safetyTimer) window.clearTimeout(safetyTimer);
-    overlay.classList.add('startup-logo--hide');
-    window.setTimeout(() => overlay.remove(), 220);
+    overlay.remove();
   };
 
-  video.addEventListener('ended', finish, { once: true });
-  video.addEventListener('error', finish, { once: true });
+  overlay.addEventListener('animationend', (event) => {
+    if (event.target === overlay) finish();
+  });
 
-  const portrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
-  video.src = portrait ? './assets/ttnaoki.mp4' : './assets/yknaoki.mp4';
-  safetyTimer = window.setTimeout(finish, 4000);
+  if (image) {
+    image.addEventListener('error', finish, { once: true });
+  }
 
-  const playback = video.play();
-  if (playback && typeof playback.catch === 'function') playback.catch(finish);
+  safetyTimer = window.setTimeout(finish, 2600);
 })();
 </script>
 <div id="transitionFx" class="transition-fx" hidden><div class="transition-cover"></div><div class="transition-tiles"></div><div class="transition-grid"></div><div class="transition-core"></div><div class="transition-sigil">✦</div></div>
